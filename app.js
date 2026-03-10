@@ -2,11 +2,12 @@
 
 const API_BASE = 'https://gamma-api.polymarket.com';
 
-// CORS proxies for file:// protocol fallback
+// CORS proxies for file:// and Vercel protocol fallback
 const CORS_PROXIES = [
-    (url) => url,
-    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url) => url, // Try direct first
     (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
 ];
 let workingProxyIndex = 0;
 
@@ -157,14 +158,14 @@ function renderWatchlist() {
     const grid = document.getElementById('watchlist-grid');
     const empty = document.getElementById('watchlist-empty');
     const watched = allMarkets.filter(m => watchlist.includes(m.id));
-    
+
     if (watched.length === 0) {
         grid.innerHTML = '';
         grid.appendChild(empty);
         empty.style.display = 'flex';
         return;
     }
-    
+
     empty.style.display = 'none';
     grid.innerHTML = '';
     watched.forEach((m, i) => grid.appendChild(createMarketCard(m, i)));
@@ -174,7 +175,7 @@ function renderWatchlist() {
 async function fetchWithProxy(url) {
     const proxyOrder = [
         workingProxyIndex,
-        ...Array.from({length: CORS_PROXIES.length}, (_, i) => i).filter(i => i !== workingProxyIndex)
+        ...Array.from({ length: CORS_PROXIES.length }, (_, i) => i).filter(i => i !== workingProxyIndex)
     ];
     for (const idx of proxyOrder) {
         try {
@@ -228,8 +229,8 @@ function processMarkets(raw) {
         const minPrice = Math.min(yesPrice, noPrice);
         const maxRoi = minPrice > 0 ? (1 / minPrice) : 1;
         const endDate = m.endDate ? new Date(m.endDate) : null;
-        const daysLeft = endDate ? Math.max(0, Math.ceil((endDate - new Date()) / (1000*60*60*24))) : null;
-        
+        const daysLeft = endDate ? Math.max(0, Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24))) : null;
+
         const q = (m.question || '').toLowerCase();
         let category = 'other';
         if (q.includes('president') || q.includes('election') || q.includes('trump') || q.includes('biden') || q.includes('congress') || q.includes('senate') || q.includes('governor') || q.includes('ceasefire') || q.includes('war') || q.includes('iran') || q.includes('fed ') || q.includes('interest rate') || q.includes('tariff'))
@@ -330,12 +331,12 @@ function generateSparkline(market) {
     const basePrice = market.yesPrice;
     const change24h = market.priceChange24h || 0;
     const change1w = market.priceChange1w || 0;
-    
+
     // Simulate 7 data points from weekly to current
     const points = [];
     const startPrice = basePrice - change1w;
     const midPrice = basePrice - change24h;
-    
+
     for (let i = 0; i < 7; i++) {
         let p;
         if (i < 5) {
