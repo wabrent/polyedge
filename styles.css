@@ -1165,3 +1165,162 @@ main {
     border-color: var(--red);
     color: var(--red);
 }
+
+/* ===== RESPONSIVE / MOBILE OPTIMIZATION ===== */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    /* Header & Nav */
+    .header-inner {
+        padding: 0 12px;
+        height: auto;
+        min-height: 56px;
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .header-left {
+        width: 100%;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .nav {
+        overflow-x: auto;
+        padding-bottom: 4px;
+        /* Space for scrollbar */
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        /* Hide scrollbar Firefox */
+    }
+
+    .nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hide scrollbar Chrome/Safari */
+
+    .nav-item {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: center;
+        padding-top: 4px;
+        border-top: 1px solid var(--border);
+    }
+
+    /* Main Container */
+    main {
+        padding: 12px 12px 60px;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+        flex-wrap: wrap;
+        padding: 10px;
+        gap: 10px 0;
+    }
+
+    .stat-divider {
+        display: none;
+    }
+
+    .stat {
+        min-width: 50%;
+        padding: 4px 0;
+    }
+
+    .stat-val {
+        font-size: 1.1rem;
+    }
+
+    /* Toolbar & Search */
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .toolbar-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .toolbar-controls {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .select-sm {
+        width: 100%;
+    }
+
+    /* Grids */
+    .markets-grid,
+    .skeleton-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Scanner */
+    .scanner-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ctrl-group {
+        min-width: 100%;
+    }
+
+    .sr-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        position: relative;
+    }
+
+    .sr-rank {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 0.9rem;
+    }
+
+    .sr-link {
+        text-align: center;
+        background: var(--blue-bg);
+        padding: 8px;
+    }
+
+    /* Kelly Calc */
+    .kelly-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .kelly-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+
+    .kelly-stat {
+        padding: 8px 4px;
+    }
+}
