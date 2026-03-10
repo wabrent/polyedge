@@ -180,9 +180,18 @@ async function fetchWithProxy(url) {
     for (const idx of proxyOrder) {
         try {
             const proxiedUrl = CORS_PROXIES[idx](url);
-            const res = await fetch(proxiedUrl);
+
+            // 5 second timeout to prevent infinite hanging
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+            const res = await fetch(proxiedUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
             const data = await res.json();
+
             if (data && (Array.isArray(data) ? data.length > 0 : true)) {
                 workingProxyIndex = idx;
                 return data;
