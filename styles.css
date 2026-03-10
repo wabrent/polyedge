@@ -799,6 +799,41 @@ main {
     flex-shrink: 0;
 }
 
+/* Kelly Fraction Segmented Control */
+.k-tabs {
+    display: flex;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    gap: 4px;
+}
+
+.k-tab {
+    flex: 1;
+    padding: 8px 0;
+    text-align: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-3);
+    font-family: var(--font);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.k-tab:hover {
+    color: var(--text-2);
+}
+
+.k-tab.active {
+    background: var(--bg-card);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 .kelly-hero {
     text-align: center;
     padding: 24px;

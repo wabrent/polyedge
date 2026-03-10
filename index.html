@@ -186,12 +186,14 @@
                                 value="50" class="range"><input type="number" id="kelly-true-prob" value="50" min="1"
                                 max="99" class="input input-sm"></div>
                     </div>
-                    <div class="field"><label>Kelly Fraction</label><select id="kelly-fraction" class="input">
-                            <option value="1">Full Kelly</option>
-                            <option value="0.5" selected>Half Kelly (recommended)</option>
-                            <option value="0.25">Quarter Kelly</option>
-                            <option value="0.1">Tenth Kelly</option>
-                        </select></div>
+                    <div class="field"><label>Kelly Fraction</label>
+                        <div class="k-tabs" id="kelly-fraction-tabs">
+                            <button class="k-tab" data-val="1">Full</button>
+                            <button class="k-tab active" data-val="0.5">Half</button>
+                            <button class="k-tab" data-val="0.25">Quarter</button>
+                            <button class="k-tab" data-val="0.1">Tenth</button>
+                        </div>
+                    </div>
                     <button class="btn-primary btn-full" id="kelly-calc-btn">Calculate</button>
                 </div>
                 <div class="kelly-output">

@@ -561,7 +561,16 @@ function initKellyCalculator() {
     probInput.addEventListener('input', () => { probRange.value = probInput.value; calculateKelly(); });
 
     document.getElementById('kelly-bankroll').addEventListener('input', calculateKelly);
-    document.getElementById('kelly-fraction').addEventListener('change', calculateKelly);
+
+    const kTabs = document.querySelectorAll('.k-tab');
+    kTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            kTabs.forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            calculateKelly();
+        });
+    });
+
     document.getElementById('kelly-calc-btn').addEventListener('click', calculateKelly);
 
     calculateKelly();
@@ -571,7 +580,10 @@ function calculateKelly() {
     const bankroll = Number(document.getElementById('kelly-bankroll').value) || 100;
     const marketPrice = Number(document.getElementById('kelly-market-price').value) / 100;
     const trueProb = Number(document.getElementById('kelly-true-prob').value) / 100;
-    const fraction = Number(document.getElementById('kelly-fraction').value);
+
+    const activeTab = document.querySelector('.k-tab.active');
+    const fraction = activeTab ? Number(activeTab.dataset.val) : 0.5;
+
     const warning = document.getElementById('kelly-warning');
 
     if (marketPrice <= 0 || marketPrice >= 1 || trueProb <= 0 || trueProb >= 1) {
