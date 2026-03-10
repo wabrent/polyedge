@@ -173,34 +173,42 @@ function renderWatchlist() {
 
 // ========== API CALLS ==========
 async function fetchWithProxy(url) {
-    const proxyOrder = [
-        workingProxyIndex,
-        ...Array.from({ length: CORS_PROXIES.length }, (_, i) => i).filter(i => i !== workingProxyIndex)
-    ];
-    for (const idx of proxyOrder) {
-        try {
-            const proxiedUrl = CORS_PROXIES[idx](url);
-
-            // 5 second timeout to prevent infinite hanging
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-            const res = await fetch(proxiedUrl, { signal: controller.signal });
-            clearTimeout(timeoutId);
-
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+    // 1. Try direct API connection first (fastest, no proxy overhead)
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000); // 4s timeout for direct
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
             const data = await res.json();
-
-            if (data && (Array.isArray(data) ? data.length > 0 : true)) {
-                workingProxyIndex = idx;
-                return data;
-            }
-        } catch (err) {
-            console.warn(`Proxy ${idx} failed:`, err.message);
+            if (data && data.length > 0) return data;
         }
+    } catch (err) {
+        console.warn('Direct fetch failed or timed out, switching to proxies...');
     }
-    return [];
+
+    // 2. If direct fails (CORS block), race the best proxies simultaneously
+    const proxies = [
+        `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+    ];
+
+    try {
+        const data = await Promise.any(proxies.map(async (pUrl) => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout for proxy
+            const res = await fetch(pUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (!res.ok) throw new Error('Proxy HTTP error');
+            const json = await res.json();
+            if (!json || json.length === 0) throw new Error('Empty payload');
+            return json;
+        }));
+        return data;
+    } catch (err) {
+        console.error('All proxies failed:', err);
+        return [];
+    }
 }
 
 async function fetchMarkets(limit = 50, offset = 0, order = 'volume24hr') {
@@ -211,7 +219,8 @@ async function fetchMarkets(limit = 50, offset = 0, order = 'volume24hr') {
 // ========== LOAD MARKETS ==========
 async function loadMarkets() {
     isLoading = true;
-    const markets = await fetchMarkets(100);
+    // Requesting 60 markets instead of 100 to halve the download payload size (from ~10MB to ~5MB)
+    const markets = await fetchMarkets(60);
     allMarkets = processMarkets(markets);
     updateStats();
     displayedCount = 0;
