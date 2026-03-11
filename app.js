@@ -223,46 +223,44 @@ function renderWatchlist() {
 
 // ========== API CALLS ==========
 async function fetchWithProxy(url) {
-    const endpoints = [
+    // Sequential fallback is more reliable for identifying exactly which proxy works
+    const proxies = [
         url, // 1. Direct
         `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        `https://cors-anywhere.herokuapp.com/${url}`, 
-        `https://proxy.cors.sh/${url}`,
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+        `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+        `https://api.allorigins.win/get?url=${encodeURIComponent(url)}` // Final JSON wrapping fallback
     ];
 
-    try {
-        const data = await Promise.any(endpoints.map(async (eUrl) => {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-                
-                const fetchOptions = { signal: controller.signal };
-                // cors.sh often needs this header
-                if (eUrl.includes('proxy.cors.sh')) {
-                    fetchOptions.headers = { 'x-cors-gratis': 'true' };
-                }
+    for (const pUrl of proxies) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            
+            const res = await fetch(pUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            
+            if (!res.ok) continue;
+            
+            let json = await res.json();
+            
+            // Handle AllOrigins 'get' format
+            if (json.contents) {
+                try { json = JSON.parse(json.contents); } 
+                catch (e) { continue; }
+            }
 
-                const res = await fetch(eUrl, fetchOptions);
-                clearTimeout(timeoutId);
-                
-                if (!res.ok) throw new Error(`Status ${res.status}`);
-                const json = await res.json();
-                
-                // If it's AllOrigins (might wrap it in a 'contents' field if not using /raw)
-                const marketsData = json.contents ? JSON.parse(json.contents) : json;
-                
-                if (!marketsData || (Array.isArray(marketsData) && marketsData.length === 0 && url.includes('limit='))) {
-                    throw new Error('Empty');
-                }
-                return marketsData;
-            } catch (e) { throw e; }
-        }));
-        return data;
-    } catch (err) {
-        console.warn('PolyEdge: Proxy fetch failed, trying final fallback');
-        return [];
+            if (json && (Array.isArray(json) || json.markets)) {
+                console.log(`PolyEdge: Data loaded via ${pUrl}`);
+                return json;
+            }
+        } catch (e) {
+            console.warn(`PolyEdge: Proxy ${pUrl} failed:`, e.message);
+        }
     }
+
+    console.error('PolyEdge: All proxies failed.');
+    return [];
 }
 
 async function fetchMarkets(limit = 50, offset = 0, order = 'volume24hr') {
@@ -334,7 +332,7 @@ function processMarkets(raw) {
             eventSlug: m.events?.[0]?.slug || m.slug || '',
             conditionId: m.conditionId || '', // Add conditionId for chart modal
         };
-    }).filter(m => m.volume24h > 0);
+    });
 }
 
 function safeJsonParse(str, fallback) {
