@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     safeInit('Watchlist', initWatchlist);
     safeInit('ChartModal', initChartModal);
     safeInit('ScannerControls', initScannerControls);
-    safeInit('Language', initLanguage);
 
     console.log('PolyEdge: Initializing data load...');
     loadMarkets();
@@ -1104,80 +1103,5 @@ async function loadChartData(market, timeFrame) {
     }
 }
 
-// ========== LANGUAGE SYNC ==========
-const translations = {
-    en: { 
-        dashboard: "Markets", watchlist: "Watchlist", scanner: "Scanner", arbitrage: "Arbitrage", kelly: "Simulator",
-        trending: "Trending Markets", search: "Search markets...", scan: "Scan", scan_now: "Scan Now",
-        title_kelly: "Kelly Criterion Calculator", subtitle_kelly: "Calculate optimal bet size based on your edge vs the market."
-    },
-    zh: { 
-        dashboard: "市场", watchlist: "关注列表", scanner: "扫描器", arbitrage: "套利交易", kelly: "模拟计算",
-        trending: "热门市场", search: "搜索市场...", scan: "开始扫描", scan_now: "立即扫描",
-        title_kelly: "凯利准则计算器", subtitle_kelly: "根据您的优势计算最佳下注额。"
-    },
-    ja: { 
-        dashboard: "市場", watchlist: "ウォッチリスト", scanner: "スキャナー", arbitrage: "裁定取引", kelly: "シミュレーター",
-        trending: "トレンド市場", search: "市場を検索...", scan: "スキャン", scan_now: "今すぐスキャン",
-        title_kelly: "ケリー基準計算機", subtitle_kelly: "エッジに基づいた最適なベット額を計算します。"
-    },
-    de: { 
-        dashboard: "Märkte", watchlist: "Watchlist", scanner: "Scanner", arbitrage: "Arbitrage", kelly: "Simulator",
-        trending: "Trending Märkte", search: "Märkte suchen...", scan: "Scan", scan_now: "Jetzt Scannen",
-        title_kelly: "Kelly-Kriterium-Rechner", subtitle_kelly: "Berechnen Sie die optimale Einsatzgröße."
-    },
-    es: { 
-        dashboard: "Mercados", watchlist: "Lista", scanner: "Escáner", arbitrage: "Arbitraje", kelly: "Simulador",
-        trending: "Mercados en Tendencia", search: "Buscar...", scan: "Escanear", scan_now: "Escanear Ahora",
-        title_kelly: "Calculadora de Criterio de Kelly", subtitle_kelly: "Calcule el tamaño óptimo de su apuesta."
-    },
-    fr: { 
-        dashboard: "Marchés", watchlist: "Surveillance", scanner: "Scanner", arbitrage: "Arbitrage", kelly: "Simulateur",
-        trending: "Marchés Tendances", search: "Rechercher...", scan: "Scanner", scan_now: "Scanner Maintenant",
-        title_kelly: "Calculateur de Kelly", subtitle_kelly: "Calculez la mise optimale selon votre avantage."
-    }
-};
 
-function initLanguage() {
-    const selector = document.getElementById('lang-select');
-    if (!selector) return;
-    const saved = localStorage.getItem('polyedge-lang') || 'en';
-    selector.value = saved;
-    applyLanguage(saved);
-
-    selector.addEventListener('change', () => {
-        const lang = selector.value;
-        localStorage.setItem('polyedge-lang', lang);
-        applyLanguage(lang);
-    });
-}
-
-function applyLanguage(lang) {
-    const dict = translations[lang] || translations.en;
-    
-    // Nav items
-    document.querySelectorAll('.nav-item').forEach(el => {
-        const key = el.getAttribute('data-tab');
-        if (dict[key]) el.textContent = dict[key];
-    });
-
-    // Titles & Titles
-    const trendingLabel = document.querySelector('.section-title');
-    if (trendingLabel && dict.trending) trendingLabel.textContent = dict.trending;
-
-    const searchInput = document.getElementById('search-input');
-    if (searchInput && dict.search) searchInput.placeholder = dict.search;
-
-    const scanBtns = document.querySelectorAll('.btn-primary');
-    scanBtns.forEach(btn => {
-        if (btn.id === 'scan-btn' && dict.scan) btn.textContent = dict.scan;
-        if (btn.textContent.includes('Scan Now') && dict.scan_now) btn.textContent = dict.scan_now;
-    });
-
-    const kellyTitle = document.querySelector('.page-title');
-    if (kellyTitle && dict.title_kelly) kellyTitle.textContent = dict.title_kelly;
-
-    const kellySubtitle = document.querySelector('.page-subtitle');
-    if (kellySubtitle && dict.subtitle_kelly) kellySubtitle.textContent = dict.subtitle_kelly;
-}
 

@@ -347,27 +347,7 @@ main {
 }
 
 /* Header Specific Select & X Link */
-.lang-select {
-    border: 1px solid var(--border);
-    background-color: var(--bg-card) !important;
-    color: var(--text);
-    font-weight: 600;
-    padding: 4px 28px 4px 12px;
-    margin-right: 8px;
-    border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-}
 
-.lang-select:hover {
-    border-color: var(--border-light);
-    background-color: var(--bg-hover) !important;
-}
-
-[data-theme="light"] .lang-select {
-    background-color: var(--bg-surface) !important;
-    border-color: var(--border);
-}
 
 .x-link {
     display: flex;
