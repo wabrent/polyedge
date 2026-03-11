@@ -1,14 +1,15 @@
-// ========== PolyEdge — Polymarket Analytics Dashboard (v2.8 Stable) ==========
+/** 
+ * PolyEdge — Polymarket Analytics Terminal (v2.9 FULL STABLE REVERT)
+ * Restore the original featured dashboard with profit simulator & alerts.
+ */
 
 const API_BASE = 'https://gamma-api.polymarket.com';
 
-// Improved CORS Proxy logic with working fallbacks
 const CORS_PROXIES = [
     url => url, // 1. Direct
     url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
     url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-    url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}` 
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
 ];
 
 // ========== STATE ==========
@@ -23,6 +24,8 @@ let alerts = JSON.parse(localStorage.getItem('polyedge-alerts') || '{}');
 
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('PolyEdge: Initializing terminal...');
+    
     const safeInit = (name, fn) => {
         try {
             fn();
@@ -35,18 +38,20 @@ window.addEventListener('DOMContentLoaded', () => {
     safeInit('Theme', initThemeToggle);
     safeInit('Tabs', initTabs);
     safeInit('Clocks', initWorldClocks);
-    safeInit('Watchlist', initWatchlist);
-    safeInit('Scanner', initScannerControls);
-    safeInit('Kelly', initKellyCalculator);
-
-    loadMarkets();
+    safeInit('Watchlist', () => {});
+    safeInit('Kelly', initKelly);
+    
+    // Refresh loop
     startAutoRefresh();
+    
+    // Initial Load
+    loadMarkets();
 });
 
 // ========== THEME TOGGLE ==========
 function initThemeToggle() {
-    const saved = localStorage.getItem('polyedge-theme');
-    if (saved) document.documentElement.setAttribute('data-theme', saved);
+    const saved = localStorage.getItem('polyedge-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
     
     document.getElementById('theme-toggle').onclick = () => {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -91,9 +96,13 @@ function initWorldClocks() {
     const update = () => {
         const now = new Date();
         const cfg = { hour: '2-digit', minute: '2-digit', hour12: false };
-        document.getElementById('clock-nyc').textContent = new Intl.DateTimeFormat('en-US', { ...cfg, timeZone: 'America/New_York' }).format(now);
-        document.getElementById('clock-ldn').textContent = new Intl.DateTimeFormat('en-GB', { ...cfg, timeZone: 'Europe/London' }).format(now);
-        document.getElementById('clock-tko').textContent = new Intl.DateTimeFormat('ja-JP', { ...cfg, timeZone: 'Asia/Tokyo' }).format(now);
+        const nyc = document.getElementById('clock-nyc');
+        const ldn = document.getElementById('clock-ldn');
+        const tko = document.getElementById('clock-tko');
+        
+        if(nyc) nyc.textContent = new Intl.DateTimeFormat('en-US', { ...cfg, timeZone: 'America/New_York' }).format(now);
+        if(ldn) ldn.textContent = new Intl.DateTimeFormat('en-GB', { ...cfg, timeZone: 'Europe/London' }).format(now);
+        if(tko) tko.textContent = new Intl.DateTimeFormat('ja-JP', { ...cfg, timeZone: 'Asia/Tokyo' }).format(now);
     };
     update();
     setInterval(update, 10000);
@@ -108,30 +117,49 @@ async function fetchWithProxy(url) {
             if (!res.ok) continue;
             let data = await res.json();
             if (data.contents) data = JSON.parse(data.contents);
-            if (data && (Array.isArray(data) || data.markets)) return data;
+            if (data && (Array.isArray(data) || data.markets)) {
+                 console.log(`PolyEdge: Data fetched via ${pUrl.split('?')[0]}`);
+                 return data;
+            }
         } catch (e) {}
     }
     return null;
 }
 
 async function loadMarkets() {
+    if (isLoading) return;
     isLoading = true;
+    
     const url = `${API_BASE}/markets?closed=false&limit=60&active=true&order=volume24hr&ascending=false`;
     const data = await fetchWithProxy(url);
+    
     if (data) {
         allMarkets = processMarkets(Array.isArray(data) ? data : (data.markets || []));
         updateStats();
         displayedCount = 0;
         renderMarkets();
     }
+    
     isLoading = false;
 
-    // Controls
-    document.getElementById('load-more-btn').onclick = () => renderMarkets();
-    document.getElementById('search-input').oninput = () => { displayedCount = 0; renderMarkets(); };
-    document.getElementById('sort-filter').onchange = () => { displayedCount = 0; renderMarkets(); };
-    document.getElementById('category-filter').onchange = () => { displayedCount = 0; renderMarkets(); };
-    document.getElementById('volume-filter').onchange = () => { displayedCount = 0; renderMarkets(); };
+    // Direct event assignment for stable v2 (Old Site Style)
+    const loadBtn = document.getElementById('load-more-btn');
+    if (loadBtn && !loadBtn.hasListener) {
+        loadBtn.onclick = () => renderMarkets();
+        loadBtn.hasListener = true;
+    }
+    
+    const searchInp = document.getElementById('search-input');
+    if (searchInp) searchInp.oninput = () => { displayedCount = 0; renderMarkets(); };
+    
+    const sortSel = document.getElementById('sort-filter');
+    if (sortSel) sortSel.onchange = () => { displayedCount = 0; renderMarkets(); };
+    
+    const catSel = document.getElementById('category-filter');
+    if (catSel) catSel.onchange = () => { displayedCount = 0; renderMarkets(); };
+
+    const volSel = document.getElementById('volume-filter');
+    if (volSel) volSel.onchange = () => { displayedCount = 0; renderMarkets(); };
 }
 
 function processMarkets(raw) {
@@ -172,20 +200,33 @@ function processMarkets(raw) {
 }
 
 function updateStats() {
-    document.getElementById('stat-total-markets').textContent = allMarkets.length;
-    const total = allMarkets.reduce((s, m) => s + m.volume24h, 0);
-    document.getElementById('stat-total-volume').textContent = '$' + formatCompact(total);
-    document.getElementById('stat-opportunities').textContent = allMarkets.filter(m => m.maxRoi > 3).length;
-    const rois = allMarkets.map(m => m.maxRoi);
-    document.getElementById('stat-max-potential').textContent = rois.length ? Math.max(...rois).toFixed(0) + 'x' : '0x';
+    const elMarkets = document.getElementById('stat-total-markets');
+    const elVolume = document.getElementById('stat-total-volume');
+    const elOpps = document.getElementById('stat-opportunities');
+    const elMaxRoi = document.getElementById('stat-max-potential');
+
+    if (elMarkets) elMarkets.textContent = allMarkets.length;
+    if (elVolume) {
+        const total = allMarkets.reduce((s, m) => s + m.volume24h, 0);
+        elVolume.textContent = '$' + formatCompact(total);
+    }
+    if (elOpps) {
+        const ops = allMarkets.filter(m => m.maxRoi > 3 && m.liquidity > 1000).length;
+        elOpps.textContent = ops;
+    }
+    if (elMaxRoi) {
+        const rois = allMarkets.map(m => m.maxRoi);
+        elMaxRoi.textContent = rois.length ? Math.max(...rois).toFixed(0) + 'x' : '0x';
+    }
 }
 
 // ========== RENDERER ==========
 function getFilteredMarkets() {
-    const search = (document.getElementById('search-input').value || '').toLowerCase();
-    const cat = document.getElementById('category-filter').value;
-    const vol = Number(document.getElementById('volume-filter').value);
-    const sort = document.getElementById('sort-filter').value;
+    const searchEl = document.getElementById('search-input');
+    const search = (searchEl ? searchEl.value || '' : '').toLowerCase();
+    const cat = document.getElementById('category-filter')?.value || 'all';
+    const vol = Number(document.getElementById('volume-filter')?.value || 0);
+    const sort = document.getElementById('sort-filter')?.value || 'volume24hr';
 
     let filtered = cat === 'all' ? [...allMarkets] : allMarkets.filter(m => m.category === cat);
     if (vol > 0) filtered = filtered.filter(m => m.volumeTotal >= vol);
@@ -202,49 +243,80 @@ function getFilteredMarkets() {
 
 function renderMarkets() {
     const grid = document.getElementById('markets-grid');
+    if (!grid) return;
+
     const filtered = getFilteredMarkets();
     if (displayedCount === 0) grid.innerHTML = '';
 
     const batch = filtered.slice(displayedCount, displayedCount + BATCH_SIZE);
-    batch.forEach(m => grid.appendChild(createMarketCard(m)));
+    batch.forEach((m, idx) => grid.appendChild(createMarketCard(m, displayedCount + idx)));
+    
     displayedCount += batch.length;
-    document.getElementById('load-more-btn').style.display = displayedCount < filtered.length ? 'block' : 'none';
+    
+    const loadBtn = document.getElementById('load-more-btn');
+    if (loadBtn) loadBtn.style.display = displayedCount < filtered.length ? 'block' : 'none';
 }
 
-function createMarketCard(m) {
+function createMarketCard(m, index) {
     const card = document.createElement('div');
     card.className = 'market-card';
+    card.style.animationDelay = `${(index % BATCH_SIZE) * 0.05}s`;
+    
     const isWatched = watchlist.includes(m.id);
     const days = m.daysLeft !== null ? m.daysLeft + 'd' : '∞';
     
     card.innerHTML = `
-        <div class="mc-star ${isWatched ? 'active' : ''}" onclick="toggleWatchlist('${m.id}')">${isWatched ? '★' : '☆'}</div>
+        <div class="mc-star ${isWatched ? 'active' : ''}" data-id="${m.id}">${isWatched ? '★' : '☆'}</div>
         <div class="mc-header">
-            <img class="mc-img" src="${m.image}" onerror="this.style.display='none'">
+            <img class="mc-img" src="${m.image}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'32\\' height=\\'32\\'><rect width=\\'32\\' height=\\'32\\' fill=\\'%231a1e26\\'/></svg>'">
             <div class="mc-title">${escapeHtml(m.question)}</div>
         </div>
         <div class="mc-meta">
-            <span>${days}</span>
-            <span>Vol ${formatCompact(m.volume24h)}</span>
-            <span>Liq ${formatCompact(m.liquidity)}</span>
+            <span>${days} left</span>
+            <span>Vol $${formatCompact(m.volume24h)}</span>
+            <span class="roi-high">${m.maxRoi.toFixed(1)}x</span>
         </div>
         <div class="mc-sparkline">${generateSparkline(m)}</div>
         <div class="mc-prices">
-            <div class="mc-price yes"><div class="mc-price-bar">${(m.yesPrice*100).toFixed(0)}¢</div></div>
-            <div class="mc-price no"><div class="mc-price-bar">${(m.noPrice*100).toFixed(0)}¢</div></div>
+            <div class="mc-price yes"><div class="mc-price-bar"><span>YES</span><span>${(m.yesPrice*100).toFixed(0)}¢</span></div></div>
+            <div class="mc-price no"><div class="mc-price-bar"><span>NO</span><span>${(m.noPrice*100).toFixed(0)}¢</span></div></div>
         </div>
+        
+        <div class="mc-profit">
+            <span class="mc-profit-label">Stake $</span>
+            <input type="number" class="mc-profit-input" value="10" min="1">
+            <span class="mc-profit-result">→ win $${((10 / m.minPrice) - 10).toFixed(2)}</span>
+        </div>
+        
         <div class="mc-footer">
-            <span class="mc-roi">${m.maxRoi.toFixed(1)}x</span>
-            <a class="btn-primary" href="https://polymarket.com/event/${m.eventSlug}" target="_blank" style="padding: 4px 12px; font-size: 0.7rem;">Trade</a>
+            <a class="btn-primary" href="https://polymarket.com/event/${m.eventSlug}" target="_blank">TRADE ON POLYMARKET</a>
         </div>
     `;
+
+    // Watchlist
+    card.querySelector('.mc-star').onclick = (e) => {
+        e.stopPropagation();
+        toggleWatchlist(m.id);
+    };
+
+    // Profit Calculator
+    const input = card.querySelector('.mc-profit-input');
+    const result = card.querySelector('.mc-profit-result');
+    input.oninput = (e) => {
+        const val = Number(e.target.value) || 0;
+        const profit = (val / m.minPrice) - val;
+        result.textContent = `→ win $${profit.toFixed(2)}`;
+    };
+    input.onclick = (e) => e.stopPropagation();
+
     return card;
 }
 
 // ========== HELPERS ==========
 function generateSparkline(m) {
-    const color = m.yesPrice > 0.5 ? '#10b981' : '#ef4444';
-    return `<svg viewBox="0 0 100 20" style="width:100%; height:20px;"><polyline points="0,15 20,10 40,18 60,12 80,14 100,5" fill="none" stroke="${color}" stroke-width="2"/></svg>`;
+    const color = m.yesPrice > 0.5 ? 'var(--blue)' : 'var(--red)';
+    // Simplified SVG mock trend
+    return `<svg viewBox="0 0 100 20" style="width:100%; height:20px; opacity: 0.6;"><polyline points="0,15 20,10 40,18 60,12 80,14 100,5" fill="none" stroke="${color}" stroke-width="1.5"/></svg>`;
 }
 
 function formatCompact(num) {
@@ -260,26 +332,54 @@ function toggleWatchlist(id) {
     const idx = watchlist.indexOf(id);
     if (idx === -1) watchlist.push(id); else watchlist.splice(idx, 1);
     localStorage.setItem('polyedge-watchlist', JSON.stringify(watchlist));
+    
+    // Refresh icons
+    document.querySelectorAll(`.mc-star[data-id="${id}"]`).forEach(btn => {
+        const active = watchlist.includes(id);
+        btn.classList.toggle('active', active);
+        btn.textContent = active ? '★' : '☆';
+    });
+    
     if (activeTab === 'watchlist') renderWatchlist();
-    else renderMarkets(); // Update icons
 }
 
 function renderWatchlist() {
     const grid = document.getElementById('watchlist-grid');
+    if (!grid) return;
     const watched = allMarkets.filter(m => watchlist.includes(m.id));
     grid.innerHTML = '';
-    watched.forEach(m => grid.appendChild(createMarketCard(m)));
+    watched.forEach((m, idx) => grid.appendChild(createMarketCard(m, idx)));
     document.getElementById('watchlist-empty').style.display = watched.length ? 'none' : 'flex';
+}
+
+function initKelly() {
+    const pInput = document.getElementById('kelly-prob');
+    const prInput = document.getElementById('kelly-price');
+    const res = document.getElementById('kelly-result');
+    
+    const calc = () => {
+        const p = (Number(pInput.value) || 0) / 100;
+        const price = (Number(prInput.value) || 0) / 100;
+        if (p <= price) { res.textContent = 'NO EDGE'; return; }
+        const b = (1 - price) / price;
+        const f = (p * b - (1 - p)) / b;
+        res.textContent = `SUGGESTED STAKE: ${(f * 100).toFixed(1)}%`;
+    };
+    
+    if (pInput) {
+        pInput.oninput = calc;
+        prInput.oninput = calc;
+    }
 }
 
 function startAutoRefresh() {
     setInterval(() => {
         refreshTimer--;
-        if (refreshTimer <= 0) { refreshTimer = 60; loadMarkets(); }
-        document.getElementById('refresh-text').textContent = refreshTimer + 's';
+        if (refreshTimer <= 0) { 
+            refreshTimer = 60; 
+            loadMarkets(); 
+        }
+        const el = document.getElementById('refresh-text');
+        if (el) el.textContent = refreshTimer + 's';
     }, 1000);
 }
-
-// Placeholder scanner/kelly
-function initScannerControls() {}
-function initKellyCalculator() {}
