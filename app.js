@@ -218,31 +218,45 @@ function renderWatchlist() {
 
 // ========== API CALLS ==========
 async function fetchWithProxy(url) {
-    // Race all connection methods simultaneously to eliminate any timeouts
+    // A robust list of proxies to bypass CORS on custom domains
     const endpoints = [
-        url, // 1. Direct (Fastest if no CORS block)
-        `https://corsproxy.io/?${encodeURIComponent(url)}`, // 2. Fast Proxy
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` // 3. Backup Proxy
+        url, // 1. Direct
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+        `https://thingproxy.freeboard.io/fetch/${url}`,
+        `https://proxy.cors.sh/${url}` // Backup (sometimes requires registration but often works for small traffic)
     ];
 
     try {
+        // We use Promise.any to get the FASTEST successful response
         const data = await Promise.any(endpoints.map(async (eUrl) => {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s absolute max wait
-            
-            const res = await fetch(eUrl, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            
-            if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
-            
-            const json = await res.json();
-            if (!json || json.length === 0) throw new Error('Empty or invalid payload');
-            
-            return json;
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+                
+                const res = await fetch(eUrl, { 
+                    signal: controller.signal,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' } // Helps bypass some proxy filters
+                });
+                clearTimeout(timeoutId);
+                
+                if (!res.ok) throw new Error(`Status ${res.status}`);
+                
+                const json = await res.json();
+                // Basic validation of Polymarket data structure
+                if (!json || (Array.isArray(json) && json.length === 0 && url.includes('limit='))) {
+                    throw new Error('Invalid data format');
+                }
+                
+                return json;
+            } catch (e) {
+                // Silently fail this specific endpoint so Promise.any can try others
+                throw e;
+            }
         }));
         return data;
     } catch (err) {
-        console.error('All endpoints failed or timed out:', err);
+        console.warn('PolyEdge: All primary proxies failed. Falling back to debug mode.');
         return [];
     }
 }
