@@ -1,93 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge</title>
-    <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb' fill-rule='evenodd'><path d='M4 3h11a6.5 6.5 0 0 1 0 13h-3v5L2 11h6V7z M12 7h3a2.5 2.5 0 0 1 0 5h-3z'/></svg>">
-    <meta name="description" content="Find profitable opportunities on Polymarket prediction markets.">
+    <title>PolyEdge — Shard Terminal</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
 </head>
-
 <body>
     <header>
-        <div class="header-inner">
-            <div class="header-left">
-                <a href="/" class="logo">
-                    <div class="logo-mark">
-                        <svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd">
-                            <path d="M4 3h11a6.5 6.5 0 0 1 0 13h-3v5L2 11h6V7z M12 7h3a2.5 2.5 0 0 1 0 5h-3z" />
-                        </svg>
-                    </div>
-                    <span class="logo-text">PolyEdge</span>
-                </a>
-                <nav class="nav">
+        <div class="header-container" style="max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; padding: 12px 24px;">
+            <div class="logo-group" style="display:flex; align-items:center; gap:24px;">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>PolyEdge</span>
+                </div>
+                <nav class="main-nav" style="display:flex; gap:16px;">
                     <button class="nav-item active" data-tab="dashboard">Markets</button>
                     <button class="nav-item" data-tab="watchlist">Watchlist</button>
-                    <button class="nav-item" data-tab="scanner">Scanner</button>
-                    <button class="nav-item" data-tab="arbitrage">Arbitrage</button>
-                    <button class="nav-item" data-tab="kelly">Simulator</button>
                 </nav>
             </div>
-            <div class="header-right">
-
-                <a href="https://x.com/polyedgeapp" target="_blank" rel="noopener" class="x-link" title="Follow us on X">
-                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                </a>
-                <div class="refresh-indicator" id="refresh-indicator" title="Auto-refreshes every 60s">
-                    <div class="refresh-ring" id="refresh-ring"></div>
-                    <span class="refresh-text" id="refresh-text">60s</span>
+            
+            <div class="header-right" style="display:flex; align-items:center; gap:20px;">
+                <div class="refresh-timer" id="refresh-timer" style="display:flex; align-items:center; gap:8px; font-size:0.75rem; color:var(--text-3);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                    <span id="refresh-text">60s</span>
                 </div>
-                <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
-                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                    </svg>
-                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" style="display:none">
-                        <circle cx="12" cy="12" r="5" />
-                        <line x1="12" y1="1" x2="12" y2="3" />
-                        <line x1="12" y1="21" x2="12" y2="23" />
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                        <line x1="1" y1="12" x2="3" y2="12" />
-                        <line x1="21" y1="12" x2="23" y2="12" />
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                    </svg>
+                <button class="theme-toggle" id="theme-toggle">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
                 </button>
-                <div class="world-clocks" id="world-clocks">
-                    <div class="clock-item">
-                        <span class="clock-label">NYC</span>
-                        <span class="clock-time" id="clock-nyc">00:00</span>
-                    </div>
-                    <div class="clock-item">
-                        <span class="clock-label">LDN</span>
-                        <span class="clock-time" id="clock-ldn">00:00</span>
-                    </div>
-                    <div class="clock-item">
-                        <span class="clock-label">TKO</span>
-                        <span class="clock-time" id="clock-tko">00:00</span>
-                    </div>
+                <div class="clocks" style="display:flex; gap:12px; font-size:0.7rem; font-weight:700;">
+                    <div>NYC <span id="clock-nyc">00:00</span></div>
+                    <div>LDN <span id="clock-ldn">00:00</span></div>
+                    <div>TKO <span id="clock-tko">00:00</span></div>
                 </div>
             </div>
         </div>
     </header>
 
-    <main>
-        <!-- ===== DASHBOARD ===== -->
-        <section class="tab active shard-layout" id="tab-dashboard" style="display: flex; gap: 24px; max-width: 1400px; margin: 0 auto;">
-            <!-- Shard Sidebar -->
-            <div class="shard-sidebar">
+    <main style="padding: 24px; max-width: 1400px; margin: 0 auto;">
+        <!-- ===== MARKETS TAB ===== -->
+        <section class="tab active shard-layout" id="tab-dashboard" style="display: flex; gap: 32px;">
+            <aside class="shard-sidebar" style="width: 220px; flex-shrink: 0;">
                 <div class="sidebar-section">
                     <div class="sidebar-title">SORT</div>
                     <div class="sidebar-grid">
@@ -99,11 +58,21 @@
                         <button class="shard-btn" data-sort="potential">Rewards</button>
                     </div>
                 </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">FILTER PRESETS</div>
+                    <div class="sidebar-list">
+                        <button class="shard-list-btn active" data-filter="all">All Markets</button>
+                        <button class="shard-list-btn" data-filter="high_vol">High Volume</button>
+                        <button class="shard-list-btn" data-filter="high_liq">High Liquidity</button>
+                    </div>
+                </div>
+
                 <div class="sidebar-section">
                     <div class="sidebar-title">TERMINAL METRICS</div>
                     <div class="shard-stats">
                         <div class="shard-stat-item">
-                            <span class="shard-stat-val" id="stat-total-markets">0</span>
+                            <span class="shard-stat-val" id="stat-total-markets">...</span>
                             <span class="shard-stat-lbl">MARKETS</span>
                         </div>
                         <div class="shard-stat-item">
@@ -120,21 +89,16 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </aside>
 
-            <!-- Main Content Area -->
             <div class="shard-main" style="flex: 1; min-width: 0;">
                 <div class="shard-top-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                    <div class="search-box" style="flex:1; max-width: 300px; background: #0f1219; border: 1px solid #1a1e26;">
-                        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                        <input type="text" id="search-input" class="search-input" style="background:transparent;" placeholder="Search markets...">
+                    <div class="search-box" style="flex: 1; max-width: 380px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="position:absolute; left:12px; top:13px; color:var(--text-3);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="search-input" placeholder="Search markets by name, category or outcome..." style="width:100%; padding: 10px 12px 10px 36px; background: #0f1219; border: 1px solid #1a1e26; border-radius: 8px; color: var(--text); font-size: 0.85rem; outline: none;">
                     </div>
-                    
-                    <div class="shard-categories">
-                        <button class="shard-cat active" data-cat="all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> All</button>
+                    <div class="shard-categories" style="display:flex; gap:8px;">
+                        <button class="shard-cat active" data-cat="all">All</button>
                         <button class="shard-cat" data-cat="politics">Politics</button>
                         <button class="shard-cat" data-cat="crypto">Crypto</button>
                         <button class="shard-cat" data-cat="sports">Sports</button>
@@ -142,157 +106,30 @@
                     </div>
                 </div>
 
-                <div class="markets-grid shard-grid" id="markets-grid">
-                    <div class="skeleton-grid">
-                        <div class="skeleton-card"></div>
-                        <div class="skeleton-card"></div>
-                        <div class="skeleton-card"></div>
-                    </div>
+                <div id="markets-grid" class="shard-grid">
+                    <!-- Skeletons handled by JS clearing grid.innerHTML -->
+                    <div class="skeleton-card" style="height: 200px; background: #0f1219; border-radius: 12px; border: 1px solid #1a1e26;"></div>
+                    <div class="skeleton-card" style="height: 200px; background: #0f131a; border-radius: 12px; border: 1px solid #1a1e26;"></div>
+                    <div class="skeleton-card" style="height: 200px; background: #0e1219; border-radius: 12px; border: 1px solid #1a1e26;"></div>
+                </div>
+
+                <div style="display:flex; justify-content:center; padding: 40px 0;">
+                    <button id="load-more-btn" class="shard-btn" style="padding: 10px 32px; font-weight: 700; border-color: var(--blue); color: var(--blue); width: auto;">LOAD MORE DATA</button>
                 </div>
             </div>
-        </section>                    <div class="skeleton-card"></div>
-                    <div class="skeleton-card"></div>
-                    <div class="skeleton-card"></div>
-                    <div class="skeleton-card"></div>
-                    <div class="skeleton-card"></div>
-                </div>
-            </div>
-            <button class="btn-load-more" id="load-more-btn" style="display:none;">Show more</button>
         </section>
 
-        <!-- ===== WATCHLIST ===== -->
+        <!-- ===== WATCHLIST TAB ===== -->
         <section class="tab" id="tab-watchlist">
-            <div class="toolbar">
-                <h2 class="section-title">⭐ Your Watchlist</h2>
-                <button class="btn-secondary" id="clear-watchlist-btn">Clear All</button>
-            </div>
-            <div class="markets-grid" id="watchlist-grid">
-                <div class="empty-state" id="watchlist-empty">
-                    <p>No saved markets yet. Click the ⭐ on any market card to add it here.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SCANNER ===== -->
-        <section class="tab" id="tab-scanner">
-            <h2 class="page-title">Opportunity Scanner</h2>
-            <p class="page-subtitle">Find high-potential markets based on ROI, liquidity, and time horizon.</p>
-            <div class="scanner-controls">
-                <div class="ctrl-group">
-                    <label>Min ROI</label>
-                    <div class="ctrl-row"><input type="range" id="min-roi" min="1" max="100" value="3"
-                            class="range"><span id="min-roi-value" class="ctrl-val">3x</span></div>
-                </div>
-                <div class="ctrl-group">
-                    <label>Min Liquidity</label>
-                    <div class="ctrl-row"><input type="range" id="min-liquidity" min="0" max="1000000" value="10000"
-                            step="10000" class="range"><span id="min-liquidity-value" class="ctrl-val">$10K</span></div>
-                </div>
-                <div class="ctrl-group">
-                    <label>Max Days</label>
-                    <div class="ctrl-row"><input type="range" id="max-days" min="1" max="365" value="30"
-                            class="range"><span id="max-days-value" class="ctrl-val">30d</span></div>
-                </div>
-                <button class="btn-primary" id="scan-btn">Scan</button>
-            </div>
-            <div id="scanner-results">
-                <div class="empty-state">
-                    <p>Set filters above and press <strong>Scan</strong></p>
-                </div>
-            </div>
-        </section>
-
-            </div>
-        </section>
-
-        <!-- ===== ARBITRAGE ===== -->
-        <section class="tab" id="tab-arbitrage">
-            <div class="toolbar">
-                <div>
-                    <h2 class="section-title">⚖️ Arbitrage Hunter</h2>
-                    <p class="section-subtitle" style="font-size: 0.9rem; color: var(--text-3); margin-top: 4px;">Find guaranteed profit opportunities across related markets.</p>
-                </div>
-                <button class="btn-primary" onclick="renderArbitrage()">Scan Now</button>
-            </div>
-            <div class="markets-grid" id="arbitrage-grid">
-                <div class="empty-state">
-                    <p>Click Scan to find mispriced markets where the sum of probabilities is less than 100%.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== KELLY ===== -->
-        <section class="tab" id="tab-kelly">
-            <h2 class="page-title">Kelly Criterion Calculator</h2>
-            <p class="page-subtitle">Calculate optimal bet size based on your edge vs the market.</p>
-            <div class="kelly-grid">
-                <div class="kelly-form card">
-                    <div class="field"><label>Bankroll ($)</label><input type="number" id="kelly-bankroll" value="100"
-                            min="1" class="input"></div>
-                    <div class="field"><label>Market Price (¢)</label>
-                        <div class="field-row"><input type="range" id="kelly-market-price-range" min="1" max="99"
-                                value="30" class="range"><input type="number" id="kelly-market-price" value="30" min="1"
-                                max="99" class="input input-sm"></div>
-                    </div>
-                    <div class="field"><label>Your Estimated Probability (%)</label>
-                        <div class="field-row"><input type="range" id="kelly-true-prob-range" min="1" max="99"
-                                value="50" class="range"><input type="number" id="kelly-true-prob" value="50" min="1"
-                                max="99" class="input input-sm"></div>
-                    </div>
-                    <div class="field"><label>Kelly Fraction</label>
-                        <div class="k-tabs" id="kelly-fraction-tabs">
-                            <button class="k-tab" data-val="1">Full</button>
-                            <button class="k-tab active" data-val="0.5">Half</button>
-                            <button class="k-tab" data-val="0.25">Quarter</button>
-                            <button class="k-tab" data-val="0.1">Tenth</button>
-                        </div>
-                    </div>
-                    <button class="btn-primary btn-full" id="kelly-calc-btn">Calculate</button>
-                </div>
-                <div class="kelly-output">
-                    <div class="kelly-hero card"><span class="kelly-hero-label">Optimal Bet</span><span
-                            class="kelly-hero-val" id="kelly-bet-size">$0.00</span></div>
-                    <div class="kelly-stats">
-                        <div class="kelly-stat card"><span class="kelly-stat-lbl">Edge</span><span
-                                class="kelly-stat-val" id="kelly-edge">0%</span></div>
-                        <div class="kelly-stat card"><span class="kelly-stat-lbl">EV</span><span class="kelly-stat-val"
-                                id="kelly-ev">$0.00</span></div>
-                        <div class="kelly-stat card"><span class="kelly-stat-lbl">If Win</span><span
-                                class="kelly-stat-val green" id="kelly-win">+$0.00</span></div>
-                        <div class="kelly-stat card"><span class="kelly-stat-lbl">If Lose</span><span
-                                class="kelly-stat-val red" id="kelly-lose">-$0.00</span></div>
-                        <div class="kelly-stat card"><span class="kelly-stat-lbl">ROI</span><span class="kelly-stat-val"
-                                id="kelly-roi">0%</span></div>
-                    </div>
-                    <div class="kelly-warning" id="kelly-warning" style="display:none;"></div>
-                </div>
+            <h2 style="font-size: 1.5rem; margin-bottom: 24px;">Your Watchlist</h2>
+            <div id="watchlist-grid" class="shard-grid"></div>
+            <div id="watchlist-empty" style="display:none; flex-direction:column; align-items:center; justify-content:center; padding: 100px 0; color:var(--text-3);">
+                <span style="font-size:3rem; margin-bottom:12px;">☆</span>
+                <p>No markets bookmarked yet.</p>
             </div>
         </section>
     </main>
 
-    <!-- ===== CHART MODAL ===== -->
-    <dialog id="chart-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="chart-title" class="modal-title">Market Price History</h3>
-                <button class="btn-close" id="btn-close-modal">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="chart-controls">
-                    <button class="chart-time-btn active" data-time="1D">1D</button>
-                    <button class="chart-time-btn" data-time="1W">1W</button>
-                    <button class="chart-time-btn" data-time="1M">1M</button>
-                    <button class="chart-time-btn" data-time="ALL">ALL</button>
-                </div>
-                <div class="chart-container" style="position: relative; height:60vh; width:100%">
-                    <canvas id="price-chart"></canvas>
-                </div>
-            </div>
-        </div>
-    </dialog>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 </body>
-
 </html>
