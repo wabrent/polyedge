@@ -85,60 +85,59 @@
 
     <main>
         <!-- ===== DASHBOARD ===== -->
-        <section class="tab active" id="tab-dashboard">
-            <div class="stats-bar">
-                <div class="stat"><span class="stat-val" id="stat-total-markets">—</span><span
-                        class="stat-lbl">Markets</span></div>
-                <div class="stat-divider"></div>
-                <div class="stat"><span class="stat-val" id="stat-total-volume">—</span><span class="stat-lbl">24h
-                        Volume</span></div>
-                <div class="stat-divider"></div>
-                <div class="stat"><span class="stat-val" id="stat-opportunities">—</span><span
-                        class="stat-lbl">Opportunities</span></div>
-                <div class="stat-divider"></div>
-                <div class="stat"><span class="stat-val" id="stat-max-potential">—</span><span class="stat-lbl">Best
-                        ROI</span></div>
+        <section class="tab active shard-layout" id="tab-dashboard" style="display: flex; gap: 24px; max-width: 1400px; margin: 0 auto;">
+            <!-- Shard Sidebar -->
+            <div class="shard-sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">SORT</div>
+                    <div class="sidebar-grid">
+                        <button class="shard-btn active" data-sort="volume24hr">24h Vol</button>
+                        <button class="shard-btn" data-sort="volume">Total Vol</button>
+                        <button class="shard-btn" data-sort="liquidity">Liquidity</button>
+                        <button class="shard-btn" data-sort="spread">Spread</button>
+                        <button class="shard-btn" data-sort="ending">End Date</button>
+                        <button class="shard-btn" data-sort="potential">Rewards</button>
+                    </div>
+                </div>
+                <div class="sidebar-section">
+                    <div class="sidebar-title">FILTER PRESETS</div>
+                    <div class="sidebar-list">
+                        <button class="shard-list-btn active" data-filter="all">All Markets</button>
+                        <button class="shard-list-btn" data-filter="high_vol">High Volume</button>
+                        <button class="shard-list-btn" data-filter="high_liq">High Liquidity</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="toolbar">
-                <div class="toolbar-left">
-                    <h2 class="section-title">Trending Markets</h2>
-                    <div class="search-box">
-                        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
+            <!-- Main Content Area -->
+            <div class="shard-main" style="flex: 1; min-width: 0;">
+                <div class="shard-top-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <div class="search-box" style="flex:1; max-width: 300px; background: #0f1219; border: 1px solid #1a1e26;">
+                        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8" />
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
-                        <input type="text" id="search-input" class="search-input" placeholder="Search markets...">
+                        <input type="text" id="search-input" class="search-input" style="background:transparent;" placeholder="Search markets...">
+                    </div>
+                    
+                    <div class="shard-categories">
+                        <button class="shard-cat active" data-cat="all"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> All</button>
+                        <button class="shard-cat" data-cat="politics">Politics</button>
+                        <button class="shard-cat" data-cat="crypto">Crypto</button>
+                        <button class="shard-cat" data-cat="sports">Sports</button>
+                        <button class="shard-cat" data-cat="economics">Economics</button>
                     </div>
                 </div>
-                <div class="toolbar-controls">
-                    <select id="category-filter" class="select-sm">
-                        <option value="all">All</option>
-                        <option value="politics">Politics</option>
-                        <option value="sports">Sports</option>
-                        <option value="crypto">Crypto</option>
-                        <option value="economics">Economics</option>
-                    </select>
-                    <select id="volume-filter" class="select-sm">
-                        <option value="0">Any Volume</option>
-                        <option value="10000">&gt; $10k Vol</option>
-                        <option value="50000">&gt; $50k Vol</option>
-                        <option value="100000">&gt; $100k Vol</option>
-                    </select>
-                    <select id="sort-filter" class="select-sm">
-                        <option value="volume24hr">Volume 24h</option>
-                        <option value="liquidity">Liquidity</option>
-                        <option value="potential">Max ROI</option>
-                        <option value="ending">Ending Soon</option>
-                    </select>
+
+                <div class="markets-grid shard-grid" id="markets-grid">
+                    <div class="skeleton-grid">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
                 </div>
             </div>
-
-            <div class="markets-grid" id="markets-grid">
-                <div class="skeleton-grid">
-                    <div class="skeleton-card"></div>
-                    <div class="skeleton-card"></div>
+        </section>                    <div class="skeleton-card"></div>
                     <div class="skeleton-card"></div>
                     <div class="skeleton-card"></div>
                     <div class="skeleton-card"></div>

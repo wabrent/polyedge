@@ -39,10 +39,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     safeInit('Tabs', initTabs);
     safeInit('Clocks', initWorldClocks);
     safeInit('Watchlist', initWatchlist);
-    safeInit('ChartModal', initChartModal);
     safeInit('ScannerControls', initScannerControls);
     safeInit('Kelly', initKellyCalculator);
-    safeInit('Alpha', initAlphaEngine);
+    safeInit('Quantum', initQuantumMatrix);
+    safeInit('ShardUI', initShardControls);
 
     // Refresh on Logo Click
     const logo = document.querySelector('.logo');
@@ -400,30 +400,69 @@ function updateStats() {
     document.getElementById('stat-max-potential').textContent = `${maxRoi.toFixed(0)}x`;
 }
 
-// ========== RENDER ==========
+let shardSort = 'volume24hr';
+let shardCategory = 'all';
+let shardFilter = 'all';
+
+function initShardControls() {
+    // Sidebar sort buttons
+    document.querySelectorAll('.shard-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.shard-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            shardSort = e.target.dataset.sort;
+            displayedCount = 0;
+            renderMarkets();
+        });
+    });
+
+    // Sidebar presets
+    document.querySelectorAll('.shard-list-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.shard-list-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            shardFilter = e.target.dataset.filter;
+            displayedCount = 0;
+            renderMarkets();
+        });
+    });
+
+    // Category bar
+    document.querySelectorAll('.shard-cat').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.shard-cat').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            shardCategory = e.target.dataset.cat;
+            displayedCount = 0;
+            renderMarkets();
+        });
+    });
+}
+
 function getFilteredMarkets() {
-    const sortBy = document.getElementById('sort-filter').value;
-    const categoryFilter = document.getElementById('category-filter').value;
-    const volumeFilter = Number(document.getElementById('volume-filter').value) || 0;
     const search = getSearchQuery();
 
-    let filtered = categoryFilter === 'all'
+    let filtered = shardCategory === 'all'
         ? [...allMarkets]
-        : allMarkets.filter(m => m.category === categoryFilter);
+        : allMarkets.filter(m => m.category === shardCategory);
 
-    if (volumeFilter > 0) {
-        filtered = filtered.filter(m => m.volumeTotal >= volumeFilter);
+    if (shardFilter === 'high_vol') {
+        filtered = filtered.filter(m => m.volumeTotal >= 100000);
+    } else if (shardFilter === 'high_liq') {
+        filtered = filtered.filter(m => m.liquidity >= 50000);
     }
 
     if (search) {
         filtered = filtered.filter(m => m.question.toLowerCase().includes(search));
     }
 
-    switch (sortBy) {
+    switch (shardSort) {
         case 'volume24hr': filtered.sort((a, b) => b.volume24h - a.volume24h); break;
+        case 'volume': filtered.sort((a, b) => b.volumeTotal - a.volumeTotal); break;
         case 'liquidity': filtered.sort((a, b) => b.liquidity - a.liquidity); break;
         case 'potential': filtered.sort((a, b) => b.maxRoi - a.maxRoi); break;
         case 'ending': filtered.sort((a, b) => (a.daysLeft || 999) - (b.daysLeft || 999)); break;
+        case 'spread': filtered.sort((a, b) => Math.abs(a.yesPrice - a.noPrice) - Math.abs(b.yesPrice - b.noPrice)); break;
     }
     return filtered;
 }
@@ -494,86 +533,67 @@ function generateSparkline(market) {
     </svg>`;
 }
 
-// ========== BADGES ==========
-function getBadges(market) {
-    const badges = [];
-    if (Math.abs(market.priceChange24h) >= 0.05) badges.push('<span class="badge badge-hot">🔥 Hot</span>');
-    if (market.daysLeft !== null && market.daysLeft <= 3) badges.push('<span class="badge badge-ending">⏰ Ending</span>');
-    else if (market.daysLeft !== null && market.daysLeft <= 7) badges.push('<span class="badge badge-ending">Soon</span>');
-    if (market.volume24h >= 1000000) badges.push('<span class="badge badge-high-vol">📈 High Vol</span>');
-    return badges.length ? `<div class="mc-badges">${badges.join('')}</div>` : '';
-}
-
-// ========== MARKET CARD ==========
+// ========== MARKET CARD (SHARD STYLE) ==========
 function createMarketCard(market, index) {
     const card = document.createElement('div');
-    card.className = 'market-card';
+    card.className = 'shard-card';
+    card.dataset.id = market.id;
 
-    const roiClass = market.maxRoi >= 10 ? 'roi-high' : market.maxRoi >= 3 ? 'roi-mid' : 'roi-low';
-    const changeClass = market.priceChange24h > 0 ? 'up' : market.priceChange24h < 0 ? 'down' : 'flat';
-    const changeSign = market.priceChange24h > 0 ? '+' : '';
     const daysText = market.daysLeft !== null ? `${market.daysLeft}d` : '∞';
-    const polymarketUrl = `https://polymarket.com/event/${market.eventSlug}`;
     const isWatched = watchlist.includes(market.id);
-    const budget = 100; // Default budget as budget-input was removed
+    
+    // Outcomes logic (default to Yes/No if no multi-outcome data)
+    let outcomesHtml = '';
+    const topOutcomes = [
+        { name: market.outcomes?.[0] || 'Yes', price: market.yesPrice, colorClass: 'blue' },
+        { name: market.outcomes?.[1] || 'No', price: market.noPrice, colorClass: 'red' }
+    ];
+
+    topOutcomes.forEach(out => {
+        const pct = (out.price * 100).toFixed(0);
+        outcomesHtml += `
+            <div class="shard-outcome">
+                <div class="shard-outcome-labels">
+                    <span class="shard-outcome-name">${escapeHtml(out.name)}</span>
+                    <span class="shard-outcome-pct ${pct > 0 ? out.colorClass : ''}">${pct}%</span>
+                </div>
+                <div class="shard-bar-bg">
+                    <div class="shard-bar-fill ${out.colorClass}" style="width: ${pct}%"></div>
+                </div>
+            </div>
+        `;
+    });
+
+    const polymarketUrl = `https://polymarket.com/event/${market.eventSlug}`;
 
     card.innerHTML = `
-        <div style="position:absolute; top:12px; right:48px; font-size:1.2rem; cursor:pointer; opacity: ${alerts[market.id] ? '1' : '0.3'}; transition: 0.2s; z-index: 10;" class="mc-alert" data-id="${market.id}">${alerts[market.id] ? '🔔' : '🔕'}</div>
-        <div class="mc-star ${isWatched ? 'active' : ''}" data-id="${market.id}">${isWatched ? '★' : '☆'}</div>
-        ${getBadges(market)}
-        <div class="mc-header">
-            <img class="mc-img" src="${market.image}" alt="" loading="lazy" onerror="this.style.display='none'">
-            <div class="mc-title">${escapeHtml(market.question)}</div>
+        <div class="shard-card-header">
+            <img class="shard-card-img" src="${market.image}" alt="" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'32\\' height=\\'32\\'><rect width=\\'32\\' height=\\'32\\' fill=\\'%231a1e26\\'/></svg>'">
+            <div class="shard-card-title">${escapeHtml(market.question)}</div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                <span class="shard-card-badge">${market.outcomes ? market.outcomes.length : 2} outcomes</span>
+                <span class="mc-star ${isWatched ? 'active' : ''}" data-id="${market.id}" style="position:static; font-size:1.1rem; line-height:1;">${isWatched ? '★' : '☆'}</span>
+            </div>
         </div>
-        <div class="mc-meta">
-            <span>${daysText}</span>
-            <span>Vol ${formatCompact(market.volume24h)}</span>
-            <span>Liq ${formatCompact(market.liquidity)}</span>
+        
+        <div style="flex:1;">
+            ${outcomesHtml}
         </div>
-        <div class="mc-sparkline">${generateSparkline(market)}</div>
-        <div class="mc-prices">
-            <div class="mc-price yes"><div class="mc-price-bar"><span class="mc-price-label">Yes</span>${(market.yesPrice * 100).toFixed(1)}¢</div></div>
-            <div class="mc-price no"><div class="mc-price-bar"><span class="mc-price-label">No</span>${(market.noPrice * 100).toFixed(1)}¢</div></div>
+
+        <div class="shard-card-footer">
+            <div>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                ${daysText}
+            </div>
+            <div>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                $${formatCompact(market.volumeTotal)}
+            </div>
+            <a href="${polymarketUrl}" target="_blank" rel="noopener" style="color:var(--text); text-decoration:none; font-weight:700;">Open ↗</a>
         </div>
-        <div class="mc-profit">
-            <span class="mc-profit-label">Bet $</span>
-            <input type="number" class="mc-profit-input" value="${Math.min(budget, 10)}" min="1" data-price="${market.minPrice}">
-            <span class="mc-profit-result">→ win $${((Math.min(budget, 10) / market.minPrice) - Math.min(budget, 10)).toFixed(2)}</span>
-        </div>
-        <div class="mc-footer">
-            <span class="mc-roi ${roiClass}">${market.maxRoi.toFixed(1)}x</span>
-            <span class="mc-change ${changeClass}">${changeSign}${(market.priceChange24h * 100).toFixed(1)}%</span>
-        </div>
-        <a class="btn-primary" href="${polymarketUrl}" target="_blank" rel="noopener" style="display: block; text-align: center; margin-top: 12px; padding: 10px 0; text-decoration: none; width: 100%; box-sizing: border-box;">Trade on Polymarket</a>
     `;
 
-    // Alert click
-    const alertBtn = card.querySelector('.mc-alert');
-    if (alertBtn) {
-        alertBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (alerts[market.id]) {
-                delete alerts[market.id];
-                saveAlerts();
-                renderMarkets();
-                return;
-            }
-            if (Notification.permission !== "granted") Notification.requestPermission();
-            
-            const targetStr = prompt(`Alert me when "${market.outcomes[0] || 'Yes'}" price hits (e.g. "60" for above 60¢, or "< 20" for below 20¢):`);
-            if (!targetStr) return;
-            
-            let target = Number(targetStr.replace(/[^\d.]/g, '')) / 100;
-            if (isNaN(target) || target <= 0) return;
-            
-            const isAbove = !targetStr.includes('<') && !targetStr.toLowerCase().includes('below');
-            alerts[market.id] = { target, isAbove, name: market.question };
-            saveAlerts();
-            renderMarkets();
-        });
-    }
-
-    // Star click
+    // Star click (Watchlist)
     const starBtn = card.querySelector('.mc-star');
     if (starBtn) {
         starBtn.addEventListener('click', (e) => {
@@ -582,21 +602,9 @@ function createMarketCard(market, index) {
         });
     }
 
-    // Profit simulator
-    const profitInput = card.querySelector('.mc-profit-input');
-    const profitResult = card.querySelector('.mc-profit-result');
-    profitInput.addEventListener('input', (e) => {
-        e.stopPropagation();
-        const bet = Number(profitInput.value) || 0;
-        const price = Number(profitInput.dataset.price) || 0.5;
-        const profit = (bet / price) - bet;
-        profitResult.textContent = `→ win $${profit.toFixed(2)}`;
-    });
-    profitInput.addEventListener('click', e => e.stopPropagation());
-
     // Card click (Chart Modal)
     card.addEventListener('click', (e) => {
-        if (e.target.closest('.mc-link') || e.target.closest('.mc-star') || e.target.closest('.mc-profit-input') || e.target.closest('.mc-alert') || e.target.closest('a')) return;
+        if (e.target.closest('.mc-star') || e.target.closest('a')) return;
         showChartModal(market);
     });
 
