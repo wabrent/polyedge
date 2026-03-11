@@ -468,7 +468,7 @@ function createMarketCard(market, index) {
     const daysText = market.daysLeft !== null ? `${market.daysLeft}d` : '∞';
     const polymarketUrl = `https://polymarket.com/event/${market.eventSlug}`;
     const isWatched = watchlist.includes(market.id);
-    const budget = Number(document.getElementById('budget-input').value) || 100;
+    const budget = 100; // Default budget as budget-input was removed
 
     card.innerHTML = `
         <div style="position:absolute; top:12px; right:48px; font-size:1.2rem; cursor:pointer; opacity: ${alerts[market.id] ? '1' : '0.3'}; transition: 0.2s; z-index: 10;" class="mc-alert" data-id="${market.id}">${alerts[market.id] ? '🔔' : '🔕'}</div>
