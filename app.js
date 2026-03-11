@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     safeInit('Theme', initThemeToggle);
     safeInit('Tabs', initTabs);
-    safeInit('Clocks', initWorldClocks);
     safeInit('Watchlist', initWatchlist);
+    safeInit('ChartModal', initChartModal);
     safeInit('ScannerControls', initScannerControls);
     safeInit('Kelly', initKellyCalculator);
     safeInit('Quantum', initQuantumMatrix);
@@ -390,14 +390,28 @@ function safeJsonParse(str, fallback) {
 
 // ========== STATS ==========
 function updateStats() {
-    document.getElementById('stat-total-markets').textContent = allMarkets.length;
-    const totalVol = allMarkets.reduce((s, m) => s + m.volume24h, 0);
-    document.getElementById('stat-total-volume').textContent = formatCurrency(totalVol);
-    const hotOpps = allMarkets.filter(m => m.maxRoi >= 3 && m.liquidity > 10000).length;
-    document.getElementById('stat-opportunities').textContent = hotOpps;
-    const rois = allMarkets.map(m => m.maxRoi);
-    const maxRoi = rois.length > 0 ? Math.max(...rois) : 0;
-    document.getElementById('stat-max-potential').textContent = `${maxRoi.toFixed(0)}x`;
+    const elMarkets = document.getElementById('stat-total-markets');
+    const elVolume = document.getElementById('stat-total-volume');
+    const elOpps = document.getElementById('stat-opportunities');
+    const elMaxRoi = document.getElementById('stat-max-potential');
+
+    if (elMarkets) elMarkets.textContent = allMarkets.length;
+    
+    if (elVolume) {
+        const totalVol = allMarkets.reduce((s, m) => s + m.volume24h, 0);
+        elVolume.textContent = formatCurrency(totalVol);
+    }
+    
+    if (elOpps) {
+        const hotOpps = allMarkets.filter(m => m.maxRoi >= 3 && m.liquidity > 10000).length;
+        elOpps.textContent = hotOpps;
+    }
+    
+    if (elMaxRoi) {
+        const rois = allMarkets.map(m => m.maxRoi);
+        const maxRoi = rois.length > 0 ? Math.max(...rois) : 0;
+        elMaxRoi.textContent = `${maxRoi.toFixed(0)}x`;
+    }
 }
 
 let shardSort = 'volume24hr';
