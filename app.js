@@ -13,6 +13,7 @@ let workingProxyIndex = 0;
 
 // ========== STATE ==========
 let allMarkets = [];
+let activeTab = 'dashboard';
 let displayedCount = 0;
 const BATCH_SIZE = 12;
 let isLoading = false;
@@ -91,14 +92,16 @@ function initTabs() {
         tabEl.classList.add('active');
 
         if (target === 'watchlist') renderWatchlist();
+        activeTab = target; // Fix: Update global activeTab state
         
         if (updateState) {
             const path = target === 'dashboard' ? '/' : `/${target}`;
             window.history.pushState({ tab: target }, '', path);
         }
         
-        // Preview content for scanner
+        // Preview content and Alpha trigger
         if (target === 'scanner' && allMarkets.length > 0) renderScannerResults(allMarkets.slice(0, 5));
+        if (target === 'alpha') updateAlphaTerminal(); 
     };
 
     document.querySelectorAll('.nav-item').forEach(tab => {
@@ -1081,11 +1084,11 @@ function renderAlphaClusters() {
     const container = document.getElementById('alpha-clusters');
     if (!container) return;
 
-    const categories = ['politics', 'crypto', 'economy'];
+    const categories = ['politics', 'crypto', 'economy', 'sports'];
     container.innerHTML = '';
 
     categories.forEach(cat => {
-        const catMarkets = allMarkets.filter(m => m.category === cat && m.liquidity > 20000);
+        const catMarkets = allMarkets.filter(m => m.category === cat);
         if (catMarkets.length < 2) return;
 
         const avgPrice = catMarkets.reduce((s, m) => s + m.yesPrice, 0) / catMarkets.length;
@@ -1095,15 +1098,15 @@ function renderAlphaClusters() {
         
         let itemsHtml = catMarkets.slice(0, 3).map(m => `
             <div class="cluster-item">
-                <span class="arb-market-name" style="max-width:160px;">${escapeHtml(m.question)}</span>
-                <span class="arb-market-price">${(m.yesPrice*100).toFixed(0)}¢</span>
+                <span style="color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">${escapeHtml(m.question.substring(0, 40))}</span>
+                <span class="arb-market-price" style="color:${m.yesPrice > 0.5 ? 'var(--green)' : 'var(--text)'}">${(m.yesPrice*100).toFixed(0)}¢</span>
             </div>
         `).join('');
 
         cluster.innerHTML = `
-            <div class="cluster-name" style="font-size:0.8rem; letter-spacing:1px; color:var(--blue); font-weight:800; margin-bottom:12px;">${cat.toUpperCase()} NETWORK</div>
-            <div class="arb-list" style="padding:0; background:transparent;">${itemsHtml}</div>
-            <div style="font-size:0.7rem; color:var(--text-3); margin-top:10px; text-align:right;">
+            <div class="cluster-name" style="font-size:0.75rem; letter-spacing:1px; color:var(--blue); font-weight:800; margin-bottom:10px; border-bottom:1px solid var(--border-light); padding-bottom:6px;">${cat.toUpperCase()} NETWORK</div>
+            <div class="cluster-list">${itemsHtml}</div>
+            <div style="font-size:0.65rem; color:var(--text-3); margin-top:8px; text-align:right;">
                 Sector Sentiment: <span style="color:var(--text); font-weight:700;">${(avgPrice*100).toFixed(1)}%</span>
             </div>
         `;
