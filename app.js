@@ -560,27 +560,29 @@ function createMarketCard(market, index) {
 function initScannerControls() {
     const minRoi = document.getElementById('min-roi');
     const minRoiVal = document.getElementById('min-roi-value');
-    minRoi.addEventListener('input', () => minRoiVal.textContent = `${minRoi.value}x`);
+    if (minRoi) minRoi.addEventListener('input', () => minRoiVal.textContent = `${minRoi.value}x`);
 
     const minLiq = document.getElementById('min-liquidity');
     const minLiqVal = document.getElementById('min-liquidity-value');
-    minLiq.addEventListener('input', () => minLiqVal.textContent = `$${formatCompact(Number(minLiq.value))}`);
+    if (minLiq) minLiq.addEventListener('input', () => minLiqVal.textContent = `$${formatCompact(Number(minLiq.value))}`);
 
     const maxDays = document.getElementById('max-days');
     const maxDaysVal = document.getElementById('max-days-value');
-    maxDays.addEventListener('input', () => maxDaysVal.textContent = `${maxDays.value}d`);
+    if (maxDays) maxDays.addEventListener('input', () => maxDaysVal.textContent = `${maxDays.value}d`);
 
-    document.getElementById('scan-btn').addEventListener('click', runScanner);
+    const scanBtn = document.getElementById('scan-btn');
+    if (scanBtn) scanBtn.addEventListener('click', runScanner);
 }
 
 async function runScanner() {
     const btn = document.getElementById('scan-btn');
+    if (!btn) return;
+    
     btn.textContent = 'Scanning...';
     btn.disabled = true;
 
     if (allMarkets.length === 0) {
-        const markets = await fetchMarkets(100);
-        allMarkets = processMarkets(markets);
+        await loadMarkets(); // Ensure we have data
     }
 
     const minRoi = Number(document.getElementById('min-roi').value);
@@ -588,60 +590,60 @@ async function runScanner() {
     const maxDays = Number(document.getElementById('max-days').value);
 
     const results = allMarkets
-        .filter(m => m.maxRoi >= minRoi && m.liquidity >= minLiq && (maxDays >= 365 || (m.daysLeft !== null && m.daysLeft <= maxDays)))
-        .sort((a, b) => calculateOpportunityScore(b) - calculateOpportunityScore(a));
+        .filter(m => {
+            const hasRoi = m.maxRoi >= minRoi;
+            const hasLiq = m.liquidity >= minLiq;
+            const isWithinTime = (maxDays >= 365) || (m.daysLeft !== null && m.daysLeft <= maxDays);
+            return hasRoi && hasLiq && isWithinTime;
+        })
+        .sort((a, b) => (b.volume24h * b.maxRoi) - (a.volume24h * a.maxRoi)); // Sort by "Opportunity Value"
 
     renderScannerResults(results);
     btn.textContent = 'Scan';
     btn.disabled = false;
 }
 
-function calculateOpportunityScore(m) {
-    return Math.log2(m.maxRoi + 1) * 10
-        + Math.log10(m.liquidity + 1) * 3
-        + Math.log10(m.volume24h + 1) * 2
-        + (m.daysLeft !== null ? Math.max(0, 30 - m.daysLeft) * 0.5 : 0)
-        + Math.abs(m.priceChange24h) * 100;
-}
-
 function renderScannerResults(results) {
     const container = document.getElementById('scanner-results');
+    if (!container) return;
+
     if (results.length === 0) {
-        container.innerHTML = `<div class="empty-state"><p>No opportunities found. Try adjusting filters.</p></div>`;
+        container.innerHTML = `<div class="empty-state"><p>No opportunities found. Try lowering your filters.</p></div>`;
         return;
     }
 
-    container.innerHTML = `<p style="font-size:0.82rem;color:var(--text-3);margin-bottom:12px">Found <strong style="color:var(--green)">${results.length}</strong> opportunities</p>`;
+    container.innerHTML = `<div style="padding: 10px; font-size: 0.9rem; color: var(--text-3); display: flex; justify-content: space-between;">
+        <span>Found ${results.length} targets</span>
+        <span>Sorted by Opportunity Score</span>
+    </div>`;
 
-    results.slice(0, 25).forEach((market, i) => {
+    results.slice(0, 20).forEach((market, i) => {
         const card = document.createElement('div');
         card.className = 'sr-card';
         const polymarketUrl = `https://polymarket.com/event/${market.eventSlug}`;
-        const changeClass = market.priceChange24h > 0 ? 'up' : market.priceChange24h < 0 ? 'down' : 'flat';
-        const changeSign = market.priceChange24h > 0 ? '+' : '';
-
+        
         card.innerHTML = `
             <div class="sr-rank">#${i + 1}</div>
             <div class="sr-info">
-                <div class="sr-title">${escapeHtml(market.question)}</div>
-                <div class="sr-meta">
-                    <span>Liq ${formatCompact(market.liquidity)}</span>
-                    <span>Vol ${formatCompact(market.volume24h)}</span>
-                    <span>${market.daysLeft !== null ? `${market.daysLeft}d` : '∞'}</span>
-                    <span class="${changeClass}">${changeSign}${(market.priceChange24h * 100).toFixed(1)}%</span>
+                <div class="sr-title" style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(market.question)}</div>
+                <div class="sr-meta" style="font-size: 0.8rem; color: var(--text-3); display: flex; gap: 12px;">
+                    <span>Liq: ${formatCompact(market.liquidity)}</span>
+                    <span>Vol 24h: ${formatCompact(market.volume24h)}</span>
+                    <span>Ends: ${market.daysLeft !== null ? `${market.daysLeft}d` : '∞'}</span>
                 </div>
             </div>
-            <div class="sr-stats">
-                <div class="sr-stat"><span class="sr-stat-val green">${market.maxRoi.toFixed(1)}x</span><span class="sr-stat-lbl">ROI</span></div>
-                <div class="sr-stat"><span class="sr-stat-val">${(market.minPrice * 100).toFixed(1)}¢</span><span class="sr-stat-lbl">Entry</span></div>
+            <div class="sr-stats" style="display: flex; align-items: center; gap: 16px;">
+                <div style="text-align: right;">
+                    <div style="color: var(--green); font-weight: 700; font-size: 1.1rem;">${market.maxRoi.toFixed(1)}x</div>
+                    <div style="font-size: 0.7rem; color: var(--text-3); text-transform: uppercase;">ROI</div>
+                </div>
+                <div style="text-align: right; min-width: 60px;">
+                    <div style="font-weight: 600;">${(market.minPrice * 100).toFixed(1)}¢</div>
+                    <div style="font-size: 0.7rem; color: var(--text-3); text-transform: uppercase;">Entry</div>
+                </div>
+                <a class="sr-link" href="${polymarketUrl}" target="_blank" rel="noopener" style="padding: 8px 12px; background: var(--blue); color: white; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600;">Trade</a>
             </div>
-            <a class="sr-link" href="${polymarketUrl}" target="_blank" rel="noopener">Trade ↗</a>
         `;
-
-        card.addEventListener('click', (e) => {
-            if (e.target.closest('.sr-link')) return;
-            window.open(polymarketUrl, '_blank');
-        });
         container.appendChild(card);
     });
 }
@@ -649,9 +651,9 @@ function renderScannerResults(results) {
 // ========== ARBITRAGE HUNTER ==========
 function renderArbitrage() {
     const grid = document.getElementById('arbitrage-grid');
-    grid.innerHTML = '<div class="empty-state"><p>Scanning...</p></div>';
+    if (!grid) return;
+    grid.innerHTML = '<div class="empty-state"><p>Scanning markets...</p></div>';
 
-    // Group markets by Event
     const events = {};
     allMarkets.forEach(m => {
         if (!m.eventSlug) return;
@@ -662,69 +664,63 @@ function renderArbitrage() {
     const opps = [];
     for (const slug in events) {
         const eventMarkets = events[slug];
-        if (eventMarkets.length < 2 || eventMarkets.length > 20) continue; // Need multiple outcomes
+        if (eventMarkets.length < 2 || eventMarkets.length > 30) continue;
 
         let sumYes = 0;
         let valid = true;
-        let eventVol = 0;
-        
         eventMarkets.forEach(m => {
             if (m.yesPrice <= 0 || m.yesPrice >= 1) valid = false;
             sumYes += m.yesPrice;
-            eventVol += m.volumeTotal || 0;
         });
 
-        // Only care about Yes sums < 0.98 (guaranteed >2% profit before fees)
-        if (valid && sumYes < 0.98 && sumYes > 0.1 && eventVol > 50000) {
-            const guaranteedRoi = ((1 / sumYes) - 1) * 100;
+        // Sum < 0.98 means guaranteed >2% ROI
+        if (valid && sumYes < 0.99 && sumYes > 0.05) {
+            const roi = ((1 / sumYes) - 1) * 100;
             opps.push({
                 slug,
-                title: eventMarkets[0].question.split('?')[0] + '?', // Guessing the top level event title
-                markets: eventMarkets,
+                roi,
                 sumYes,
-                roi: guaranteedRoi
+                title: eventMarkets[0].question.split('?')[0] + '?',
+                markets: eventMarkets.sort((a,b) => b.yesPrice - a.yesPrice)
             });
         }
     }
 
-    opps.sort((a,b) => b.roi - a.roi);
-
     if (opps.length === 0) {
-        grid.innerHTML = '<div class="empty-state"><p>No guaranteed arbitrage opportunities found currently. PolyEdge scanned all markets.</p></div>';
+        grid.innerHTML = '<div class="empty-state"><p>No arbitrage active right now. Markets are efficiently priced.</p></div>';
         return;
     }
 
     grid.innerHTML = '';
-    opps.forEach(opp => {
-        const div = document.createElement('div');
-        div.className = 'market-card';
-        div.style.border = '2px solid var(--green)';
+    opps.sort((a,b) => b.roi - a.roi).forEach(opp => {
+        const card = document.createElement('div');
+        card.className = 'arb-card';
         
         const marketsHtml = opp.markets.map(m => `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.85rem;">
-                <span style="color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;">${m.question}</span>
-                <span style="font-weight: 600;">${(m.yesPrice * 100).toFixed(1)}¢</span>
+            <div class="arb-market-row">
+                <span class="arb-market-name">${escapeHtml(m.outcomes[0] || m.question)}</span>
+                <span class="arb-market-price">${(m.yesPrice * 100).toFixed(1)}¢</span>
             </div>
         `).join('');
 
-        div.innerHTML = `
-            <div class="mc-header">
-                <div class="mc-title-area" style="width: 100%;">
-                    <div class="mc-title">${opp.title}</div>
-                    <div class="mc-meta">Guaranteed ROI: <span style="color: var(--green); font-weight: bold;">+${opp.roi.toFixed(2)}%</span></div>
-                </div>
+        card.innerHTML = `
+            <div class="arb-card-header">
+                <div class="arb-roi-badge">+${opp.roi.toFixed(1)}% ROI</div>
+                <h3 class="arb-title">${escapeHtml(opp.title)}</h3>
             </div>
-            <div style="padding: 12px; background: var(--bg); border-radius: 6px; margin-top: 12px;">
-                <div style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 8px;">Buy YES on all these outcomes:</div>
+            <div class="arb-list">
+                <div class="arb-list-label">Execute strategy (Buy YES on all):</div>
                 ${marketsHtml}
             </div>
-            <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
-                <span>Total Cost / Dollar:</span>
-                <span style="font-weight: bold;">${(opp.sumYes * 100).toFixed(1)}¢</span>
+            <div class="arb-footer">
+                <div class="arb-total">
+                    <span class="label">Total Cost:</span>
+                    <span class="value">${(opp.sumYes * 100).toFixed(1)}¢ per $1.00</span>
+                </div>
+                <a href="https://polymarket.com/event/${opp.slug}" target="_blank" class="arb-btn">Open on Polymarket</a>
             </div>
-            <a class="btn-primary" href="https://polymarket.com/event/${opp.slug}" target="_blank" rel="noopener" style="display: block; text-align: center; margin-top: 16px; padding: 10px 0; text-decoration: none; width: 100%; box-sizing: border-box; background: var(--green); color: #fff;">Execute Arbitrage</a>
         `;
-        grid.appendChild(div);
+        grid.appendChild(card);
     });
 }
 function initKellyCalculator() {
@@ -845,153 +841,7 @@ function safeJsonParse(str, fallback) {
     }
 }
 
-// ========== SCANNER ==========
-function initScannerControls() {
-    const minRoi = document.getElementById('min-roi');
-    const minRoiVal = document.getElementById('min-roi-value');
-    if (minRoi) minRoi.addEventListener('input', () => minRoiVal.textContent = `${minRoi.value}x`);
 
-    const minLiq = document.getElementById('min-liquidity');
-    const minLiqVal = document.getElementById('min-liquidity-value');
-    if (minLiq) minLiq.addEventListener('input', () => minLiqVal.textContent = `$${formatCompact(Number(minLiq.value))}`);
-
-    const maxDays = document.getElementById('max-days');
-    const maxDaysVal = document.getElementById('max-days-value');
-    if (maxDays) maxDays.addEventListener('input', () => maxDaysVal.textContent = `${maxDays.value}d`);
-    
-    const applyBtn = document.getElementById('apply-filters');
-    if (applyBtn) {
-        applyBtn.addEventListener('click', () => {
-            displayedCount = 0;
-            renderScanner();
-        });
-    }
-}
-
-function renderScanner() {
-    const container = document.getElementById('scanner-results');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    const minRoi = Number(document.getElementById('min-roi').value);
-    const minLiq = Number(document.getElementById('min-liquidity').value);
-    const maxDays = Number(document.getElementById('max-days').value);
-    
-    const filtered = allMarkets.filter(m => {
-        if (m.maxRoi < minRoi) return false;
-        if (m.liquidity < minLiq) return false;
-        if (m.daysLeft !== null && m.daysLeft > maxDays) return false;
-        return true;
-    }).sort((a, b) => b.maxRoi - a.maxRoi);
-
-    if (filtered.length === 0) {
-        container.innerHTML = '<div class="empty-state"><p>No markets match your criteria.</p></div>';
-        return;
-    }
-
-    filtered.forEach((market, i) => {
-        const card = document.createElement('div');
-        card.className = 'sr-card';
-        const polymarketUrl = `https://polymarket.com/event/${market.eventSlug}`;
-        const changeClass = market.priceChange24h > 0 ? 'up' : market.priceChange24h < 0 ? 'down' : 'flat';
-        const changeSign = market.priceChange24h > 0 ? '+' : '';
-
-        card.innerHTML = `
-            <div class="sr-rank">#${i + 1}</div>
-            <div class="sr-info">
-                <div class="sr-title">${escapeHtml(market.question)}</div>
-                <div class="sr-meta">
-                    <span>Liq ${formatCompact(market.liquidity)}</span>
-                    <span>Vol ${formatCompact(market.volume24h)}</span>
-                    <span>${market.daysLeft !== null ? `${market.daysLeft}d` : '∞'}</span>
-                    <span class="${changeClass}">${changeSign}${(market.priceChange24h * 100).toFixed(1)}%</span>
-                </div>
-            </div>
-            <div class="sr-stats">
-                <div class="sr-stat"><span class="sr-stat-val green">${market.maxRoi.toFixed(1)}x</span><span class="sr-stat-lbl">ROI</span></div>
-                <div class="sr-stat"><span class="sr-stat-val">${(market.minPrice * 100).toFixed(1)}¢</span><span class="sr-stat-lbl">Entry</span></div>
-            </div>
-            <a class="sr-link" href="${polymarketUrl}" target="_blank" rel="noopener">Trade ↗</a>
-        `;
-
-        card.addEventListener('click', (e) => {
-            if (e.target.closest('.sr-link')) return;
-            showChartModal(market);
-        });
-        container.appendChild(card);
-    });
-}
-
-// ========== ARBITRAGE HUNTER ==========
-function renderArbitrage() {
-    const grid = document.getElementById('arbitrage-grid');
-    if (!grid) return;
-    grid.innerHTML = '<div class="empty-state"><p>Scanning...</p></div>';
-
-    // Group markets by Event
-    const events = {};
-    allMarkets.forEach(m => {
-        if (!m.eventSlug) return;
-        if (!events[m.eventSlug]) events[m.eventSlug] = [];
-        events[m.eventSlug].push(m);
-    });
-
-    const opps = [];
-    for (const slug in events) {
-        const eventMarkets = events[slug];
-        if (eventMarkets.length < 2 || eventMarkets.length > 20) continue;
-
-        let sumYes = 0;
-        let valid = true;
-        eventMarkets.forEach(m => {
-            if (m.yesPrice <= 0) valid = false;
-            sumYes += m.yesPrice;
-        });
-
-        if (valid && sumYes < 0.98) {
-            opps.push({ slug, sumYes, markets: eventMarkets, question: eventMarkets[0].question });
-        }
-    }
-
-    if (opps.length === 0) {
-        grid.innerHTML = '<div class="empty-state"><p>No arbitrage opportunities found. Try again later.</p></div>';
-        return;
-    }
-
-    grid.innerHTML = '';
-    opps.sort((a,b) => a.sumYes - b.sumYes).forEach(opp => {
-        const div = document.createElement('div');
-        div.className = 'mc-card arbitrage-card';
-        const roi = ((1 / opp.sumYes) - 1) * 100;
-
-        let marketsHtml = opp.markets.map(m => `
-            <div style="display:flex; justify-content:space-between; font-size: 0.85rem; margin-bottom: 4px;">
-                <span style="color:var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">${escapeHtml(m.outcomes[0] || 'Yes')}</span>
-                <span style="font-weight: 600;">${(m.yesPrice * 100).toFixed(1)}¢</span>
-            </div>
-        `).join('');
-
-        div.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                <h4 style="margin: 0; font-size: 1rem; line-height: 1.3;">${escapeHtml(opp.question)}</h4>
-                <div style="background: var(--green-bg); color: var(--green); padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.9rem;">
-                    +${roi.toFixed(1)}%
-                </div>
-            </div>
-            <div style="padding: 12px; background: var(--bg); border-radius: 6px; margin-top: 12px;">
-                <div style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 8px;">Buy YES on all these outcomes:</div>
-                ${marketsHtml}
-            </div>
-            <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
-                <span>Total Cost / Dollar:</span>
-                <span style="font-weight: bold;">${(opp.sumYes * 100).toFixed(1)}¢</span>
-            </div>
-            <a class="btn-primary" href="https://polymarket.com/event/${opp.slug}" target="_blank" rel="noopener" style="display: block; text-align: center; margin-top: 16px; padding: 10px 0; text-decoration: none; width: 100%; box-sizing: border-box; background: var(--green); color: #fff;">Execute Arbitrage</a>
-        `;
-        grid.appendChild(div);
-    });
-}
 
 // ========== CHART MODAL ==========
 let currentChart = null;
