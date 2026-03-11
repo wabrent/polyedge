@@ -36,11 +36,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     safeInit('Theme', initThemeToggle);
     safeInit('Tabs', initTabs);
-    safeInit('BudgetSync', initBudgetSync);
+    safeInit('Clocks', initWorldClocks);
     safeInit('Watchlist', initWatchlist);
     safeInit('ChartModal', initChartModal);
     safeInit('ScannerControls', initScannerControls);
-    safeInit('Wallet', initWallet);
 
     console.log('PolyEdge: Initializing data load...');
     loadMarkets();
@@ -81,17 +80,22 @@ function initTabs() {
     });
 }
 
-// ========== BUDGET SYNC ==========
-function initBudgetSync() {
-    const budgetInput = document.getElementById('budget-input');
-    const kellyBankroll = document.getElementById('kelly-bankroll');
-    budgetInput.addEventListener('input', () => {
-        kellyBankroll.value = Number(budgetInput.value) || 100;
-        calculateKelly();
-    });
-    kellyBankroll.addEventListener('input', () => {
-        budgetInput.value = Number(kellyBankroll.value) || 100;
-    });
+// ========== WORLD CLOCKS ==========
+function initWorldClocks() {
+    const update = () => {
+        const now = new Date();
+        const options = { hour: '2-digit', minute: '2-digit', hour12: false };
+        
+        const nyc = document.getElementById('clock-nyc');
+        const ldn = document.getElementById('clock-ldn');
+        const tko = document.getElementById('clock-tko');
+
+        if (nyc) nyc.textContent = now.toLocaleTimeString('en-US', { ...options, timeZone: 'America/New_York' });
+        if (ldn) ldn.textContent = now.toLocaleTimeString('en-GB', { ...options, timeZone: 'Europe/London' });
+        if (tko) tko.textContent = now.toLocaleTimeString('ja-JP', { ...options, timeZone: 'Asia/Tokyo' });
+    };
+    update();
+    setInterval(update, 10000); // Update every 10s
 }
 
 // ========== SEARCH ==========
@@ -1099,54 +1103,4 @@ async function loadChartData(market, timeFrame) {
     }
 }
 
-// ========== WALLET SYNC ==========
-let userWalletAddress = null;
-const USDC_ADDRESS = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
-const USDC_ABI = ["function balanceOf(address owner) view returns (uint256)", "function decimals() view returns (uint8)"];
 
-async function initWallet() {
-    const btn = document.getElementById('btn-connect');
-    if (!btn) return;
-    if (window.ethereum) {
-        try {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts.length > 0) handleConnect(accounts[0], btn);
-        } catch (e) {}
-    }
-    btn.addEventListener('click', async () => {
-        if (!window.ethereum) { alert("Web3 wallet not detected."); return; }
-        try {
-            btn.textContent = "Connecting...";
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            if (accounts.length > 0) handleConnect(accounts[0], btn);
-        } catch (e) { btn.textContent = "Connect Wallet"; }
-    });
-}
-
-async function handleConnect(address, btn) {
-    userWalletAddress = address;
-    btn.textContent = `${address.substring(0,6)}...${address.substring(38)}`;
-    btn.style.background = "var(--green-bg)";
-    btn.style.color = "var(--green)";
-    btn.style.borderColor = "var(--green)";
-    try {
-        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x89' }] });
-        await fetchUSDCBalance();
-    } catch (e) {}
-}
-
-async function fetchUSDCBalance() {
-    if (!userWalletAddress || !window.ethers) return;
-    try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
-        const balance = await usdcContract.balanceOf(userWalletAddress);
-        const decimals = await usdcContract.decimals();
-        const formatted = ethers.utils.formatUnits(balance, decimals);
-        const input = document.getElementById('budget-input');
-        if (input && Math.floor(formatted) > 0) {
-            input.value = Math.floor(formatted);
-            input.dispatchEvent(new Event('input'));
-        }
-    } catch (e) {}
-}
