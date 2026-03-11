@@ -222,45 +222,44 @@ function renderWatchlist() {
 
 // ========== API CALLS ==========
 async function fetchWithProxy(url) {
-    // A robust list of proxies to bypass CORS on custom domains
     const endpoints = [
         url, // 1. Direct
         `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        `https://proxy.cors.sh/${url}`,
         `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-        `https://thingproxy.freeboard.io/fetch/${url}`,
-        `https://proxy.cors.sh/${url}` // Backup (sometimes requires registration but often works for small traffic)
+        `https://corsproxy.org/?${encodeURIComponent(url)}` // Reliable backup
     ];
 
     try {
-        // We use Promise.any to get the FASTEST successful response
         const data = await Promise.any(endpoints.map(async (eUrl) => {
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
                 
-                const res = await fetch(eUrl, { 
-                    signal: controller.signal,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' } // Helps bypass some proxy filters
-                });
+                const fetchOptions = { signal: controller.signal };
+                // cors.sh often needs this header
+                if (eUrl.includes('proxy.cors.sh')) {
+                    fetchOptions.headers = { 'x-cors-gratis': 'true' };
+                }
+
+                const res = await fetch(eUrl, fetchOptions);
                 clearTimeout(timeoutId);
                 
                 if (!res.ok) throw new Error(`Status ${res.status}`);
-                
                 const json = await res.json();
-                // Basic validation of Polymarket data structure
-                if (!json || (Array.isArray(json) && json.length === 0 && url.includes('limit='))) {
-                    throw new Error('Invalid data format');
-                }
                 
-                return json;
-            } catch (e) {
-                // Silently fail this specific endpoint so Promise.any can try others
-                throw e;
-            }
+                // If it's AllOrigins (might wrap it in a 'contents' field if not using /raw)
+                const marketsData = json.contents ? JSON.parse(json.contents) : json;
+                
+                if (!marketsData || (Array.isArray(marketsData) && marketsData.length === 0 && url.includes('limit='))) {
+                    throw new Error('Empty');
+                }
+                return marketsData;
+            } catch (e) { throw e; }
         }));
         return data;
     } catch (err) {
-        console.warn('PolyEdge: All primary proxies failed. Falling back to debug mode.');
+        console.warn('PolyEdge: Proxy fetch failed, trying final fallback');
         return [];
     }
 }
