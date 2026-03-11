@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge — Polymarket Analytics Terminal</title>
+    <title>PolyEdge — Polymarket Analytics Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="glow-bg"></div>
-    
     <header>
         <div class="header-container">
             <div class="logo">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                 </svg>
                 <span>PolyEdge</span>
             </div>
@@ -24,26 +22,32 @@
             <nav class="main-nav">
                 <button class="nav-item active" data-tab="dashboard">Markets</button>
                 <button class="nav-item" data-tab="watchlist">Watchlist</button>
-                <button class="nav-item" data-tab="scanner">Alpha Scanner</button>
+                <button class="nav-item" data-tab="scanner">Scanner</button>
                 <button class="nav-item" data-tab="arbitrage">Arbitrage</button>
-                <button class="nav-item" data-tab="simulator">Kelly Simulator</button>
+                <button class="nav-item" data-tab="simulator">Simulator</button>
             </nav>
 
             <div class="header-right">
-                <div class="refresh-timer" id="refresh-timer">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                <div class="refresh-group">
+                    <svg width="20" height="20" class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6m12-4a9 9 0 0 1-15 6.7L3 16"/>
                     </svg>
-                    <span id="refresh-text">60s</span>
+                    <div class="refresh-timer-circle">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="circle" id="refresh-progress" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <span id="refresh-text">60s</span>
+                    </div>
                 </div>
                 <button class="theme-toggle" id="theme-toggle">
-                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="4.22"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/></svg>
+                    <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
                 </button>
                 <div class="world-clocks">
-                    <div class="clock-item">NYC <span id="clock-nyc">00:00</span></div>
-                    <div class="clock-item">LDN <span id="clock-ldn">00:00</span></div>
-                    <div class="clock-item">TKO <span id="clock-tko">00:00</span></div>
+                    <div class="clock-item">NYC <span id="clock-nyc">08:36</span></div>
+                    <div class="clock-item">LDN <span id="clock-ldn">12:36</span></div>
+                    <div class="clock-item">TKO <span id="clock-tko">21:36</span></div>
                 </div>
             </div>
         </div>
@@ -53,94 +57,63 @@
         <!-- ===== DASHBOARD ===== -->
         <section class="tab active" id="tab-dashboard">
             <div class="stats-bar">
-                <div class="stat"><span class="stat-val" id="stat-total-markets">...</span><span class="stat-lbl">Markets</span></div>
-                <div class="stat"><span class="stat-val" id="stat-total-volume">$0</span><span class="stat-lbl">24h Vol</span></div>
-                <div class="stat"><span class="stat-val" id="stat-opportunities">0</span><span class="stat-lbl">Alpha Ops</span></div>
-                <div class="stat"><span class="stat-val" id="stat-max-potential">0x</span><span class="stat-lbl">Max ROI</span></div>
+                <div class="stat"><span class="stat-val" id="stat-total-markets">60</span><span class="stat-lbl">Markets</span></div>
+                <div class="stat-divider"></div>
+                <div class="stat"><span class="stat-val" id="stat-total-volume">$79.5M</span><span class="stat-lbl">24h Volume</span></div>
+                <div class="stat-divider"></div>
+                <div class="stat"><span class="stat-val" id="stat-opportunities">52</span><span class="stat-lbl">Opportunities</span></div>
+                <div class="stat-divider"></div>
+                <div class="stat"><span class="stat-val" id="stat-max-potential">2000x</span><span class="stat-lbl">Best ROI</span></div>
             </div>
 
             <div class="toolbar">
                 <div class="toolbar-left">
-                    <h2 class="section-title">Global Markets</h2>
+                    <h2 class="section-title">Trending Markets</h2>
                     <div class="search-box">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" id="search-input" placeholder="Search event...">
+                        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="text" id="search-input" class="search-input" placeholder="Search markets...">
                     </div>
                 </div>
                 <div class="toolbar-controls">
                     <select id="category-filter" class="select-sm">
-                        <option value="all">Categories</option>
+                        <option value="all">All</option>
                         <option value="politics">Politics</option>
                         <option value="crypto">Crypto</option>
                         <option value="sports">Sports</option>
-                        <option value="economics">Economics</option>
                     </select>
                     <select id="volume-filter" class="select-sm">
-                        <option value="0">Vol: Any</option>
+                        <option value="0">Any Volume</option>
                         <option value="10000">> $10k</option>
                         <option value="50000">> $50k</option>
-                        <option value="100000">> $100k</option>
                     </select>
                     <select id="sort-filter" class="select-sm">
-                        <option value="volume24hr">Sort: 24h Vol</option>
-                        <option value="liquidity">Sort: Liquidity</option>
-                        <option value="potential">Sort: Roi</option>
-                        <option value="ending">Sort: Ending</option>
+                        <option value="volume24hr">Volume 24h</option>
+                        <option value="liquidity">Liquidity</option>
+                        <option value="potential">Max ROI</option>
                     </select>
                 </div>
             </div>
 
             <div class="markets-grid" id="markets-grid">
-                <!-- Data loaded via JS -->
+                <!-- Data loaded via JS to match the image exactly -->
             </div>
 
             <div class="load-more-container">
-                <button class="btn-load-more" id="load-more-btn">LOAD MORE MARKETS</button>
+                <button class="btn-load-more" id="load-more-btn">Load more markets</button>
             </div>
         </section>
 
-        <!-- ===== WATCHLIST ===== -->
+        <!-- ===== OTHER TABS PLACEHOLDERS ===== -->
         <section class="tab" id="tab-watchlist">
             <h2 class="section-title">Your Watchlist</h2>
             <div class="markets-grid" id="watchlist-grid"></div>
-            <div id="watchlist-empty" class="empty-state">
-                <p>Bookmark markets to track them here.</p>
-            </div>
         </section>
-
-        <!-- ===== SCANNER (COMING SOON) ===== -->
-        <section class="tab" id="tab-scanner">
-             <div class="empty-state">
-                <h2 style="font-size: 2rem;">Alpha Scanner</h2>
-                <p>Deep analytical scans for arbitrage & low-liquidity inefficiencies.</p>
-             </div>
-        </section>
-
-        <!-- ===== KELLY / SIMULATOR ===== -->
-        <section class="tab" id="tab-simulator">
-             <div class="kelly-container">
-                 <div class="kelly-card">
-                     <h3>Kelly Criterion Betting</h3>
-                     <p>Optimize your stake size based on edge.</p>
-                     <div class="kelly-inputs">
-                        <input type="number" id="kelly-prob" value="55" placeholder="Prob %">
-                        <input type="number" id="kelly-price" value="50" placeholder="Price ¢">
-                     </div>
-                     <div id="kelly-result" class="roi-high" style="margin-top: 20px; font-size: 1.5rem;">—</div>
-                 </div>
-             </div>
-        </section>
+        <section class="tab" id="tab-scanner"></section>
+        <section class="tab" id="tab-arbitrage"></section>
+        <section class="tab" id="tab-simulator"></section>
     </main>
-
-    <div id="chart-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <div id="modal-title" style="margin-bottom: 20px; font-weight: 700;">Market Chart</div>
-            <div id="modal-chart-container" style="height: 300px; background: #000; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 0.8rem;">
-                Historical chart visualization
-            </div>
-        </div>
-    </div>
 
     <script src="app.js"></script>
 </body>
