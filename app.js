@@ -22,15 +22,27 @@ let watchlist = JSON.parse(localStorage.getItem('polyedge-watchlist') || '[]');
 let alerts = JSON.parse(localStorage.getItem('polyedge-alerts') || '{}');
 
 // ========== INIT ==========
-document.addEventListener('DOMContentLoaded', () => {
-    initThemeToggle();
-    initTabs();
-    initBudgetSync();
-    initWatchlist();
-    initChartModal();
-    initScannerControls();
-    initWatchlist();
-    initWallet();
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('PolyEdge: Initializing...');
+    
+    const safeInit = (name, fn) => {
+        try {
+            fn();
+            console.log(`PolyEdge: ${name} initialized`);
+        } catch (e) {
+            console.error(`PolyEdge: Failed to initialize ${name}`, e);
+        }
+    };
+
+    safeInit('Theme', initThemeToggle);
+    safeInit('Tabs', initTabs);
+    safeInit('BudgetSync', initBudgetSync);
+    safeInit('Watchlist', initWatchlist);
+    safeInit('ChartModal', initChartModal);
+    safeInit('ScannerControls', initScannerControls);
+    safeInit('Wallet', initWallet);
+
+    console.log('PolyEdge: Initializing data load...');
     loadMarkets();
     startAutoRefresh();
 });
@@ -807,4 +819,320 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+function safeJsonParse(str, fallback) {
+    try {
+        return typeof str === 'string' ? JSON.parse(str) : str;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+// ========== SCANNER ==========
+function initScannerControls() {
+    const minRoi = document.getElementById('min-roi');
+    const minRoiVal = document.getElementById('min-roi-value');
+    if (minRoi) minRoi.addEventListener('input', () => minRoiVal.textContent = `${minRoi.value}x`);
+
+    const minLiq = document.getElementById('min-liquidity');
+    const minLiqVal = document.getElementById('min-liquidity-value');
+    if (minLiq) minLiq.addEventListener('input', () => minLiqVal.textContent = `$${formatCompact(Number(minLiq.value))}`);
+
+    const maxDays = document.getElementById('max-days');
+    const maxDaysVal = document.getElementById('max-days-value');
+    if (maxDays) maxDays.addEventListener('input', () => maxDaysVal.textContent = `${maxDays.value}d`);
+    
+    const applyBtn = document.getElementById('apply-filters');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            displayedCount = 0;
+            renderScanner();
+        });
+    }
+}
+
+function renderScanner() {
+    const container = document.getElementById('scanner-results');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const minRoi = Number(document.getElementById('min-roi').value);
+    const minLiq = Number(document.getElementById('min-liquidity').value);
+    const maxDays = Number(document.getElementById('max-days').value);
+    
+    const filtered = allMarkets.filter(m => {
+        if (m.maxRoi < minRoi) return false;
+        if (m.liquidity < minLiq) return false;
+        if (m.daysLeft !== null && m.daysLeft > maxDays) return false;
+        return true;
+    }).sort((a, b) => b.maxRoi - a.maxRoi);
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No markets match your criteria.</p></div>';
+        return;
+    }
+
+    filtered.forEach((market, i) => {
+        const card = document.createElement('div');
+        card.className = 'sr-card';
+        const polymarketUrl = `https://polymarket.com/event/${market.eventSlug}`;
+        const changeClass = market.priceChange24h > 0 ? 'up' : market.priceChange24h < 0 ? 'down' : 'flat';
+        const changeSign = market.priceChange24h > 0 ? '+' : '';
+
+        card.innerHTML = `
+            <div class="sr-rank">#${i + 1}</div>
+            <div class="sr-info">
+                <div class="sr-title">${escapeHtml(market.question)}</div>
+                <div class="sr-meta">
+                    <span>Liq ${formatCompact(market.liquidity)}</span>
+                    <span>Vol ${formatCompact(market.volume24h)}</span>
+                    <span>${market.daysLeft !== null ? `${market.daysLeft}d` : '∞'}</span>
+                    <span class="${changeClass}">${changeSign}${(market.priceChange24h * 100).toFixed(1)}%</span>
+                </div>
+            </div>
+            <div class="sr-stats">
+                <div class="sr-stat"><span class="sr-stat-val green">${market.maxRoi.toFixed(1)}x</span><span class="sr-stat-lbl">ROI</span></div>
+                <div class="sr-stat"><span class="sr-stat-val">${(market.minPrice * 100).toFixed(1)}¢</span><span class="sr-stat-lbl">Entry</span></div>
+            </div>
+            <a class="sr-link" href="${polymarketUrl}" target="_blank" rel="noopener">Trade ↗</a>
+        `;
+
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.sr-link')) return;
+            showChartModal(market);
+        });
+        container.appendChild(card);
+    });
+}
+
+// ========== ARBITRAGE HUNTER ==========
+function renderArbitrage() {
+    const grid = document.getElementById('arbitrage-grid');
+    if (!grid) return;
+    grid.innerHTML = '<div class="empty-state"><p>Scanning...</p></div>';
+
+    // Group markets by Event
+    const events = {};
+    allMarkets.forEach(m => {
+        if (!m.eventSlug) return;
+        if (!events[m.eventSlug]) events[m.eventSlug] = [];
+        events[m.eventSlug].push(m);
+    });
+
+    const opps = [];
+    for (const slug in events) {
+        const eventMarkets = events[slug];
+        if (eventMarkets.length < 2 || eventMarkets.length > 20) continue;
+
+        let sumYes = 0;
+        let valid = true;
+        eventMarkets.forEach(m => {
+            if (m.yesPrice <= 0) valid = false;
+            sumYes += m.yesPrice;
+        });
+
+        if (valid && sumYes < 0.98) {
+            opps.push({ slug, sumYes, markets: eventMarkets, question: eventMarkets[0].question });
+        }
+    }
+
+    if (opps.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><p>No arbitrage opportunities found. Try again later.</p></div>';
+        return;
+    }
+
+    grid.innerHTML = '';
+    opps.sort((a,b) => a.sumYes - b.sumYes).forEach(opp => {
+        const div = document.createElement('div');
+        div.className = 'mc-card arbitrage-card';
+        const roi = ((1 / opp.sumYes) - 1) * 100;
+
+        let marketsHtml = opp.markets.map(m => `
+            <div style="display:flex; justify-content:space-between; font-size: 0.85rem; margin-bottom: 4px;">
+                <span style="color:var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">${escapeHtml(m.outcomes[0] || 'Yes')}</span>
+                <span style="font-weight: 600;">${(m.yesPrice * 100).toFixed(1)}¢</span>
+            </div>
+        `).join('');
+
+        div.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                <h4 style="margin: 0; font-size: 1rem; line-height: 1.3;">${escapeHtml(opp.question)}</h4>
+                <div style="background: var(--green-bg); color: var(--green); padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.9rem;">
+                    +${roi.toFixed(1)}%
+                </div>
+            </div>
+            <div style="padding: 12px; background: var(--bg); border-radius: 6px; margin-top: 12px;">
+                <div style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 8px;">Buy YES on all these outcomes:</div>
+                ${marketsHtml}
+            </div>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                <span>Total Cost / Dollar:</span>
+                <span style="font-weight: bold;">${(opp.sumYes * 100).toFixed(1)}¢</span>
+            </div>
+            <a class="btn-primary" href="https://polymarket.com/event/${opp.slug}" target="_blank" rel="noopener" style="display: block; text-align: center; margin-top: 16px; padding: 10px 0; text-decoration: none; width: 100%; box-sizing: border-box; background: var(--green); color: #fff;">Execute Arbitrage</a>
+        `;
+        grid.appendChild(div);
+    });
+}
+
+// ========== CHART MODAL ==========
+let currentChart = null;
+let currentMarketForChart = null;
+
+function initChartModal() {
+    const modal = document.getElementById('chart-modal');
+    if (!modal) return;
+    
+    const closeBtn = document.getElementById('btn-close-modal');
+    if (closeBtn) closeBtn.addEventListener('click', () => modal.close());
+    
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
+
+    document.querySelectorAll('.chart-time-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.chart-time-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            if (currentMarketForChart) loadChartData(currentMarketForChart, e.target.dataset.time);
+        });
+    });
+}
+
+function showChartModal(market) {
+    currentMarketForChart = market;
+    const title = document.getElementById('chart-title');
+    if (title) title.textContent = market.question;
+    const modal = document.getElementById('chart-modal');
+    if (modal) modal.showModal();
+    
+    document.querySelectorAll('.chart-time-btn').forEach(b => b.classList.remove('active'));
+    const defaultBtn = document.querySelector('.chart-time-btn[data-time="1W"]');
+    if (defaultBtn) defaultBtn.classList.add('active');
+    
+    loadChartData(market, '1W');
+}
+
+async function loadChartData(market, timeFrame) {
+    if (!market.conditionId) return;
+    const canvas = document.getElementById('price-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    if (currentChart) currentChart.destroy();
+    
+    currentChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: ['Loading...'], datasets: [{ data: [0.5] }] },
+        options: { plugins: { title: { display: true, text: 'Fetching price history...' } }, animation: false }
+    });
+
+    try {
+        const eventRes = await fetch(`https://gamma-api.polymarket.com/events/${market.eventSlug}`);
+        const eventData = await eventRes.json();
+        let clobTokenId = "";
+        if (eventData && eventData.markets) {
+           const matchingMarket = eventData.markets.find(m => m.id === market.id);
+           if (matchingMarket && matchingMarket.clobTokenIds) {
+               clobTokenId = JSON.parse(matchingMarket.clobTokenIds || '[]')[0]; 
+           }
+        }
+        if (!clobTokenId) throw new Error("No token ID");
+
+        const intervalMap = { '1D': '1d', '1W': '1w', '1M': '1m', 'ALL': 'max' };
+        const interval = intervalMap[timeFrame] || '1w';
+        const priceRes = await fetch(`https://clob.polymarket.com/prices-history?interval=${interval}&market=${clobTokenId}&fidelity=60`);
+        const priceData = await priceRes.json();
+        
+        if (!priceData.history || priceData.history.length === 0) throw new Error("No data");
+
+        const labels = priceData.history.map(p => new Date(p.t * 1000).toLocaleString());
+        const data = priceData.history.map(p => p.p * 100);
+        const color = data[data.length - 1] >= data[0] ? '#10b981' : '#ef4444';
+
+        currentChart.destroy();
+        currentChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: `Price (¢)`,
+                    data,
+                    borderColor: color,
+                    backgroundColor: color + '20',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '¢' } } }
+            }
+        });
+    } catch (e) {
+        console.error(e);
+        if (currentChart) currentChart.destroy();
+        currentChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ['Error'], datasets: [{ data: [0.5] }] },
+            options: { plugins: { title: { display: true, text: 'Chart data not available.' } } }
+        });
+    }
+}
+
+// ========== WALLET SYNC ==========
+let userWalletAddress = null;
+const USDC_ADDRESS = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
+const USDC_ABI = ["function balanceOf(address owner) view returns (uint256)", "function decimals() view returns (uint8)"];
+
+async function initWallet() {
+    const btn = document.getElementById('btn-connect');
+    if (!btn) return;
+    if (window.ethereum) {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length > 0) handleConnect(accounts[0], btn);
+        } catch (e) {}
+    }
+    btn.addEventListener('click', async () => {
+        if (!window.ethereum) { alert("Web3 wallet not detected."); return; }
+        try {
+            btn.textContent = "Connecting...";
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            if (accounts.length > 0) handleConnect(accounts[0], btn);
+        } catch (e) { btn.textContent = "Connect Wallet"; }
+    });
+}
+
+async function handleConnect(address, btn) {
+    userWalletAddress = address;
+    btn.textContent = `${address.substring(0,6)}...${address.substring(38)}`;
+    btn.style.background = "var(--green-bg)";
+    btn.style.color = "var(--green)";
+    btn.style.borderColor = "var(--green)";
+    try {
+        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x89' }] });
+        await fetchUSDCBalance();
+    } catch (e) {}
+}
+
+async function fetchUSDCBalance() {
+    if (!userWalletAddress || !window.ethers) return;
+    try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
+        const balance = await usdcContract.balanceOf(userWalletAddress);
+        const decimals = await usdcContract.decimals();
+        const formatted = ethers.utils.formatUnits(balance, decimals);
+        const input = document.getElementById('budget-input');
+        if (input && Math.floor(formatted) > 0) {
+            input.value = Math.floor(formatted);
+            input.dispatchEvent(new Event('input'));
+        }
+    } catch (e) {}
 }
