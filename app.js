@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     safeInit('ChartModal', initChartModal);
     safeInit('ScannerControls', initScannerControls);
     safeInit('Kelly', initKellyCalculator);
-    safeInit('Quantum', initQuantumMatrix);
+    safeInit('Alpha', initAlphaEngine);
 
     // Refresh on Logo Click
     const logo = document.querySelector('.logo');
@@ -92,15 +92,16 @@ function initTabs() {
         tabEl.classList.add('active');
 
         if (target === 'watchlist') renderWatchlist();
-        activeTab = target; 
+        activeTab = target; // Fix: Update global activeTab state
         
         if (updateState) {
             const path = target === 'dashboard' ? '/' : `/${target}`;
             window.history.pushState({ tab: target }, '', path);
         }
         
+        // Preview content and Alpha trigger
         if (target === 'scanner' && allMarkets.length > 0) renderScannerResults(allMarkets.slice(0, 5));
-        if (target === 'quantum') renderQuantumMatrix();
+        if (target === 'alpha') updateAlphaTerminal(); 
     };
 
     document.querySelectorAll('.nav-item').forEach(tab => {
@@ -997,210 +998,133 @@ async function loadChartData(market, timeFrame) {
     }
 }
 
-// ========== QUANTUM MATRIX (D3.js) ==========
-let quantumSimulation = null;
-let quantumSvg = null;
-let quantumIsRendered = false;
+// ========== ALPHA ENGINE V2 ==========
+let marketSnapshots = new Map();
 
-function initQuantumMatrix() {
-    document.getElementById('q-reset').addEventListener('click', () => {
-        if (quantumSimulation) {
-            quantumSimulation.alpha(1).restart();
+function initAlphaEngine() {
+    // Neural feel: update terminal faster than price loads
+    setInterval(updateAlphaTerminal, 3000); 
+}
+
+function updateAlphaTerminal() {
+    if (activeTab !== 'alpha' || allMarkets.length === 0) return;
+    
+    detectAlphaSignals();
+    renderAlphaClusters();
+    updateGlobalMetrics();
+}
+
+function detectAlphaSignals() {
+    const whaleFeed = document.getElementById('whale-feed');
+    const heatmapGrid = document.getElementById('alpha-signals');
+    if (!whaleFeed || !heatmapGrid) return;
+
+    allMarkets.forEach(m => {
+        const prev = marketSnapshots.get(m.id);
+        if (prev) {
+            // 1. Whale Activity (> $1.5k change in 15-60s)
+            const volDiff = m.volumeTotal - prev.volumeTotal;
+            if (volDiff > 1500) addWhaleToFeed(m, volDiff);
+
+            // 2. Accumulation Detection (Price down/flat, Volume UP)
+            const priceDiff = m.yesPrice - prev.yesPrice;
+            if (volDiff > 3000 && priceDiff <= 0) {
+                addAccumulationSignal(m, volDiff);
+            }
         }
-    });
-
-    document.getElementById('q-cluster-by').addEventListener('change', (e) => {
-        updateQuantumForces(e.target.value);
-    });
-
-    document.getElementById('q-close-panel').addEventListener('click', () => {
-        document.getElementById('quantum-side-panel').classList.remove('active');
-    });
-
-    // Handle generic window resize
-    window.addEventListener('resize', () => {
-        if (activeTab === 'quantum' && quantumSvg) {
-            renderQuantumMatrix(); // Re-render to adapt
-        }
+        marketSnapshots.set(m.id, { ...m });
     });
 }
 
-function renderQuantumMatrix() {
-    if (activeTab !== 'quantum' || allMarkets.length === 0) return;
+function addWhaleToFeed(m, amount) {
+    const feed = document.getElementById('whale-feed');
+    const boot = feed.querySelector('.boot-msg');
+    if (boot) boot.remove();
+
+    const row = document.createElement('div');
+    row.className = 'trade-row';
+    const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const isBuy = m.yesPrice > 0.4;
+
+    row.innerHTML = `
+        <span class="tr-time">[${time}]</span>
+        <span class="tr-action ${isBuy ? 'buy' : 'sell'}">${isBuy ? 'IN' : 'OUT'}</span>
+        <span class="tr-amount">$${formatCompact(amount)}</span>
+        <span class="tr-market">${escapeHtml(m.question)}</span>
+    `;
+
+    feed.prepend(row);
+    if (feed.children.length > 30) feed.lastChild.remove();
+}
+
+function addAccumulationSignal(m, volume) {
+    const grid = document.getElementById('alpha-signals');
+    const empty = grid.querySelector('.empty-state');
+    if (empty) empty.remove();
+
+    if (document.getElementById(`acc-${m.id}`)) return;
+
+    const card = document.createElement('div');
+    card.id = `acc-${m.id}`;
+    card.className = 'heatmap-card';
+    card.innerHTML = `
+        <div style="color:var(--blue); font-size:0.6rem; font-weight:800; margin-bottom:4px">DETECTED_ACCUMULATION</div>
+        <div style="font-size:0.8rem; font-weight:700; color:var(--text); line-height:1.2">${escapeHtml(m.question.substring(0, 60))}...</div>
+        <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:0.7rem;">
+            <span>PRESSURE: <span style="color:var(--green)">HIGH</span></span>
+            <span>VOL: $${formatCompact(volume)}</span>
+        </div>
+    `;
+
+    grid.prepend(card);
+    if (grid.children.length > 8) grid.lastChild.remove();
+}
+
+function updateGlobalMetrics() {
+    // Sentiment Calculation
+    const avgPrice = allMarkets.reduce((s, m) => s + m.yesPrice, 0) / allMarkets.length;
+    const sentiment = avgPrice * 100;
     
-    const container = document.getElementById('quantum-container');
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const bar = document.getElementById('sentiment-bar');
+    const val = document.getElementById('sentiment-value');
+    const volIdx = document.getElementById('alpha-vol-index');
 
-    // Only render once heavily unless forced
-    if (quantumIsRendered && quantumSvg) return;
-    quantumIsRendered = true;
+    if (bar && val) {
+        bar.style.width = `${sentiment}%`;
+        val.textContent = sentiment > 55 ? 'BULLISH_BIAS' : sentiment < 45 ? 'BEARISH_BIAS' : 'NEUTRAL_FLOW';
+        val.style.color = sentiment > 55 ? 'var(--green)' : sentiment < 45 ? 'var(--red)' : 'var(--blue)';
+    }
 
-    container.innerHTML = ''; // Clear previous
+    if (volIdx) {
+        const highVolCount = allMarkets.filter(m => m.volume24h > 100000).length;
+        volIdx.textContent = highVolCount > 20 ? 'HIGH_MOMENTUM' : 'STABLE_FLOW';
+    }
+}
 
-    // Prepare Data
-    // Filter to top 150 by volume to avoid messy hairballs
-    let nodes = [...allMarkets].sort((a,b) => b.volumeTotal - a.volumeTotal).slice(0, 150).map(m => ({
-        ...m,
-        radius: Math.max(5, Math.min(30, Math.sqrt(m.volumeTotal || 0) / 50)) // Scale radius by volume
-    }));
+function renderAlphaClusters() {
+    const container = document.getElementById('alpha-clusters');
+    if (!container) return;
 
-    // Categories to colors
-    const colorScale = {
-        'politics': '#3b82f6',
-        'crypto': '#f59e0b',
-        'economy': '#10b981',
-        'sports': '#8b5cf6',
-        'other': '#64748b'
-    };
+    const cats = ['politics', 'crypto', 'economy'];
+    container.innerHTML = '';
 
-    quantumSvg = d3.select("#quantum-container")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height);
+    cats.forEach(cat => {
+        const labs = allMarkets.filter(m => m.category === cat).slice(0, 3);
+        if (labs.length === 0) return;
 
-    // Create a tooltip
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "d3-tooltip");
-
-    // Initialize simulation
-    quantumSimulation = d3.forceSimulation(nodes)
-        .force("charge", d3.forceManyBody().strength(-30))
-        .force("collide", d3.forceCollide().radius(d => d.radius + 2).iterations(2))
-        .force("center", d3.forceCenter(width / 2, height / 2));
-
-    applyCategoryClusterForce(nodes, width, height);
-
-    // Draw nodes
-    const node = quantumSvg.append("g")
-        .selectAll("circle")
-        .data(nodes)
-        .enter().append("circle")
-        .attr("r", d => d.radius)
-        .attr("fill", d => colorScale[d.category] || colorScale['other'])
-        .attr("stroke", "#ffffff")
-        .attr("stroke-width", 0.5)
-        .attr("opacity", 0.8)
-        .call(d3.drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended))
-        .on("mouseover", (event, d) => {
-            d3.select(event.currentTarget).attr("stroke-width", 2).attr("opacity", 1);
-            tooltip.transition().duration(200).style("opacity", 1);
-            tooltip.html(`
-                <div class="d3-tt-title">${d.question}</div>
-                <div class="d3-tt-stats">
-                    <span>Vol: $${formatCompact(d.volumeTotal)}</span>
-                    <span class="d3-tt-val">${(d.yesPrice*100).toFixed(0)}¢</span>
+        const cluster = document.createElement('div');
+        cluster.style.marginBottom = '16px';
+        cluster.innerHTML = `
+            <div class="panel-tag" style="background:transparent; padding:0; border:none; color:var(--blue)">${cat.toUpperCase()}_SECTOR</div>
+            ${labs.map(m => `
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; padding:6px 0; border-bottom:1px solid #1a1e26;">
+                    <span style="color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">${escapeHtml(m.question.substring(0, 40))}</span>
+                    <span style="font-weight:800; color:${m.yesPrice > 0.5 ? 'var(--green)' : 'var(--text)'}">${(m.yesPrice*100).toFixed(0)}¢</span>
                 </div>
-            `)
-            .style("left", (event.pageX + 15) + "px")
-            .style("top", (event.pageY - 28) + "px");
-        })
-        .on("mouseout", (event, d) => {
-            d3.select(event.currentTarget).attr("stroke-width", 0.5).attr("opacity", 0.8);
-            tooltip.transition().duration(500).style("opacity", 0);
-        })
-        .on("click", (event, d) => {
-            openQuantumPanel(d);
-        });
-
-    // Pulsing effect for high probability nodes
-    node.filter(d => d.yesPrice > 0.8 || d.yesPrice < 0.2)
-        .append("animate")
-        .attr("attributeName", "opacity")
-        .attr("values", "0.4;1;0.4")
-        .attr("dur", "2s")
-        .attr("repeatCount", "indefinite");
-
-    quantumSimulation.on("tick", () => {
-        node
-            .attr("cx", d => d.x = Math.max(d.radius, Math.min(width - d.radius, d.x)))
-            .attr("cy", d => d.y = Math.max(d.radius, Math.min(height - d.radius, d.y)));
-    });
-
-    // Drag functions
-    function dragstarted(event, d) {
-        if (!event.active) quantumSimulation.alphaTarget(0.3).restart();
-        d.fx = d.x; d.fy = d.y;
-    }
-    function dragged(event, d) { d.fx = event.x; d.fy = event.y; }
-    function dragended(event, d) {
-        if (!event.active) quantumSimulation.alphaTarget(0);
-        d.fx = null; d.fy = null;
-    }
-}
-
-function updateQuantumForces(type) {
-    if (!quantumSimulation || !quantumSvg) return;
-    const width = document.getElementById('quantum-container').clientWidth;
-    const height = document.getElementById('quantum-container').clientHeight;
-    const nodes = quantumSimulation.nodes();
-
-    if (type === 'category') {
-        applyCategoryClusterForce(nodes, width, height);
-    } else if (type === 'probability') {
-        const xScale = d3.scaleLinear().domain([0, 1]).range([100, width - 100]);
-        quantumSimulation
-            .force("x", d3.forceX(d => xScale(d.yesPrice)).strength(0.8))
-            .force("y", d3.forceY(height / 2).strength(0.1))
-            .force("center", null);
-    }
-    
-    quantumSimulation.alpha(1).restart();
-}
-
-function applyCategoryClusterForce(nodes, width, height) {
-    const categories = ['politics', 'crypto', 'economy', 'sports', 'other'];
-    const foci = {};
-    categories.forEach((cat, i) => {
-        // Arrange in a circle
-        const angle = (i / categories.length) * 2 * Math.PI;
-        const radius = Math.min(width, height) * 0.3;
-        foci[cat] = { x: width/2 + Math.cos(angle)*radius, y: height/2 + Math.sin(angle)*radius };
-    });
-
-    quantumSimulation
-        .force("x", d3.forceX(d => (foci[d.category] || foci['other']).x).strength(0.1))
-        .force("y", d3.forceY(d => (foci[d.category] || foci['other']).y).strength(0.1))
-        .force("center", d3.forceCenter(width / 2, height / 2));
-}
-
-function openQuantumPanel(d) {
-    const panel = document.getElementById('quantum-side-panel');
-    document.getElementById('q-panel-cat').textContent = d.category.toUpperCase();
-    document.getElementById('q-panel-title').textContent = d.question;
-    document.getElementById('q-panel-price').textContent = `${(d.yesPrice*100).toFixed(1)}%`;
-    document.getElementById('q-panel-vol').textContent = `$${formatCompact(d.volumeTotal)}`;
-    document.getElementById('q-panel-trade').href = `https://polymarket.com/event/${d.slug}`;
-
-    // Generate Narrative Links (Fake AI relationships based on category and matching words)
-    const linksContainer = document.getElementById('q-panel-links');
-    linksContainer.innerHTML = '';
-    
-    const words = d.question.toLowerCase().split(' ').filter(w => w.length > 4);
-    let linked = allMarkets.filter(m => 
-        m.id !== d.id && 
-        (m.category === d.category || words.some(w => m.question.toLowerCase().includes(w)))
-    );
-    
-    // Sort by volume, max 5
-    linked.sort((a,b) => b.volumeTotal - a.volumeTotal).slice(0, 5).forEach(m => {
-        const correlation = m.category === d.category ? "Direct" : "Indirect";
-        linksContainer.innerHTML += `
-            <div class="q-link-item" onclick="document.getElementById('q-close-panel').click()">
-                <div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(m.question)}</div>
-                <div class="q-link-val" style="color: ${m.yesPrice > 0.5 ? 'var(--green)' : 'var(--red)'}">${(m.yesPrice*100).toFixed(0)}¢</div>
-            </div>
+            `).join('')}
         `;
+        container.appendChild(cluster);
     });
-
-    if (linked.length === 0) {
-        linksContainer.innerHTML = '<div style="font-size:0.8rem; color:var(--text-3); font-style:italic;">No direct correlations detected in current dataset.</div>';
-    }
-
-    panel.classList.add('active');
 }
 
 
