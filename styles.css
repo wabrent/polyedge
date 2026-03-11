@@ -388,6 +388,7 @@ main {
     color: var(--text);
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -453,6 +454,36 @@ main {
     .shard-layout { flex-direction: column; }
     .shard-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 16px;}
     .sidebar-section { flex: 1; min-width: 200px; }
+}
+
+/* ===== SHARD TERMINAL STATS ===== */
+.shard-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.shard-stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.shard-stat-val {
+    font-family: 'JetBrains Mono', monospace, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--blue);
+}
+
+.shard-stat-lbl {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--text-3);
+    letter-spacing: 0.5px;
 }
 
 @keyframes fadeUp {
