@@ -673,10 +673,19 @@ function renderScannerResults(results) {
             <div class="sr-rank">#${i + 1}</div>
             <div class="sr-info">
                 <div class="sr-title" style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(market.question)}</div>
-                <div class="sr-meta" style="font-size: 0.8rem; color: var(--text-3); display: flex; gap: 12px;">
+                <div class="sr-meta" style="font-size: 0.8rem; color: var(--text-3); display: flex; gap: 12px; align-items:center;">
                     <span>Liq: ${formatCompact(market.liquidity)}</span>
+                    <span style="color:var(--border-light)">|</span>
                     <span>Vol 24h: ${formatCompact(market.volume24h)}</span>
+                    <span style="color:var(--border-light)">|</span>
                     <span>Ends: ${market.daysLeft !== null ? `${market.daysLeft}d` : '∞'}</span>
+                    <span style="color:var(--border-light)">|</span>
+                    <span style="display:flex; align-items:center; gap:4px;">
+                        Depth Bias: 
+                        <span style="color:${(market.liquidity > market.volume24h * 2 && market.minPrice > 0.5) ? 'var(--green)' : (market.liquidity > market.volume24h * 2 && market.minPrice < 0.5) ? 'var(--red)' : 'var(--blue)'}; font-weight:700;">
+                            ${(market.liquidity > market.volume24h * 2) ? (market.minPrice > 0.5 ? 'BULL WALL' : 'BEAR WALL') : 'NEUTRAL'}
+                        </span>
+                    </span>
                 </div>
             </div>
             <div class="sr-stats" style="display: flex; align-items: center; gap: 16px;">
