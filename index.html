@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 </head>
@@ -30,7 +31,7 @@
                 </a>
                 <nav class="nav">
                     <button class="nav-item active" data-tab="dashboard">Markets</button>
-                    <button class="nav-item" data-tab="watchlist">Watchlist</button>
+                    <button class="nav-item" data-tab="quantum">Quantum Map 🌌</button>
                     <button class="nav-item" data-tab="scanner">Scanner</button>
                     <button class="nav-item" data-tab="arbitrage">Arbitrage</button>
                     <button class="nav-item" data-tab="kelly">Simulator</button>
@@ -191,6 +192,59 @@
         </section>
 
             </div>
+        </section>
+
+        <!-- ===== QUANTUM MATRIX (3D VISUALIZER) ===== -->
+        <section class="tab" id="tab-quantum" style="padding:0; height: calc(100vh - 72px); overflow:hidden; position:relative;">
+            
+            <div id="quantum-container" style="width:100%; height:100%; background:#050510;"></div>
+            
+            <div class="quantum-overlay-ui top-bar">
+                <div class="q-title">SYSTEM_QUANTUM_MAP_V1</div>
+                <div class="q-controls">
+                    <button id="q-reset" class="btn-secondary btn-sm">Reset View</button>
+                    <select id="q-cluster-by" class="select select-sm">
+                        <option value="category">Cluster by Category</option>
+                        <option value="probability">Cluster by Price (Probability)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Side Panel showing node details -->
+            <div id="quantum-side-panel" class="quantum-panel hidden">
+                <button id="q-close-panel" class="modal-close">&times;</button>
+                <div class="q-panel-cat" id="q-panel-cat">POLITICS</div>
+                <h3 id="q-panel-title" style="margin:10px 0; font-size:1.1rem; color:var(--text);">Market Title</h3>
+                
+                <div class="q-panel-stats">
+                    <div class="q-stat-item">
+                        <label>Current Probability</label>
+                        <div id="q-panel-price" style="font-size:1.5rem; font-weight:800; color:var(--blue);">54%</div>
+                    </div>
+                    <div class="q-stat-item">
+                        <label>Global Volume</label>
+                        <div id="q-panel-vol" style="font-size:1.2rem; font-weight:700;">$1.2M</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px; font-size:0.8rem; color:var(--text-3); text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #1a1e26; padding-bottom:6px; margin-bottom:10px;">Narrative Linkages</div>
+                <div id="q-panel-links" class="q-links-list">
+                    <!-- Related nodes appear here -->
+                </div>
+                
+                <a id="q-panel-trade" href="#" target="_blank" class="btn-primary" style="display:block; text-align:center; margin-top:30px;">Open Terminal on Polymarket</a>
+            </div>
+            
+            <!-- Legend -->
+            <div class="quantum-overlay-ui bottom-legend">
+                <div class="legend-item"><span class="l-dot" style="background:#3b82f6;"></span>Politics</div>
+                <div class="legend-item"><span class="l-dot" style="background:#f59e0b;"></span>Crypto</div>
+                <div class="legend-item"><span class="l-dot" style="background:#10b981;"></span>Economy</div>
+                <div class="legend-item"><span class="l-dot" style="background:#8b5cf6;"></span>Sports</div>
+                <div class="legend-item"><span class="l-dot" style="background:#64748b;"></span>Other</div>
+                <div class="legend-size">Node Size = Liquidity / Volume</div>
+            </div>
+
         </section>
 
         <!-- ===== ARBITRAGE ===== -->
