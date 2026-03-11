@@ -19,6 +19,7 @@ let isLoading = false;
 let refreshTimer = 60;
 let refreshInterval = null;
 let watchlist = JSON.parse(localStorage.getItem('polyedge-watchlist') || '[]');
+let alerts = JSON.parse(localStorage.getItem('polyedge-alerts') || '{}');
 
 // ========== INIT ==========
 document.addEventListener('DOMContentLoaded', () => {
@@ -120,16 +121,47 @@ function updateRefreshDisplay() {
 }
 
 async function silentRefresh() {
-    const markets = await fetchMarkets(100);
+    const markets = await fetchMarkets(60);
     if (markets.length > 0) {
         allMarkets = processMarkets(markets);
         updateStats();
         displayedCount = 0;
         renderMarkets();
+        checkAlerts();
     }
 }
 
-// ========== WATCHLIST ==========
+// ========== ALERTS & WATCHLIST ==========
+function checkAlerts() {
+    if (Notification.permission !== "granted") return;
+    
+    let changed = false;
+    Object.keys(alerts).forEach(id => {
+        const market = allMarkets.find(m => m.id === id);
+        if (!market) return;
+        
+        const alert = alerts[id];
+        const triggered = alert.isAbove ? market.yesPrice >= alert.target : market.yesPrice <= alert.target;
+        
+        if (triggered) {
+            new Notification('PolyEdge Alert 🚨', {
+                body: `${alert.name}\nHit target: ${(alert.target*100).toFixed(1)}¢ (Current: ${(market.yesPrice*100).toFixed(1)}¢)`
+            });
+            delete alerts[id];
+            changed = true;
+        }
+    });
+    
+    if (changed) {
+        saveAlerts();
+        renderMarkets();
+    }
+}
+
+function saveAlerts() {
+    localStorage.setItem('polyedge-alerts', JSON.stringify(alerts));
+}
+
 function initWatchlist() {
     document.getElementById('clear-watchlist-btn').addEventListener('click', () => {
         watchlist = [];
@@ -227,6 +259,7 @@ async function loadMarkets() {
 
     document.getElementById('sort-filter').addEventListener('change', () => { displayedCount = 0; renderMarkets(); });
     document.getElementById('category-filter').addEventListener('change', () => { displayedCount = 0; renderMarkets(); });
+    document.getElementById('volume-filter').addEventListener('change', () => { displayedCount = 0; renderMarkets(); });
 }
 
 function processMarkets(raw) {
@@ -294,11 +327,16 @@ function updateStats() {
 function getFilteredMarkets() {
     const sortBy = document.getElementById('sort-filter').value;
     const categoryFilter = document.getElementById('category-filter').value;
+    const volumeFilter = Number(document.getElementById('volume-filter').value) || 0;
     const search = getSearchQuery();
 
     let filtered = categoryFilter === 'all'
         ? [...allMarkets]
         : allMarkets.filter(m => m.category === categoryFilter);
+
+    if (volumeFilter > 0) {
+        filtered = filtered.filter(m => m.volumeTotal >= volumeFilter);
+    }
 
     if (search) {
         filtered = filtered.filter(m => m.question.toLowerCase().includes(search));
@@ -403,6 +441,7 @@ function createMarketCard(market, index) {
     const budget = Number(document.getElementById('budget-input').value) || 100;
 
     card.innerHTML = `
+        <div style="position:absolute; top:12px; right:48px; font-size:1.2rem; cursor:pointer; opacity: ${alerts[market.id] ? '1' : '0.3'}; transition: 0.2s; z-index: 10;" class="mc-alert" data-id="${market.id}">${alerts[market.id] ? '🔔' : '🔕'}</div>
         <div class="mc-star ${isWatched ? 'active' : ''}" data-id="${market.id}">${isWatched ? '★' : '☆'}</div>
         ${getBadges(market)}
         <div class="mc-header">
@@ -427,15 +466,44 @@ function createMarketCard(market, index) {
         <div class="mc-footer">
             <span class="mc-roi ${roiClass}">${market.maxRoi.toFixed(1)}x</span>
             <span class="mc-change ${changeClass}">${changeSign}${(market.priceChange24h * 100).toFixed(1)}%</span>
-            <a class="mc-link" href="${polymarketUrl}" target="_blank" rel="noopener">Trade ↗</a>
         </div>
+        <a class="btn-primary" href="${polymarketUrl}" target="_blank" rel="noopener" style="display: block; text-align: center; margin-top: 12px; padding: 10px 0; text-decoration: none; width: 100%; box-sizing: border-box;">Trade on Polymarket</a>
     `;
 
+    // Alert click
+    const alertBtn = card.querySelector('.mc-alert');
+    if (alertBtn) {
+        alertBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (alerts[market.id]) {
+                delete alerts[market.id];
+                saveAlerts();
+                renderMarkets();
+                return;
+            }
+            if (Notification.permission !== "granted") Notification.requestPermission();
+            
+            const targetStr = prompt(`Alert me when "${market.outcomes[0] || 'Yes'}" price hits (e.g. "60" for above 60¢, or "< 20" for below 20¢):`);
+            if (!targetStr) return;
+            
+            let target = Number(targetStr.replace(/[^\d.]/g, '')) / 100;
+            if (isNaN(target) || target <= 0) return;
+            
+            const isAbove = !targetStr.includes('<') && !targetStr.toLowerCase().includes('below');
+            alerts[market.id] = { target, isAbove, name: market.question };
+            saveAlerts();
+            renderMarkets();
+        });
+    }
+
     // Star click
-    card.querySelector('.mc-star').addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleWatchlist(market.id);
-    });
+    const starBtn = card.querySelector('.mc-star');
+    if (starBtn) {
+        starBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleWatchlist(market.id);
+        });
+    }
 
     // Profit simulator
     const profitInput = card.querySelector('.mc-profit-input');
@@ -548,7 +616,87 @@ function renderScannerResults(results) {
     });
 }
 
-// ========== KELLY CALCULATOR ==========
+// ========== ARBITRAGE HUNTER ==========
+function renderArbitrage() {
+    const grid = document.getElementById('arbitrage-grid');
+    grid.innerHTML = '<div class="empty-state"><p>Scanning...</p></div>';
+
+    // Group markets by Event
+    const events = {};
+    allMarkets.forEach(m => {
+        if (!m.eventSlug) return;
+        if (!events[m.eventSlug]) events[m.eventSlug] = [];
+        events[m.eventSlug].push(m);
+    });
+
+    const opps = [];
+    for (const slug in events) {
+        const eventMarkets = events[slug];
+        if (eventMarkets.length < 2 || eventMarkets.length > 20) continue; // Need multiple outcomes
+
+        let sumYes = 0;
+        let valid = true;
+        let eventVol = 0;
+        
+        eventMarkets.forEach(m => {
+            if (m.yesPrice <= 0 || m.yesPrice >= 1) valid = false;
+            sumYes += m.yesPrice;
+            eventVol += m.volumeTotal || 0;
+        });
+
+        // Only care about Yes sums < 0.98 (guaranteed >2% profit before fees)
+        if (valid && sumYes < 0.98 && sumYes > 0.1 && eventVol > 50000) {
+            const guaranteedRoi = ((1 / sumYes) - 1) * 100;
+            opps.push({
+                slug,
+                title: eventMarkets[0].question.split('?')[0] + '?', // Guessing the top level event title
+                markets: eventMarkets,
+                sumYes,
+                roi: guaranteedRoi
+            });
+        }
+    }
+
+    opps.sort((a,b) => b.roi - a.roi);
+
+    if (opps.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><p>No guaranteed arbitrage opportunities found currently. PolyEdge scanned all markets.</p></div>';
+        return;
+    }
+
+    grid.innerHTML = '';
+    opps.forEach(opp => {
+        const div = document.createElement('div');
+        div.className = 'market-card';
+        div.style.border = '2px solid var(--green)';
+        
+        const marketsHtml = opp.markets.map(m => `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.85rem;">
+                <span style="color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;">${m.question}</span>
+                <span style="font-weight: 600;">${(m.yesPrice * 100).toFixed(1)}¢</span>
+            </div>
+        `).join('');
+
+        div.innerHTML = `
+            <div class="mc-header">
+                <div class="mc-title-area" style="width: 100%;">
+                    <div class="mc-title">${opp.title}</div>
+                    <div class="mc-meta">Guaranteed ROI: <span style="color: var(--green); font-weight: bold;">+${opp.roi.toFixed(2)}%</span></div>
+                </div>
+            </div>
+            <div style="padding: 12px; background: var(--bg); border-radius: 6px; margin-top: 12px;">
+                <div style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 8px;">Buy YES on all these outcomes:</div>
+                ${marketsHtml}
+            </div>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                <span>Total Cost / Dollar:</span>
+                <span style="font-weight: bold;">${(opp.sumYes * 100).toFixed(1)}¢</span>
+            </div>
+            <a class="btn-primary" href="https://polymarket.com/event/${opp.slug}" target="_blank" rel="noopener" style="display: block; text-align: center; margin-top: 16px; padding: 10px 0; text-decoration: none; width: 100%; box-sizing: border-box; background: var(--green); color: #fff;">Execute Arbitrage</a>
+        `;
+        grid.appendChild(div);
+    });
+}
 function initKellyCalculator() {
     const priceRange = document.getElementById('kelly-market-price-range');
     const priceInput = document.getElementById('kelly-market-price');

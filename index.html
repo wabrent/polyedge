@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PolyEdge</title>
     <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb' fill-rule='evenodd'><path d='M4 3h11a6.5 6.5 0 0 1 0 13h-3v5L2 11h6V7z M12 7h3a2.5 2.5 0 0 1 0 5h-3z'/></svg>">
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%232563eb' stroke-width='6' stroke-linejoin='round' stroke-linecap='round'><path d='M62,18 L38,48 L48,48 L28,82 L52,54 L42,54 Z'/><path d='M28,48 L28,24 L56,24 L72,40 L72,56 L56,72 L42,72'/><path d='M28,24 L38,34 L50,34'/><path d='M56,24 L46,34 L46,44'/></svg>">
     <meta name="description" content="Find profitable opportunities on Polymarket prediction markets.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,8 +20,11 @@
             <div class="header-left">
                 <a href="#" class="logo">
                     <div class="logo-mark">
-                        <svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd">
-                            <path d="M4 3h11a6.5 6.5 0 0 1 0 13h-3v5L2 11h6V7z M12 7h3a2.5 2.5 0 0 1 0 5h-3z" />
+                        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+                            <path d="M62,18 L38,48 L48,48 L28,82 L52,54 L42,54 Z"/>
+                            <path d="M28,48 L28,24 L56,24 L72,40 L72,56 L56,72 L42,72"/>
+                            <path d="M28,24 L38,34 L50,34"/>
+                            <path d="M56,24 L46,34 L46,44"/>
                         </svg>
                     </div>
                     <span class="logo-text">PolyEdge</span>
@@ -30,6 +33,7 @@
                     <button class="nav-item active" data-tab="dashboard">Markets</button>
                     <button class="nav-item" data-tab="watchlist">Watchlist</button>
                     <button class="nav-item" data-tab="scanner">Scanner</button>
+                    <button class="nav-item" data-tab="arbitrage">Arbitrage</button>
                     <button class="nav-item" data-tab="kelly">Simulator</button>
                 </nav>
             </div>
@@ -104,6 +108,12 @@
                         <option value="crypto">Crypto</option>
                         <option value="economics">Economics</option>
                     </select>
+                    <select id="volume-filter" class="select-sm">
+                        <option value="0">Any Volume</option>
+                        <option value="10000">&gt; $10k Vol</option>
+                        <option value="50000">&gt; $50k Vol</option>
+                        <option value="100000">&gt; $100k Vol</option>
+                    </select>
                     <select id="sort-filter" class="select-sm">
                         <option value="volume24hr">Volume 24h</option>
                         <option value="liquidity">Liquidity</option>
@@ -164,6 +174,22 @@
             <div id="scanner-results">
                 <div class="empty-state">
                     <p>Set filters above and press <strong>Scan</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== ARBITRAGE ===== -->
+        <section class="tab" id="tab-arbitrage">
+            <div class="toolbar">
+                <div>
+                    <h2 class="section-title">⚖️ Arbitrage Hunter</h2>
+                    <p class="section-subtitle" style="font-size: 0.9rem; color: var(--text-3); margin-top: 4px;">Find guaranteed profit opportunities across related markets.</p>
+                </div>
+                <button class="btn-primary" onclick="renderArbitrage()">Scan Now</button>
+            </div>
+            <div class="markets-grid" id="arbitrage-grid">
+                <div class="empty-state">
+                    <p>Click Scan to find mispriced markets where the sum of probabilities is less than 100%.</p>
                 </div>
             </div>
         </section>
