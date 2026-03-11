@@ -190,51 +190,51 @@ header {
     border-color: var(--border-light);
 }
 
-.budget-chip {
+/* ===== WORLD CLOCKS ===== */
+.world-clocks {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 4px 4px 12px;
+    gap: 12px;
+    padding: 4px 12px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 12px;
+    margin-left: 8px;
 }
 
-.budget-label {
-    font-size: 0.72rem;
+.clock-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 42px;
+    padding: 0 4px;
+    border-right: 1px solid var(--border);
+}
+
+.clock-item:last-child {
+    border-right: none;
+}
+
+.clock-label {
+    font-size: 0.55rem;
+    font-weight: 800;
     color: var(--text-3);
-    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    line-height: 1;
+    margin-bottom: 2px;
 }
 
-.budget-input-wrap {
-    display: flex;
-    align-items: center;
-    background: var(--bg-input);
-    border-radius: 7px;
-    padding: 4px 8px;
-}
-
-.budget-sign {
-    color: var(--green);
-    font-weight: 700;
-    font-size: 0.85rem;
-}
-
-.budget-input {
-    width: 56px;
-    background: none;
-    border: none;
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 0.9rem;
+.clock-time {
+    font-size: 0.8rem;
     font-weight: 600;
-    text-align: right;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
 }
 
-.budget-input:focus {
-    outline: none;
+[data-theme="light"] .world-clocks {
+    background: var(--bg-surface);
+    border-color: var(--border);
 }
 
 /* ===== MAIN ===== */

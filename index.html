@@ -72,16 +72,20 @@
                         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
                     </svg>
                 </button>
-                <div class="budget-chip">
-                    <span class="budget-label">Budget</span>
-                    <div class="budget-input-wrap">
-                        <span class="budget-sign">$</span>
-                        <input type="number" id="budget-input" class="budget-input" value="100" min="1" step="1">
+                <div class="world-clocks" id="world-clocks">
+                    <div class="clock-item">
+                        <span class="clock-label">NYC</span>
+                        <span class="clock-time" id="clock-nyc">00:00</span>
+                    </div>
+                    <div class="clock-item">
+                        <span class="clock-label">LDN</span>
+                        <span class="clock-time" id="clock-ldn">00:00</span>
+                    </div>
+                    <div class="clock-item">
+                        <span class="clock-label">TKO</span>
+                        <span class="clock-time" id="clock-tko">00:00</span>
                     </div>
                 </div>
-                <button class="btn-wallet" id="btn-connect" style="margin-left: 12px; height: 36px; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue); cursor: pointer; transition: all 0.2s; white-space: nowrap;">
-                    Connect Wallet
-                </button>
             </div>
         </div>
     </header>
