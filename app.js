@@ -42,6 +42,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     safeInit('ScannerControls', initScannerControls);
     safeInit('Kelly', initKellyCalculator);
 
+    // Refresh on Logo Click
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        logo.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = '/'; // This ensures a clean reload on most hosting environments
+        });
+    }
+
     console.log('PolyEdge: Initializing data load...');
     loadMarkets();
     startAutoRefresh();
@@ -69,15 +78,43 @@ function updateThemeIcons() {
 
 // ========== TAB NAVIGATION ==========
 function initTabs() {
+    const switchTab = (target, updateState = true) => {
+        const tabEl = document.getElementById(`tab-${target}`);
+        const navEl = document.querySelector(`.nav-item[data-tab="${target}"]`);
+        if (!tabEl || !navEl) return;
+
+        document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+        navEl.classList.add('active');
+
+        document.querySelectorAll('.tab').forEach(c => c.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        if (target === 'watchlist') renderWatchlist();
+        
+        if (updateState) {
+            const path = target === 'dashboard' ? '/' : `/${target}`;
+            window.history.pushState({ tab: target }, '', path);
+        }
+        
+        // Preview content for scanner
+        if (target === 'scanner' && allMarkets.length > 0) renderScannerResults(allMarkets.slice(0, 5));
+    };
+
     document.querySelectorAll('.nav-item').forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.dataset.tab;
-            document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            document.querySelectorAll('.tab').forEach(c => c.classList.remove('active'));
-            document.getElementById(`tab-${target}`).classList.add('active');
-            if (target === 'watchlist') renderWatchlist();
-        });
+        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    // Handle initial path on load
+    const currentPath = window.location.pathname.replace('/', '') || 'dashboard';
+    const validTabs = ['dashboard', 'watchlist', 'scanner', 'arbitrage', 'kelly'];
+    if (validTabs.includes(currentPath)) {
+        switchTab(currentPath, false);
+    }
+
+    // Handle back/forward buttons
+    window.addEventListener('popstate', (event) => {
+        const tab = (event.state && event.state.tab) || 'dashboard';
+        switchTab(tab, false);
     });
 }
 
