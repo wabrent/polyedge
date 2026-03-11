@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     safeInit('ChartModal', initChartModal);
     safeInit('ScannerControls', initScannerControls);
     safeInit('Kelly', initKellyCalculator);
+    safeInit('Alpha', initAlphaEngine);
 
     // Refresh on Logo Click
     const logo = document.querySelector('.logo');
@@ -987,6 +988,129 @@ async function loadChartData(market, timeFrame) {
         });
     }
 }
+
+// ========== ALPHA ENGINE ==========
+let marketSnapshots = new Map();
+
+function initAlphaEngine() {
+    setInterval(updateAlphaTerminal, 5000); // 5 sec alpha sync
+}
+
+function updateAlphaTerminal() {
+    if (activeTab !== 'alpha' || allMarkets.length === 0) return;
+    
+    detectAlphaSignals();
+    renderAlphaClusters();
+}
+
+function detectAlphaSignals() {
+    const whaleFeed = document.getElementById('whale-feed');
+    const signalGrid = document.getElementById('alpha-signals');
+    if (!whaleFeed || !signalGrid) return;
+
+    allMarkets.forEach(m => {
+        const prev = marketSnapshots.get(m.id);
+        if (prev) {
+            // 1. Whale Trades (Volume Spike)
+            const volDiff = m.volumeTotal - prev.volumeTotal;
+            if (volDiff > 5000) { 
+                addWhaleToFeed(m, volDiff);
+            }
+
+            // 2. Price Drift (> 3¢ move in a cycle)
+            const priceDiff = Math.abs(m.yesPrice - prev.yesPrice);
+            if (priceDiff > 0.03) {
+                addSignal('drift', m, priceDiff);
+            }
+        }
+        marketSnapshots.set(m.id, { ...m });
+    });
+}
+
+function addWhaleToFeed(m, amount) {
+    const feed = document.getElementById('whale-feed');
+    const empty = feed.querySelector('.empty-state, .info');
+    if (empty) empty.remove();
+
+    const row = document.createElement('div');
+    row.className = 'trade-row tr-whale';
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const isBuy = m.yesPrice > 0.45; 
+
+    row.innerHTML = `
+        <span class="tr-time">${time}</span>
+        <span class="tr-action ${isBuy ? 'buy' : 'sell'}">${isBuy ? 'BUY' : 'SELL'}</span>
+        <span class="tr-amount">$${formatCompact(amount)}</span>
+        <span class="tr-market">${escapeHtml(m.question.substring(0, 45))}...</span>
+    `;
+
+    feed.prepend(row);
+    if (feed.children.length > 25) feed.lastChild.remove();
+}
+
+function addSignal(type, m, intensity) {
+    const grid = document.getElementById('alpha-signals');
+    const empty = grid.querySelector('.empty-state');
+    if (empty) empty.remove();
+
+    const id = `sig-${m.id}`;
+    if (document.getElementById(id)) return;
+
+    const card = document.createElement('div');
+    card.id = id;
+    card.className = 'signal-card';
+    card.style.borderLeft = '3px solid var(--blue)';
+    
+    card.innerHTML = `
+        <div class="sig-header">
+            <span class="sig-type drift">VOLATILITY DRIFT</span>
+            <span style="color:var(--blue); font-weight:800;">High Momentum</span>
+        </div>
+        <div class="sig-title" style="font-size:0.85rem; font-weight:600; margin:8px 0;">${escapeHtml(m.question)}</div>
+        <div class="sig-stats" style="display:flex; gap:10px; font-size:0.75rem; color:var(--text-3);">
+            <span>Jump: <span style="color:var(--text); font-weight:700;">${(intensity*100).toFixed(1)}¢</span></span>
+            <span>Price: <span style="color:var(--text); font-weight:700;">${(m.yesPrice*100).toFixed(1)}¢</span></span>
+        </div>
+    `;
+
+    grid.prepend(card);
+    if (grid.children.length > 12) grid.lastChild.remove();
+}
+
+function renderAlphaClusters() {
+    const container = document.getElementById('alpha-clusters');
+    if (!container) return;
+
+    const categories = ['politics', 'crypto', 'economy'];
+    container.innerHTML = '';
+
+    categories.forEach(cat => {
+        const catMarkets = allMarkets.filter(m => m.category === cat && m.liquidity > 20000);
+        if (catMarkets.length < 2) return;
+
+        const avgPrice = catMarkets.reduce((s, m) => s + m.yesPrice, 0) / catMarkets.length;
+        
+        const cluster = document.createElement('div');
+        cluster.className = 'cluster-card';
+        
+        let itemsHtml = catMarkets.slice(0, 3).map(m => `
+            <div class="cluster-item">
+                <span class="arb-market-name" style="max-width:160px;">${escapeHtml(m.question)}</span>
+                <span class="arb-market-price">${(m.yesPrice*100).toFixed(0)}¢</span>
+            </div>
+        `).join('');
+
+        cluster.innerHTML = `
+            <div class="cluster-name" style="font-size:0.8rem; letter-spacing:1px; color:var(--blue); font-weight:800; margin-bottom:12px;">${cat.toUpperCase()} NETWORK</div>
+            <div class="arb-list" style="padding:0; background:transparent;">${itemsHtml}</div>
+            <div style="font-size:0.7rem; color:var(--text-3); margin-top:10px; text-align:right;">
+                Sector Sentiment: <span style="color:var(--text); font-weight:700;">${(avgPrice*100).toFixed(1)}%</span>
+            </div>
+        `;
+        container.appendChild(cluster);
+    });
+}
+
 
 
 

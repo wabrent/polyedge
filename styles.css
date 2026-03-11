@@ -1351,6 +1351,149 @@ main {
     }
 }
 
+/* ===== ALPHA TERMINAL STYLE ===== */
+.alpha-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.alpha-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-pulse {
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--green);
+    animation: statusPulse 1.5s infinite;
+}
+
+@keyframes statusPulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.alpha-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 20px;
+}
+
+.alpha-col {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+    overflow: hidden;
+}
+
+.col-header {
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-2);
+}
+
+.stream-container, .signals-container, .clusters-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+/* Trade Stream Rows */
+.trade-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-light);
+    font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+    font-size: 0.82rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.trade-row:last-child { border-bottom: none; }
+
+.tr-whale { background: rgba(37, 99, 235, 0.05); border-left: 2px solid var(--blue); }
+.tr-insider { background: rgba(16, 185, 129, 0.05); border-left: 2px solid var(--green); }
+
+.tr-time { color: var(--text-3); min-width: 50px; }
+.tr-action { font-weight: 700; }
+.tr-action.buy { color: var(--green); }
+.tr-action.sell { color: var(--red); }
+.tr-amount { font-weight: 600; color: var(--text); }
+.tr-market { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: 10px; flex-grow: 1; }
+
+/* Signal Cards */
+.signal-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.sig-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.sig-type { font-size: 0.7rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+.sig-type.drift { background: var(--blue-bg); color: var(--blue); }
+.sig-type.mega { background: var(--green-bg); color: var(--green); }
+
+.sig-title { font-size: 0.85rem; font-weight: 600; line-height: 1.3; margin-bottom: 8px; }
+.sig-stats { display: flex; gap: 12px; font-size: 0.75rem; color: var(--text-3); }
+.sig-val { color: var(--text); font-weight: 600; }
+
+/* Cluster Cards */
+.cluster-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.cluster-name { font-size: 0.9rem; font-weight: 800; margin-bottom: 10px; color: var(--blue); }
+.cluster-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    padding: 4px 0;
+}
+
+.cluster-item .trend { font-weight: 700; }
+.trend.up { color: var(--green); }
+.trend.down { color: var(--red); }
+
+@media (max-width: 1200px) {
+    .alpha-grid { grid-template-columns: 1fr; }
+    .alpha-col { height: 400px; }
+}
+
 /* ===== ARBITRAGE CARD REDESIGN ===== */
 .arb-card {
     background: var(--bg-card);

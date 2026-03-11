@@ -31,6 +31,7 @@
                 <nav class="nav">
                     <button class="nav-item active" data-tab="dashboard">Markets</button>
                     <button class="nav-item" data-tab="watchlist">Watchlist</button>
+                    <button class="nav-item" data-tab="alpha">Alpha Terminal ⚡</button>
                     <button class="nav-item" data-tab="scanner">Scanner</button>
                     <button class="nav-item" data-tab="arbitrage">Arbitrage</button>
                     <button class="nav-item" data-tab="kelly">Simulator</button>
@@ -186,6 +187,55 @@
             <div id="scanner-results">
                 <div class="empty-state">
                     <p>Set filters above and press <strong>Scan</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== ALPHA TERMINAL ===== -->
+        <section class="tab" id="tab-alpha">
+            <div class="alpha-header">
+                <div>
+                    <h2 class="section-title">⚡ Alpha Terminal</h2>
+                    <p class="section-subtitle">Real-time smart money tracking and volatility anomalies.</p>
+                </div>
+                <div class="alpha-status">
+                    <span class="status-pulse"></span>
+                    <span id="alpha-status-text">Engine Online</span>
+                </div>
+            </div>
+
+            <div class="alpha-grid">
+                <!-- Whale & Trade Stream -->
+                <div class="alpha-col whale-stream">
+                    <div class="col-header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        Whale Trade Feed (Live)
+                    </div>
+                    <div id="whale-feed" class="stream-container">
+                        <div class="stream-msg info">Monitoring liquidity pools for large orders...</div>
+                    </div>
+                </div>
+
+                <!-- Volatility & Smart Money -->
+                <div class="alpha-col accumulation-tracker">
+                    <div class="col-header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        Momentum & Accumulation
+                    </div>
+                    <div id="alpha-signals" class="signals-container">
+                        <div class="empty-state">No anomalies detected in the last cycle.</div>
+                    </div>
+                </div>
+                
+                <!-- Relationship Clusters -->
+                <div class="alpha-col correlation-matrix">
+                    <div class="col-header">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        Narrative Clusters (Alpha)
+                    </div>
+                    <div id="alpha-clusters" class="clusters-container">
+                        <div class="empty-state">Calculating narrative correlations...</div>
+                    </div>
                 </div>
             </div>
         </section>
