@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     safeInit('Watchlist', initWatchlist);
     safeInit('ChartModal', initChartModal);
     safeInit('ScannerControls', initScannerControls);
+    safeInit('Kelly', initKellyCalculator);
 
     console.log('PolyEdge: Initializing data load...');
     loadMarkets();
@@ -225,9 +226,9 @@ async function fetchWithProxy(url) {
     const endpoints = [
         url, // 1. Direct
         `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        `https://cors-anywhere.herokuapp.com/${url}`, 
         `https://proxy.cors.sh/${url}`,
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-        `https://corsproxy.org/?${encodeURIComponent(url)}` // Reliable backup
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
     ];
 
     try {
