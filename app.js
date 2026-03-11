@@ -173,40 +173,31 @@ function renderWatchlist() {
 
 // ========== API CALLS ==========
 async function fetchWithProxy(url) {
-    // 1. Try direct API connection first (fastest, no proxy overhead)
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000); // 4s timeout for direct
-        const res = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-            const data = await res.json();
-            if (data && data.length > 0) return data;
-        }
-    } catch (err) {
-        console.warn('Direct fetch failed or timed out, switching to proxies...');
-    }
-
-    // 2. If direct fails (CORS block), race the best proxies simultaneously
-    const proxies = [
-        `https://corsproxy.io/?${encodeURIComponent(url)}`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+    // Race all connection methods simultaneously to eliminate any timeouts
+    const endpoints = [
+        url, // 1. Direct (Fastest if no CORS block)
+        `https://corsproxy.io/?${encodeURIComponent(url)}`, // 2. Fast Proxy
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` // 3. Backup Proxy
     ];
 
     try {
-        const data = await Promise.any(proxies.map(async (pUrl) => {
+        const data = await Promise.any(endpoints.map(async (eUrl) => {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout for proxy
-            const res = await fetch(pUrl, { signal: controller.signal });
+            const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s absolute max wait
+            
+            const res = await fetch(eUrl, { signal: controller.signal });
             clearTimeout(timeoutId);
-            if (!res.ok) throw new Error('Proxy HTTP error');
+            
+            if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+            
             const json = await res.json();
-            if (!json || json.length === 0) throw new Error('Empty payload');
+            if (!json || json.length === 0) throw new Error('Empty or invalid payload');
+            
             return json;
         }));
         return data;
     } catch (err) {
-        console.error('All proxies failed:', err);
+        console.error('All endpoints failed or timed out:', err);
         return [];
     }
 }
