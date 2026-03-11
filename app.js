@@ -1,4 +1,4 @@
-// ========== PolyEdge — Polymarket Analytics Dashboard (v3.1) ==========
+// ========== PolyEdge — Polymarket Analytics Dashboard (v2.8 Stable) ==========
 
 const API_BASE = 'https://gamma-api.polymarket.com';
 
@@ -18,26 +18,17 @@ let displayedCount = 0;
 const BATCH_SIZE = 12;
 let isLoading = false;
 let refreshTimer = 60;
-let refreshInterval = null;
 let watchlist = JSON.parse(localStorage.getItem('polyedge-watchlist') || '[]');
 let alerts = JSON.parse(localStorage.getItem('polyedge-alerts') || '{}');
 
-// Shard Settings
-let shardSort = 'volume24hr';
-let shardCategory = 'all';
-let shardFilter = 'all';
-
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', () => {
-    console.log('PolyEdge: Environment check...');
-    
-    // Core initialization sequence
     const safeInit = (name, fn) => {
         try {
             fn();
             console.log(`PolyEdge: [${name}] initialized`);
         } catch (e) {
-            console.error(`PolyEdge: [${name}] failed to init`, e);
+            console.error(`PolyEdge: [${name}] failed`, e);
         }
     };
 
@@ -47,18 +38,7 @@ window.addEventListener('DOMContentLoaded', () => {
     safeInit('Watchlist', initWatchlist);
     safeInit('Scanner', initScannerControls);
     safeInit('Kelly', initKellyCalculator);
-    safeInit('ShardUI', initShardUI);
 
-    // Refresh on Logo Click
-    const logo = document.querySelector('.logo');
-    if (logo) {
-        logo.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = '/'; 
-        });
-    }
-
-    console.log('PolyEdge: Starting initial load...');
     loadMarkets();
     startAutoRefresh();
 });
@@ -68,31 +48,25 @@ function initThemeToggle() {
     const saved = localStorage.getItem('polyedge-theme');
     if (saved) document.documentElement.setAttribute('data-theme', saved);
     
-    const btns = document.querySelectorAll('.theme-toggle');
-    btns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const newTheme = isDark ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('polyedge-theme', newTheme);
-            updateThemeIcons();
-        });
-    });
+    document.getElementById('theme-toggle').onclick = () => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const newTheme = isDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('polyedge-theme', newTheme);
+        updateThemeIcons();
+    };
     updateThemeIcons();
 }
 
 function updateThemeIcons() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.querySelectorAll('.icon-sun').forEach(i => i.style.display = isDark ? 'block' : 'none');
-    document.querySelectorAll('.icon-moon').forEach(i => i.style.display = isDark ? 'none' : 'block');
+    document.querySelector('.icon-sun').style.display = isDark ? 'block' : 'none';
+    document.querySelector('.icon-moon').style.display = isDark ? 'none' : 'block';
 }
 
 // ========== TABS ==========
 function initTabs() {
-    const switchTab = (target, updateState = true) => {
-        if (!target) return;
-        
-        // UI reset
+    const switchTab = (target) => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         
@@ -101,83 +75,15 @@ function initTabs() {
         
         if (tabEl) tabEl.classList.add('active');
         if (navEl) navEl.classList.add('active');
+        activeTab = target;
 
-        activeTab = target; 
-        
-        if (updateState) {
-            const path = target === 'dashboard' ? '/' : `/${target}`;
-            window.history.pushState({ tab: target }, '', path);
-        }
-        
-        // Refresh views on switch
         if (target === 'watchlist') renderWatchlist();
-        if (target === 'dashboard') {
-             displayedCount = 0;
-             renderMarkets();
-        }
+        if (target === 'dashboard') { displayedCount = 0; renderMarkets(); }
     };
 
     document.querySelectorAll('.nav-item').forEach(tab => {
         tab.addEventListener('click', () => switchTab(tab.dataset.tab));
     });
-
-    // Handle initial routing
-    const path = window.location.pathname.replace('/', '') || 'dashboard';
-    const valid = ['dashboard', 'watchlist', 'scanner', 'arbitrage', 'kelly'];
-    if (valid.includes(path)) switchTab(path, false);
-
-    window.addEventListener('popstate', (e) => {
-        const tab = (e.state && e.state.tab) || 'dashboard';
-        switchTab(tab, false);
-    });
-}
-
-// ========== SHARD UI ==========
-function initShardUI() {
-    // Sort Buttons
-    document.querySelectorAll('.shard-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const el = e.currentTarget;
-            document.querySelectorAll('.shard-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            shardSort = el.dataset.sort;
-            displayedCount = 0;
-            renderMarkets();
-        });
-    });
-
-    // Preset Buttons
-    document.querySelectorAll('.shard-list-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const el = e.currentTarget;
-            document.querySelectorAll('.shard-list-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            shardFilter = el.dataset.filter;
-            displayedCount = 0;
-            renderMarkets();
-        });
-    });
-
-    // Category Buttons
-    document.querySelectorAll('.shard-cat').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const el = e.currentTarget;
-            document.querySelectorAll('.shard-cat').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            shardCategory = el.dataset.cat;
-            displayedCount = 0;
-            renderMarkets();
-        });
-    });
-
-    // Search input
-    const searchInp = document.getElementById('search-input');
-    if (searchInp) {
-        searchInp.addEventListener('input', () => {
-            displayedCount = 0;
-            renderMarkets();
-        });
-    }
 }
 
 // ========== WORLD CLOCKS ==========
@@ -185,60 +91,12 @@ function initWorldClocks() {
     const update = () => {
         const now = new Date();
         const cfg = { hour: '2-digit', minute: '2-digit', hour12: false };
-        
-        const nyc = document.getElementById('clock-nyc');
-        const ldn = document.getElementById('clock-ldn');
-        const tko = document.getElementById('clock-tko');
-        
-        if(nyc) nyc.textContent = new Intl.DateTimeFormat('en-US', { ...cfg, timeZone: 'America/New_York' }).format(now);
-        if(ldn) ldn.textContent = new Intl.DateTimeFormat('en-GB', { ...cfg, timeZone: 'Europe/London' }).format(now);
-        if(tko) tko.textContent = new Intl.DateTimeFormat('ja-JP', { ...cfg, timeZone: 'Asia/Tokyo' }).format(now);
+        document.getElementById('clock-nyc').textContent = new Intl.DateTimeFormat('en-US', { ...cfg, timeZone: 'America/New_York' }).format(now);
+        document.getElementById('clock-ldn').textContent = new Intl.DateTimeFormat('en-GB', { ...cfg, timeZone: 'Europe/London' }).format(now);
+        document.getElementById('clock-tko').textContent = new Intl.DateTimeFormat('ja-JP', { ...cfg, timeZone: 'Asia/Tokyo' }).format(now);
     };
     update();
     setInterval(update, 10000);
-}
-
-// ========== WATCHLIST & ALERTS ==========
-function initWatchlist() {
-    const grid = document.getElementById('watchlist-grid');
-    if (grid) renderWatchlist();
-}
-
-function toggleWatchlist(id) {
-    const idx = watchlist.indexOf(id);
-    if (idx === -1) watchlist.push(id);
-    else watchlist.splice(idx, 1);
-    
-    localStorage.setItem('polyedge-watchlist', JSON.stringify(watchlist));
-    
-    // Refresh all instances of star icons
-    document.querySelectorAll(`.mc-star[data-id="${id}"]`).forEach(btn => {
-        btn.classList.toggle('active', watchlist.includes(id));
-        btn.textContent = watchlist.includes(id) ? '★' : '☆';
-    });
-    
-    if (activeTab === 'watchlist') renderWatchlist();
-}
-
-function renderWatchlist() {
-    const grid = document.getElementById('watchlist-grid');
-    const empty = document.getElementById('watchlist-empty');
-    if (!grid) return;
-
-    const watched = allMarkets.filter(m => watchlist.includes(m.id));
-
-    if (watched.length === 0) {
-        grid.innerHTML = '';
-        if (empty) {
-            grid.appendChild(empty);
-            empty.style.display = 'flex';
-        }
-        return;
-    }
-
-    if (empty) empty.style.display = 'none';
-    grid.innerHTML = '';
-    watched.forEach(m => grid.appendChild(createMarketCard(m)));
 }
 
 // ========== API & DATA ==========
@@ -248,49 +106,32 @@ async function fetchWithProxy(url) {
             const pUrl = pFn(url);
             const res = await fetch(pUrl);
             if (!res.ok) continue;
-            
             let data = await res.json();
-            
-            // AllOrigins JSON wrap fallback
-            if (data.contents) {
-                try { data = JSON.parse(data.contents); }
-                catch (e) { continue; }
-            }
-            
-            if (data && (Array.isArray(data) || data.markets)) {
-                console.log(`PolyEdge: Loaded via ${pUrl.split('?')[0]}`);
-                return data;
-            }
-        } catch (e) {
-            console.warn(`PolyEdge: Proxy failed for ${url}`);
-        }
+            if (data.contents) data = JSON.parse(data.contents);
+            if (data && (Array.isArray(data) || data.markets)) return data;
+        } catch (e) {}
     }
     return null;
 }
 
 async function loadMarkets() {
-    if (isLoading) return;
     isLoading = true;
-    
     const url = `${API_BASE}/markets?closed=false&limit=60&active=true&order=volume24hr&ascending=false`;
     const data = await fetchWithProxy(url);
-    
     if (data) {
         allMarkets = processMarkets(Array.isArray(data) ? data : (data.markets || []));
         updateStats();
         displayedCount = 0;
         renderMarkets();
-    } else {
-        console.error('PolyEdge: TOTAL FAIL - Could not load market data.');
     }
-    
-    const loadMoreBtn = document.getElementById('load-more-btn');
-    if (loadMoreBtn && !loadMoreBtn.hasListener) {
-        loadMoreBtn.addEventListener('click', () => renderMarkets());
-        loadMoreBtn.hasListener = true;
-    }
-    
     isLoading = false;
+
+    // Controls
+    document.getElementById('load-more-btn').onclick = () => renderMarkets();
+    document.getElementById('search-input').oninput = () => { displayedCount = 0; renderMarkets(); };
+    document.getElementById('sort-filter').onchange = () => { displayedCount = 0; renderMarkets(); };
+    document.getElementById('category-filter').onchange = () => { displayedCount = 0; renderMarkets(); };
+    document.getElementById('volume-filter').onchange = () => { displayedCount = 0; renderMarkets(); };
 }
 
 function processMarkets(raw) {
@@ -304,18 +145,17 @@ function processMarkets(raw) {
         const endDate = m.endDate ? new Date(m.endDate) : null;
         const daysLeft = endDate ? Math.max(0, Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24))) : null;
 
-        // Categorization logic
         const q = (m.question || '').toLowerCase();
         let cat = 'other';
-        if (/president|election|trump|biden|congress|senate|politics|governor|war|iran|fed|tariff/.test(q)) cat = 'politics';
-        else if (/bitcoin|ethereum|crypto|btc|eth|solana/.test(q)) cat = 'crypto';
-        else if (/nfl|nba|world cup|premier league|win the|super bowl|uefa|sports/.test(q)) cat = 'sports';
-        else if (/gdp|inflation|economy|recession|s&p|nasdaq/.test(q)) cat = 'economics';
+        if (/president|election|trump|biden|politics/.test(q)) cat = 'politics';
+        else if (/bitcoin|ethereum|crypto|btc|eth/.test(q)) cat = 'crypto';
+        else if (/nfl|nba|world cup|premier|sports/.test(q)) cat = 'sports';
+        else if (/gdp|inflation|economy|s&p|nasdaq/.test(q)) cat = 'economics';
 
         return {
             id: m.id || m.clobTokenId || Math.random(),
-            question: m.question || 'Unknown Title',
-            image: m.image || m.icon || '',
+            question: m.question || 'Unknown Market',
+            image: m.image || '',
             category: cat,
             yesPrice,
             noPrice,
@@ -325,163 +165,121 @@ function processMarkets(raw) {
             daysLeft,
             maxRoi,
             minPrice,
-            eventSlug: m.slug || m.eventSlug || '',
+            eventSlug: m.slug || '',
             outcomes
         };
     });
 }
 
 function updateStats() {
-    const elMarkets = document.getElementById('stat-total-markets');
-    const elVolume = document.getElementById('stat-total-volume');
-    const elOpps = document.getElementById('stat-opportunities');
-    const elMaxRoi = document.getElementById('stat-max-potential');
-
-    if (elMarkets) elMarkets.textContent = allMarkets.length;
-    if (elVolume) {
-        const total = allMarkets.reduce((s, m) => s + m.volume24h, 0);
-        elVolume.textContent = `$${formatCompact(total)}`;
-    }
-    if (elOpps) {
-        elOpps.textContent = allMarkets.filter(m => m.maxRoi > 3 && m.liquidity > 10000).length;
-    }
-    if (elMaxRoi) {
-        const rois = allMarkets.map(m => m.maxRoi);
-        elMaxRoi.textContent = rois.length ? `${Math.max(...rois).toFixed(0)}x` : '0x';
-    }
+    document.getElementById('stat-total-markets').textContent = allMarkets.length;
+    const total = allMarkets.reduce((s, m) => s + m.volume24h, 0);
+    document.getElementById('stat-total-volume').textContent = '$' + formatCompact(total);
+    document.getElementById('stat-opportunities').textContent = allMarkets.filter(m => m.maxRoi > 3).length;
+    const rois = allMarkets.map(m => m.maxRoi);
+    document.getElementById('stat-max-potential').textContent = rois.length ? Math.max(...rois).toFixed(0) + 'x' : '0x';
 }
 
 // ========== RENDERER ==========
+function getFilteredMarkets() {
+    const search = (document.getElementById('search-input').value || '').toLowerCase();
+    const cat = document.getElementById('category-filter').value;
+    const vol = Number(document.getElementById('volume-filter').value);
+    const sort = document.getElementById('sort-filter').value;
+
+    let filtered = cat === 'all' ? [...allMarkets] : allMarkets.filter(m => m.category === cat);
+    if (vol > 0) filtered = filtered.filter(m => m.volumeTotal >= vol);
+    if (search) filtered = filtered.filter(m => m.question.toLowerCase().includes(search));
+
+    switch (sort) {
+        case 'volume24hr': filtered.sort((a,b) => b.volume24h - a.volume24h); break;
+        case 'liquidity': filtered.sort((a,b) => b.liquidity - a.liquidity); break;
+        case 'potential': filtered.sort((a,b) => b.maxRoi - a.maxRoi); break;
+        case 'ending': filtered.sort((a,b) => (a.daysLeft || 999) - (b.daysLeft || 999)); break;
+    }
+    return filtered;
+}
+
 function renderMarkets() {
     const grid = document.getElementById('markets-grid');
-    if (!grid) return;
-
-    const query = (document.getElementById('search-input')?.value || '').toLowerCase();
-    
-    // Primary Filter
-    let filtered = shardCategory === 'all' ? [...allMarkets] : allMarkets.filter(m => m.category === shardCategory);
-    
-    // Preset Filter
-    if (shardFilter === 'high_vol') filtered = filtered.filter(m => m.volumeTotal > 100000);
-    else if (shardFilter === 'high_liq') filtered = filtered.filter(m => m.liquidity > 50000);
-
-    // Search
-    if (query) filtered = filtered.filter(m => m.question.toLowerCase().includes(query));
-
-    // Sort
-    switch (shardSort) {
-        case 'volume24hr': filtered.sort((a,b) => b.volume24h - a.volume24h); break;
-        case 'volume': filtered.sort((a,b) => b.volumeTotal - a.volumeTotal); break;
-        case 'liquidity': filtered.sort((a,b) => b.liquidity - a.liquidity); break;
-        case 'spread': filtered.sort((a,b) => Math.abs(a.yesPrice - a.noPrice) - Math.abs(b.yesPrice - b.noPrice)); break;
-        case 'ending': filtered.sort((a,b) => (a.daysLeft || 999) - (b.daysLeft || 999)); break;
-        case 'potential': filtered.sort((a,b) => b.maxRoi - a.maxRoi); break;
-    }
-
+    const filtered = getFilteredMarkets();
     if (displayedCount === 0) grid.innerHTML = '';
 
     const batch = filtered.slice(displayedCount, displayedCount + BATCH_SIZE);
-    
-    if (batch.length === 0 && displayedCount === 0) {
-        grid.innerHTML = '<div class="empty-state">No matching markets found.</div>';
-        const loadBtn = document.getElementById('load-more-btn');
-        if(loadBtn) loadBtn.style.display = 'none';
-        return;
-    }
-
     batch.forEach(m => grid.appendChild(createMarketCard(m)));
     displayedCount += batch.length;
-
-    const loadMoreBtn = document.getElementById('load-more-btn');
-    if (loadMoreBtn) loadMoreBtn.style.display = displayedCount < filtered.length ? 'block' : 'none';
+    document.getElementById('load-more-btn').style.display = displayedCount < filtered.length ? 'block' : 'none';
 }
 
 function createMarketCard(m) {
     const card = document.createElement('div');
-    card.className = 'shard-card';
-    
+    card.className = 'market-card';
     const isWatched = watchlist.includes(m.id);
-    const outcomesHtml = [
-        { name: 'Yes', price: m.yesPrice, color: 'blue' },
-        { name: 'No', price: m.noPrice, color: 'red' }
-    ].map(o => {
-        const pct = (o.price * 100).toFixed(0);
-        return `
-            <div class="shard-outcome">
-                <div class="shard-outcome-labels">
-                    <span class="shard-outcome-name">${o.name}</span>
-                    <span class="shard-outcome-pct ${o.color}">${pct}%</span>
-                </div>
-                <div class="shard-bar-bg">
-                    <div class="shard-bar-fill ${o.color}" style="width: ${pct}%"></div>
-                </div>
-            </div>
-        `;
-    }).join('');
-
+    const days = m.daysLeft !== null ? m.daysLeft + 'd' : '∞';
+    
     card.innerHTML = `
-        <div class="shard-card-header">
-            <img class="shard-card-img" src="${m.image}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'32\\' height=\\'32\\'><rect width=\\'32\\' height=\\'32\\' fill=\\'%231a1e26\\'/></svg>'">
-            <div class="shard-card-title">${escapeHtml(m.question)}</div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                <span class="mc-star ${isWatched ? 'active' : ''}" data-id="${m.id}">${isWatched ? '★' : '☆'}</span>
-            </div>
+        <div class="mc-star ${isWatched ? 'active' : ''}" onclick="toggleWatchlist('${m.id}')">${isWatched ? '★' : '☆'}</div>
+        <div class="mc-header">
+            <img class="mc-img" src="${m.image}" onerror="this.style.display='none'">
+            <div class="mc-title">${escapeHtml(m.question)}</div>
         </div>
-        <div style="flex:1;">${outcomesHtml}</div>
-        <div class="shard-card-footer">
-            <div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${m.daysLeft ?? '∞'}d</div>
-            <div>$${formatCompact(m.volumeTotal)}</div>
-            <a href="https://polymarket.com/event/${m.eventSlug}" target="_blank" style="color:var(--text); text-decoration:none; font-weight:700;">Open →</a>
+        <div class="mc-meta">
+            <span>${days}</span>
+            <span>Vol ${formatCompact(m.volume24h)}</span>
+            <span>Liq ${formatCompact(m.liquidity)}</span>
+        </div>
+        <div class="mc-sparkline">${generateSparkline(m)}</div>
+        <div class="mc-prices">
+            <div class="mc-price yes"><div class="mc-price-bar">${(m.yesPrice*100).toFixed(0)}¢</div></div>
+            <div class="mc-price no"><div class="mc-price-bar">${(m.noPrice*100).toFixed(0)}¢</div></div>
+        </div>
+        <div class="mc-footer">
+            <span class="mc-roi">${m.maxRoi.toFixed(1)}x</span>
+            <a class="btn-primary" href="https://polymarket.com/event/${m.eventSlug}" target="_blank" style="padding: 4px 12px; font-size: 0.7rem;">Trade</a>
         </div>
     `;
-
-    card.querySelector('.mc-star').onclick = (e) => { e.stopPropagation(); toggleWatchlist(m.id); };
-    card.onclick = (e) => { if(!e.target.closest('a') && !e.target.closest('.mc-star')) showChartModal(m); };
-
     return card;
 }
 
 // ========== HELPERS ==========
+function generateSparkline(m) {
+    const color = m.yesPrice > 0.5 ? '#10b981' : '#ef4444';
+    return `<svg viewBox="0 0 100 20" style="width:100%; height:20px;"><polyline points="0,15 20,10 40,18 60,12 80,14 100,5" fill="none" stroke="${color}" stroke-width="2"/></svg>`;
+}
+
 function formatCompact(num) {
-    if (!num) return '0';
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+    if (num >= 1000000) return (num/1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num/1000).toFixed(1) + 'k';
     return num.toFixed(0);
 }
 
-function formatCurrency(num) {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num);
+function safeJsonParse(v, fb) { try { return (typeof v === 'string') ? JSON.parse(v) : v; } catch(e) { return fb; } }
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+function toggleWatchlist(id) {
+    const idx = watchlist.indexOf(id);
+    if (idx === -1) watchlist.push(id); else watchlist.splice(idx, 1);
+    localStorage.setItem('polyedge-watchlist', JSON.stringify(watchlist));
+    if (activeTab === 'watchlist') renderWatchlist();
+    else renderMarkets(); // Update icons
 }
 
-function safeJsonParse(val, fallback) {
-    if (Array.isArray(val)) return val;
-    try { return JSON.parse(val); } catch (e) { return fallback; }
-}
-
-function escapeHtml(text) {
-    const d = document.createElement('div');
-    d.textContent = text;
-    return d.innerHTML;
+function renderWatchlist() {
+    const grid = document.getElementById('watchlist-grid');
+    const watched = allMarkets.filter(m => watchlist.includes(m.id));
+    grid.innerHTML = '';
+    watched.forEach(m => grid.appendChild(createMarketCard(m)));
+    document.getElementById('watchlist-empty').style.display = watched.length ? 'none' : 'flex';
 }
 
 function startAutoRefresh() {
     setInterval(() => {
         refreshTimer--;
-        if (refreshTimer <= 0) {
-            refreshTimer = 60;
-            loadMarkets();
-        }
-        const timerEl = document.getElementById('refresh-text');
-        if (timerEl) timerEl.textContent = `${refreshTimer}s`;
+        if (refreshTimer <= 0) { refreshTimer = 60; loadMarkets(); }
+        document.getElementById('refresh-text').textContent = refreshTimer + 's';
     }, 1000);
 }
 
-// ========== PLACEHOLDER MODALS ==========
-function showChartModal(m) {
-    console.log('PolyEdge: Modal requested for', m.question);
-    alert(`Market Details:\n\n${m.question}\nPrice: ${(m.yesPrice*100).toFixed(1)}¢\nVolume: $${formatCompact(m.volumeTotal)}`);
-}
-
-function initScannerControls() { /* Scanner placeholder */ }
-function initKellyCalculator() { /* Kelly placeholder */ }
-function initQuantumMatrix() { /* Quantum placeholder */ }
+// Placeholder scanner/kelly
+function initScannerControls() {}
+function initKellyCalculator() {}
