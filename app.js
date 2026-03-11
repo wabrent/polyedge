@@ -159,19 +159,25 @@ function getSearchQuery() {
 
 // ========== AUTO-REFRESH ==========
 function startAutoRefresh() {
-    refreshTimer = 60;
-    updateRefreshDisplay();
     if (refreshInterval) clearInterval(refreshInterval);
+    
+    // Initialize refreshTimer based on current tab
+    const initialRefreshRate = activeTab === 'alpha' ? 15 : 60;
+    refreshTimer = initialRefreshRate;
+    updateRefreshUI(); // Call this to set initial display and animation
+
     refreshInterval = setInterval(() => {
+        if (isLoading) return;
+        
+        // Fast refresh for Alpha, standard for others
+        const refreshRate = activeTab === 'alpha' ? 15 : 60;
+        
         refreshTimer--;
-        updateRefreshDisplay();
         if (refreshTimer <= 0) {
-            refreshTimer = 60;
-            document.getElementById('refresh-ring').style.animation = 'none';
-            void document.getElementById('refresh-ring').offsetWidth;
-            document.getElementById('refresh-ring').style.animation = 'refreshSpin 60s linear infinite';
+            refreshTimer = refreshRate;
             silentRefresh();
         }
+        updateRefreshUI();
     }, 1000);
 }
 
@@ -992,11 +998,12 @@ async function loadChartData(market, timeFrame) {
     }
 }
 
-// ========== ALPHA ENGINE ==========
+// ========== ALPHA ENGINE V2 ==========
 let marketSnapshots = new Map();
 
 function initAlphaEngine() {
-    setInterval(updateAlphaTerminal, 5000); // 5 sec alpha sync
+    // Neural feel: update terminal faster than price loads
+    setInterval(updateAlphaTerminal, 3000); 
 }
 
 function updateAlphaTerminal() {
@@ -1004,26 +1011,25 @@ function updateAlphaTerminal() {
     
     detectAlphaSignals();
     renderAlphaClusters();
+    updateGlobalMetrics();
 }
 
 function detectAlphaSignals() {
     const whaleFeed = document.getElementById('whale-feed');
-    const signalGrid = document.getElementById('alpha-signals');
-    if (!whaleFeed || !signalGrid) return;
+    const heatmapGrid = document.getElementById('alpha-signals');
+    if (!whaleFeed || !heatmapGrid) return;
 
     allMarkets.forEach(m => {
         const prev = marketSnapshots.get(m.id);
         if (prev) {
-            // 1. Whale Trades (Volume Spike)
+            // 1. Whale Activity (> $1.5k change in 15-60s)
             const volDiff = m.volumeTotal - prev.volumeTotal;
-            if (volDiff > 5000) { 
-                addWhaleToFeed(m, volDiff);
-            }
+            if (volDiff > 1500) addWhaleToFeed(m, volDiff);
 
-            // 2. Price Drift (> 3¢ move in a cycle)
-            const priceDiff = Math.abs(m.yesPrice - prev.yesPrice);
-            if (priceDiff > 0.03) {
-                addSignal('drift', m, priceDiff);
+            // 2. Accumulation Detection (Price down/flat, Volume UP)
+            const priceDiff = m.yesPrice - prev.yesPrice;
+            if (volDiff > 3000 && priceDiff <= 0) {
+                addAccumulationSignal(m, volDiff);
             }
         }
         marketSnapshots.set(m.id, { ...m });
@@ -1032,83 +1038,90 @@ function detectAlphaSignals() {
 
 function addWhaleToFeed(m, amount) {
     const feed = document.getElementById('whale-feed');
-    const empty = feed.querySelector('.empty-state, .info');
-    if (empty) empty.remove();
+    const boot = feed.querySelector('.boot-msg');
+    if (boot) boot.remove();
 
     const row = document.createElement('div');
-    row.className = 'trade-row tr-whale';
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const isBuy = m.yesPrice > 0.45; 
+    row.className = 'trade-row';
+    const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const isBuy = m.yesPrice > 0.4;
 
     row.innerHTML = `
-        <span class="tr-time">${time}</span>
-        <span class="tr-action ${isBuy ? 'buy' : 'sell'}">${isBuy ? 'BUY' : 'SELL'}</span>
+        <span class="tr-time">[${time}]</span>
+        <span class="tr-action ${isBuy ? 'buy' : 'sell'}">${isBuy ? 'IN' : 'OUT'}</span>
         <span class="tr-amount">$${formatCompact(amount)}</span>
-        <span class="tr-market">${escapeHtml(m.question.substring(0, 45))}...</span>
+        <span class="tr-market">${escapeHtml(m.question)}</span>
     `;
 
     feed.prepend(row);
-    if (feed.children.length > 25) feed.lastChild.remove();
+    if (feed.children.length > 30) feed.lastChild.remove();
 }
 
-function addSignal(type, m, intensity) {
+function addAccumulationSignal(m, volume) {
     const grid = document.getElementById('alpha-signals');
     const empty = grid.querySelector('.empty-state');
     if (empty) empty.remove();
 
-    const id = `sig-${m.id}`;
-    if (document.getElementById(id)) return;
+    if (document.getElementById(`acc-${m.id}`)) return;
 
     const card = document.createElement('div');
-    card.id = id;
-    card.className = 'signal-card';
-    card.style.borderLeft = '3px solid var(--blue)';
-    
+    card.id = `acc-${m.id}`;
+    card.className = 'heatmap-card';
     card.innerHTML = `
-        <div class="sig-header">
-            <span class="sig-type drift">VOLATILITY DRIFT</span>
-            <span style="color:var(--blue); font-weight:800;">High Momentum</span>
-        </div>
-        <div class="sig-title" style="font-size:0.85rem; font-weight:600; margin:8px 0;">${escapeHtml(m.question)}</div>
-        <div class="sig-stats" style="display:flex; gap:10px; font-size:0.75rem; color:var(--text-3);">
-            <span>Jump: <span style="color:var(--text); font-weight:700;">${(intensity*100).toFixed(1)}¢</span></span>
-            <span>Price: <span style="color:var(--text); font-weight:700;">${(m.yesPrice*100).toFixed(1)}¢</span></span>
+        <div style="color:var(--blue); font-size:0.6rem; font-weight:800; margin-bottom:4px">DETECTED_ACCUMULATION</div>
+        <div style="font-size:0.8rem; font-weight:700; color:var(--text); line-height:1.2">${escapeHtml(m.question.substring(0, 60))}...</div>
+        <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:0.7rem;">
+            <span>PRESSURE: <span style="color:var(--green)">HIGH</span></span>
+            <span>VOL: $${formatCompact(volume)}</span>
         </div>
     `;
 
     grid.prepend(card);
-    if (grid.children.length > 12) grid.lastChild.remove();
+    if (grid.children.length > 8) grid.lastChild.remove();
+}
+
+function updateGlobalMetrics() {
+    // Sentiment Calculation
+    const avgPrice = allMarkets.reduce((s, m) => s + m.yesPrice, 0) / allMarkets.length;
+    const sentiment = avgPrice * 100;
+    
+    const bar = document.getElementById('sentiment-bar');
+    const val = document.getElementById('sentiment-value');
+    const volIdx = document.getElementById('alpha-vol-index');
+
+    if (bar && val) {
+        bar.style.width = `${sentiment}%`;
+        val.textContent = sentiment > 55 ? 'BULLISH_BIAS' : sentiment < 45 ? 'BEARISH_BIAS' : 'NEUTRAL_FLOW';
+        val.style.color = sentiment > 55 ? 'var(--green)' : sentiment < 45 ? 'var(--red)' : 'var(--blue)';
+    }
+
+    if (volIdx) {
+        const highVolCount = allMarkets.filter(m => m.volume24h > 100000).length;
+        volIdx.textContent = highVolCount > 20 ? 'HIGH_MOMENTUM' : 'STABLE_FLOW';
+    }
 }
 
 function renderAlphaClusters() {
     const container = document.getElementById('alpha-clusters');
     if (!container) return;
 
-    const categories = ['politics', 'crypto', 'economy', 'sports'];
+    const cats = ['politics', 'crypto', 'economy'];
     container.innerHTML = '';
 
-    categories.forEach(cat => {
-        const catMarkets = allMarkets.filter(m => m.category === cat);
-        if (catMarkets.length < 2) return;
+    cats.forEach(cat => {
+        const labs = allMarkets.filter(m => m.category === cat).slice(0, 3);
+        if (labs.length === 0) return;
 
-        const avgPrice = catMarkets.reduce((s, m) => s + m.yesPrice, 0) / catMarkets.length;
-        
         const cluster = document.createElement('div');
-        cluster.className = 'cluster-card';
-        
-        let itemsHtml = catMarkets.slice(0, 3).map(m => `
-            <div class="cluster-item">
-                <span style="color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">${escapeHtml(m.question.substring(0, 40))}</span>
-                <span class="arb-market-price" style="color:${m.yesPrice > 0.5 ? 'var(--green)' : 'var(--text)'}">${(m.yesPrice*100).toFixed(0)}¢</span>
-            </div>
-        `).join('');
-
+        cluster.style.marginBottom = '16px';
         cluster.innerHTML = `
-            <div class="cluster-name" style="font-size:0.75rem; letter-spacing:1px; color:var(--blue); font-weight:800; margin-bottom:10px; border-bottom:1px solid var(--border-light); padding-bottom:6px;">${cat.toUpperCase()} NETWORK</div>
-            <div class="cluster-list">${itemsHtml}</div>
-            <div style="font-size:0.65rem; color:var(--text-3); margin-top:8px; text-align:right;">
-                Sector Sentiment: <span style="color:var(--text); font-weight:700;">${(avgPrice*100).toFixed(1)}%</span>
-            </div>
+            <div class="panel-tag" style="background:transparent; padding:0; border:none; color:var(--blue)">${cat.toUpperCase()}_SECTOR</div>
+            ${labs.map(m => `
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; padding:6px 0; border-bottom:1px solid #1a1e26;">
+                    <span style="color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">${escapeHtml(m.question.substring(0, 40))}</span>
+                    <span style="font-weight:800; color:${m.yesPrice > 0.5 ? 'var(--green)' : 'var(--text)'}">${(m.yesPrice*100).toFixed(0)}¢</span>
+                </div>
+            `).join('')}
         `;
         container.appendChild(cluster);
     });
