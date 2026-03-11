@@ -346,6 +346,36 @@ main {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='%238a8a98'%3E%3Cpath d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
 }
 
+/* Header Specific Select & X Link */
+.lang-select {
+    border: none;
+    background-color: transparent;
+    font-weight: 600;
+    padding-left: 0;
+    margin-right: 8px;
+}
+
+[data-theme="light"] .lang-select {
+    background-color: transparent;
+}
+
+.x-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-3);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: color 0.2s, background 0.2s;
+    margin-right: 8px;
+}
+
+.x-link:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+}
+
 /* ===== MARKET CARDS ===== */
 .markets-grid {
     display: grid;
@@ -913,6 +943,75 @@ main {
     color: var(--text-3);
     text-align: center;
     gap: 6px;
+}
+
+/* ===== MODAL ===== */
+.modal {
+    border: none;
+    border-radius: 16px;
+    padding: 0;
+    width: 90%;
+    max-width: 800px;
+    background: var(--bg-card);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    color: var(--text);
+}
+.modal::backdrop {
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+}
+.modal-content {
+    display: flex;
+    flex-direction: column;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+}
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-3);
+    cursor: pointer;
+}
+.btn-close:hover {
+    color: var(--red);
+}
+.modal-body {
+    padding: 20px;
+}
+.chart-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    justify-content: flex-end;
+}
+.chart-time-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    color: var(--text-2);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+}
+.chart-time-btn:hover {
+    background: var(--bg-hover);
+}
+.chart-time-btn.active {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
 }
 
 /* ===== RESPONSIVE ===== */

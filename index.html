@@ -6,12 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PolyEdge</title>
     <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%232563eb' stroke-width='6' stroke-linejoin='round' stroke-linecap='round'><path d='M62,18 L38,48 L48,48 L28,82 L52,54 L42,54 Z'/><path d='M28,48 L28,24 L56,24 L72,40 L72,56 L56,72 L42,72'/><path d='M28,24 L38,34 L50,34'/><path d='M56,24 L46,34 L46,44'/></svg>">
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb' fill-rule='evenodd'><path d='M4 3h11a6.5 6.5 0 0 1 0 13h-3v5L2 11h6V7z M12 7h3a2.5 2.5 0 0 1 0 5h-3z'/></svg>">
     <meta name="description" content="Find profitable opportunities on Polymarket prediction markets.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 </head>
 
 <body>
@@ -20,11 +22,8 @@
             <div class="header-left">
                 <a href="#" class="logo">
                     <div class="logo-mark">
-                        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
-                            <path d="M62,18 L38,48 L48,48 L28,82 L52,54 L42,54 Z"/>
-                            <path d="M28,48 L28,24 L56,24 L72,40 L72,56 L56,72 L42,72"/>
-                            <path d="M28,24 L38,34 L50,34"/>
-                            <path d="M56,24 L46,34 L46,44"/>
+                        <svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd">
+                            <path d="M4 3h11a6.5 6.5 0 0 1 0 13h-3v5L2 11h6V7z M12 7h3a2.5 2.5 0 0 1 0 5h-3z" />
                         </svg>
                     </div>
                     <span class="logo-text">PolyEdge</span>
@@ -38,6 +37,19 @@
                 </nav>
             </div>
             <div class="header-right">
+                <select class="select-sm lang-select" id="lang-select" title="Change Language">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                    <option value="ja">日本語</option>
+                    <option value="de">Deutsch</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                </select>
+                <a href="https://x.com/polyedgeapp" target="_blank" rel="noopener" class="x-link" title="Follow us on X">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                </a>
                 <div class="refresh-indicator" id="refresh-indicator" title="Auto-refreshes every 60s">
                     <div class="refresh-ring" id="refresh-ring"></div>
                     <span class="refresh-text" id="refresh-text">60s</span>
@@ -67,6 +79,9 @@
                         <input type="number" id="budget-input" class="budget-input" value="100" min="1" step="1">
                     </div>
                 </div>
+                <button class="btn-wallet" id="btn-connect" style="margin-left: 12px; height: 36px; padding: 0 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue); cursor: pointer; transition: all 0.2s; white-space: nowrap;">
+                    Connect Wallet
+                </button>
             </div>
         </div>
     </header>
@@ -242,6 +257,29 @@
             </div>
         </section>
     </main>
+
+    <!-- ===== CHART MODAL ===== -->
+    <dialog id="chart-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="chart-title" class="modal-title">Market Price History</h3>
+                <button class="btn-close" id="btn-close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="chart-controls">
+                    <button class="chart-time-btn active" data-time="1D">1D</button>
+                    <button class="chart-time-btn" data-time="1W">1W</button>
+                    <button class="chart-time-btn" data-time="1M">1M</button>
+                    <button class="chart-time-btn" data-time="ALL">ALL</button>
+                </div>
+                <div class="chart-container" style="position: relative; height:60vh; width:100%">
+                    <canvas id="price-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 </body>
 

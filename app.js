@@ -26,10 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
     initTabs();
     initBudgetSync();
-    initSearch();
-    initKellyCalculator();
+    initWatchlist();
+    initChartModal();
     initScannerControls();
     initWatchlist();
+    initWallet();
     loadMarkets();
     startAutoRefresh();
 });
@@ -301,6 +302,7 @@ function processMarkets(raw) {
             bestAsk: m.bestAsk || 0,
             spread: (m.bestAsk || 0) - (m.bestBid || 0),
             eventSlug: m.events?.[0]?.slug || m.slug || '',
+            conditionId: m.conditionId || '', // Add conditionId for chart modal
         };
     }).filter(m => m.volume24h > 0);
 }
@@ -517,10 +519,10 @@ function createMarketCard(market, index) {
     });
     profitInput.addEventListener('click', e => e.stopPropagation());
 
-    // Card click
+    // Card click (Chart Modal)
     card.addEventListener('click', (e) => {
-        if (e.target.closest('.mc-link') || e.target.closest('.mc-star') || e.target.closest('.mc-profit-input')) return;
-        window.open(polymarketUrl, '_blank');
+        if (e.target.closest('.mc-link') || e.target.closest('.mc-star') || e.target.closest('.mc-profit-input') || e.target.closest('.mc-alert') || e.target.closest('a')) return;
+        showChartModal(market);
     });
 
     return card;
