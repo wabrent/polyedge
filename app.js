@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     safeInit('Watchlist', initWatchlist);
     safeInit('ChartModal', initChartModal);
     safeInit('ScannerControls', initScannerControls);
+    safeInit('Language', initLanguage);
 
     console.log('PolyEdge: Initializing data load...');
     loadMarkets();
@@ -1103,4 +1104,35 @@ async function loadChartData(market, timeFrame) {
     }
 }
 
+// ========== LANGUAGE SYNC ==========
+const translations = {
+    en: { markets: "Markets", watchlist: "Watchlist", scanner: "Scanner", arbitrage: "Arbitrage", simulator: "Simulator" },
+    zh: { markets: "市场", watchlist: "关注列表", scanner: "扫描器", arbitrage: "套利", simulator: "模拟器" },
+    ja: { markets: "市場", watchlist: "ウォッチリスト", scanner: "スキャナー", arbitrage: "裁定取引", simulator: "シミュレーター" },
+    de: { markets: "Märkte", watchlist: "Beobachtungsliste", scanner: "Scanner", arbitrage: "Arbitrage", simulator: "Simulator" },
+    es: { markets: "Mercados", watchlist: "Lista de seguimiento", scanner: "Escáner", arbitrage: "Arbitraje", simulator: "Simulador" },
+    fr: { markets: "Marchés", watchlist: "Liste de surveillance", scanner: "Scanner", arbitrage: "Arbitrage", simulator: "Simulateur" }
+};
+
+function initLanguage() {
+    const selector = document.getElementById('lang-select');
+    if (!selector) return;
+    const saved = localStorage.getItem('polyedge-lang') || 'en';
+    selector.value = saved;
+    applyLanguage(saved);
+
+    selector.addEventListener('change', () => {
+        const lang = selector.value;
+        localStorage.setItem('polyedge-lang', lang);
+        applyLanguage(lang);
+    });
+}
+
+function applyLanguage(lang) {
+    const dict = translations[lang] || translations.en;
+    document.querySelectorAll('.nav-item').forEach(el => {
+        const key = el.getAttribute('data-tab');
+        if (dict[key]) el.textContent = dict[key];
+    });
+}
 
