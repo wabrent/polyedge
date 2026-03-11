@@ -31,7 +31,6 @@
                 <nav class="nav">
                     <button class="nav-item active" data-tab="dashboard">Markets</button>
                     <button class="nav-item" data-tab="watchlist">Watchlist</button>
-                    <button class="nav-item" data-tab="alpha">Alpha Terminal ⚡</button>
                     <button class="nav-item" data-tab="scanner">Scanner</button>
                     <button class="nav-item" data-tab="arbitrage">Arbitrage</button>
                     <button class="nav-item" data-tab="kelly">Simulator</button>
@@ -191,70 +190,6 @@
             </div>
         </section>
 
-        <!-- ===== ALPHA TERMINAL ===== -->
-        <section class="tab" id="tab-alpha">
-            <div class="alpha-top-bar">
-                <div class="alpha-brand">
-                    <span class="alpha-logo">⚡</span>
-                    <div>
-                        <div class="alpha-title">SYSTEM_ALPHA_TERMINAL_V2</div>
-                        <div class="alpha-subtitle">High-Frequency Intelligence & Flow Analysis</div>
-                    </div>
-                </div>
-                <div class="alpha-metrics">
-                    <div class="a-metric">
-                        <span class="a-label">GLOBAL_VOLATILITY</span>
-                        <span class="a-val" id="alpha-vol-index">LOW_BIAS</span>
-                    </div>
-                    <div class="a-metric">
-                        <span class="a-label">ENGINE_STATUS</span>
-                        <span class="a-val green">SYNCED_LIVE</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="alpha-main-grid">
-                <!-- Left: Live Impulse Feed -->
-                <div class="alpha-panel panel-feed">
-                    <div class="panel-tag">LIVE_IMPULSE_FEED</div>
-                    <div id="whale-feed" class="terminal-feed">
-                        <div class="boot-msg">Initializing neural link to Polymarket API...</div>
-                        <div class="boot-msg">Scanning liquidity pools...</div>
-                        <div class="boot-msg">Listening for whale footprints...</div>
-                    </div>
-                </div>
-
-                <!-- Middle: Heatmap & Accumulation -->
-                <div class="alpha-panel panel-heatmap">
-                    <div class="panel-tag">INSIDER_ACCUMULATION_HEATMAP</div>
-                    <div class="heatmap-nav">
-                        <span>DETECTION_LOG</span>
-                        <span class="scan-line"></span>
-                    </div>
-                    <div id="alpha-signals" class="heatmap-container">
-                        <div class="empty-state">No significant price-volume divergence detected.</div>
-                    </div>
-                </div>
-
-                <!-- Right: Sentiment & Clusters -->
-                <div class="alpha-panel panel-clusters">
-                    <div class="panel-tag">NARRATIVE_CLUSTERS</div>
-                    <div id="alpha-clusters" class="clusters-container">
-                        <div class="empty-state">Processing narrative correlations...</div>
-                    </div>
-                    
-                    <div class="panel-tag" style="margin-top:20px">MARKET_SENTIMENT_GAUGE</div>
-                    <div class="sentiment-gauge">
-                        <div class="gauge-track">
-                            <div id="sentiment-bar" class="gauge-fill" style="width: 50%"></div>
-                        </div>
-                        <div class="gauge-labels">
-                            <span>BEARISH</span>
-                            <span id="sentiment-value">NEUTRAL</span>
-                            <span>BULLISH</span>
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
 
