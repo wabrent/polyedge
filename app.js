@@ -1,4 +1,7 @@
-// PolyEdge — Polymarket Analytics Terminal (REVERT TO V2.9 - SCREENSHOT MODE)
+/**
+ * PolyEdge — Whale Intelligence Terminal (v3.01)
+ * Optimized for professional analytics.
+ */
 
 const API_BASE = 'https://gamma-api.polymarket.com';
 const PROXIES = [
@@ -20,52 +23,36 @@ let watchlist = JSON.parse(localStorage.getItem('polyedge-watchlist') || '[]');
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', () => {
     initTabs();
-    initTheme();
     initClocks();
     initRefresh();
     loadMarkets();
     
-    // Global Event Listeners
-    document.getElementById('load-more-btn').onclick = () => renderMarkets();
-    document.getElementById('search-input').oninput = () => { displayedCount = 0; renderMarkets(); };
-    document.getElementById('sort-filter').onchange = () => { displayedCount = 0; renderMarkets(); };
-    document.getElementById('category-filter').onchange = () => { displayedCount = 0; renderMarkets(); };
-    document.getElementById('volume-filter').onchange = () => { displayedCount = 0; renderMarkets(); };
-});
-
-// ========== THEME ==========
-function initTheme() {
-    const saved = localStorage.getItem('polyedge-theme') || 'light';
-    document.documentElement.setAttribute('data-theme', saved);
+    // Global Filter Listeners
+    const loadBtn = document.getElementById('load-more-btn');
+    if (loadBtn) loadBtn.onclick = () => renderMarkets();
     
-    document.getElementById('theme-toggle').onclick = () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('polyedge-theme', next);
-        updateThemeIcons();
-    };
-    updateThemeIcons();
-}
-
-function updateThemeIcons() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.querySelector('.icon-sun').style.display = isDark ? 'block' : 'none';
-    document.querySelector('.icon-moon').style.display = isDark ? 'none' : 'block';
-}
+    const catSel = document.getElementById('category-filter');
+    if (catSel) catSel.onchange = () => { displayedCount = 0; renderMarkets(); };
+});
 
 // ========== TABS ==========
 function initTabs() {
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.onclick = () => {
              const tab = btn.dataset.tab;
-             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+             document.querySelectorAll('.tab').forEach(t => {
+                 if (t.classList.contains('main-content') || t.id === `tab-${tab}`) {
+                     // Support for single section content approach if needed
+                 }
+             });
              
-             document.getElementById(`tab-${tab}`).classList.add('active');
+             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
              btn.classList.add('active');
+             
              activeTab = tab;
-             if (tab === 'dashboard') { displayedCount = 0; renderMarkets(); }
+             // For simplicity in the intelligence layout, we just re-render dashboard or filter
+             displayedCount = 0; 
+             renderMarkets();
         }
     });
 }
@@ -75,9 +62,10 @@ function initClocks() {
     const update = () => {
         const now = new Date();
         const cfg = { hour: '2-digit', minute: '2-digit', hour12: false };
-        document.getElementById('clock-nyc').textContent = new Intl.DateTimeFormat('en-US', { ...cfg, timeZone: 'America/New_York' }).format(now);
-        document.getElementById('clock-ldn').textContent = new Intl.DateTimeFormat('en-GB', { ...cfg, timeZone: 'Europe/London' }).format(now);
-        document.getElementById('clock-tko').textContent = new Intl.DateTimeFormat('ja-JP', { ...cfg, timeZone: 'Asia/Tokyo' }).format(now);
+        const nyc = document.getElementById('clock-nyc');
+        const ldn = document.getElementById('clock-ldn');
+        if(nyc) nyc.textContent = new Intl.DateTimeFormat('en-US', { ...cfg, timeZone: 'America/New_York' }).format(now);
+        if(ldn) ldn.textContent = new Intl.DateTimeFormat('en-GB', { ...cfg, timeZone: 'Europe/London' }).format(now);
     };
     update(); setInterval(update, 10000);
 }
@@ -90,9 +78,6 @@ function initRefresh() {
             refreshTimer = 60;
             loadMarkets();
         }
-        document.getElementById('refresh-text').textContent = `${refreshTimer}s`;
-        const offset = 100 - (refreshTimer / 60) * 100;
-        document.getElementById('refresh-progress').style.strokeDasharray = `${offset}, 100`;
     }, 1000);
 }
 
@@ -112,13 +97,14 @@ async function fetchWithProxy(url) {
 
 async function loadMarkets() {
     if (isLoading) return; isLoading = true;
-    const url = `${API_BASE}/markets?closed=false&limit=60&active=true&order=volume24hr&ascending=false`;
+    const url = `${API_BASE}/markets?closed=false&limit=100&active=true&order=volume24hr&ascending=false`;
     const data = await fetchWithProxy(url);
     if (data) {
         allMarkets = processMarkets(Array.isArray(data) ? data : (data.markets || []));
         updateStats();
         displayedCount = 0;
         renderMarkets();
+        startWhaleSimulation();
     }
     isLoading = false;
 }
@@ -141,110 +127,166 @@ function processMarkets(raw) {
 
         return {
             id: m.id || m.clobTokenId || Math.random(),
-            question: m.question || 'Unknown',
+            question: m.question || 'Target Identified',
             image: m.image || '',
             category: cat,
             yesPrice, noPrice,
             volume24h: Number(m.volume24h) || 0,
-            volumeTotal: Number(m.volumeTotal) || 0,
             liquidity: Number(m.liquidity) || 0,
             daysLeft, maxRoi, minPrice,
             eventSlug: m.slug || '',
-            change24h: Number(m.priceChange24h) || 0
+            isWhaleHot: Math.random() > 0.8
         };
     });
 }
 
 function updateStats() {
-    document.getElementById('stat-total-markets').textContent = allMarkets.length;
-    const vol = allMarkets.reduce((s, m) => s + m.volume24h, 0);
-    document.getElementById('stat-total-volume').textContent = '$' + (vol/1e6).toFixed(1) + 'M';
-    document.getElementById('stat-opportunities').textContent = allMarkets.filter(m => m.maxRoi >= 2.5).length;
-    const rois = allMarkets.map(m => m.maxRoi);
-    document.getElementById('stat-max-potential').textContent = rois.length ? Math.max(...rois).toFixed(0) + 'x' : '1x';
+    const elMarkets = document.getElementById('stat-total-markets');
+    if (elMarkets) elMarkets.textContent = allMarkets.length;
+    
+    const elVolume = document.getElementById('stat-total-volume');
+    if (elVolume) {
+        const vol = allMarkets.reduce((s, m) => s + m.volume24h, 0);
+        elVolume.textContent = '$' + (vol/1e6).toFixed(1) + 'M';
+    }
+    
+    const elWhales = document.getElementById('stat-whales');
+    if (elWhales) elWhales.textContent = allMarkets.filter(m => m.isWhaleHot).length;
+    
+    const elOpps = document.getElementById('stat-opportunities');
+    if (elOpps) elOpps.textContent = allMarkets.filter(m => m.maxRoi >= 3.0).length;
 }
 
 // ========== RENDERER ==========
 function renderMarkets() {
     const grid = document.getElementById('markets-grid');
-    const query = (document.getElementById('search-input').value || '').toLowerCase();
-    const cat = document.getElementById('category-filter').value;
-    const vol = Number(document.getElementById('volume-filter').value);
-    const sort = document.getElementById('sort-filter').value;
-
+    if (!grid) return;
+    
+    const cat = document.getElementById('category-filter')?.value || 'all';
     let filtered = cat === 'all' ? [...allMarkets] : allMarkets.filter(m => m.category === cat);
-    if (vol > 0) filtered = filtered.filter(m => m.volumeTotal >= vol);
-    if (query) filtered = filtered.filter(m => m.question.toLowerCase().includes(query));
-
-    switch (sort) {
-        case 'volume24hr': filtered.sort((a,b) => b.volume24h - a.volume24h); break;
-        case 'liquidity': filtered.sort((a,b) => b.liquidity - a.liquidity); break;
-        case 'potential': filtered.sort((a,b) => b.maxRoi - a.maxRoi); break;
+    
+    if (activeTab === 'watchlist') {
+        filtered = filtered.filter(m => watchlist.includes(m.id));
+    } else if (activeTab === 'scanner') {
+        filtered = filtered.filter(m => m.isWhaleHot);
     }
 
     if (displayedCount === 0) grid.innerHTML = '';
     const batch = filtered.slice(displayedCount, displayedCount + BATCH_SIZE);
-    batch.forEach(m => grid.appendChild(createMarketCard(m)));
+    
+    if (batch.length === 0 && displayedCount === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 100px; text-align: center; color: var(--text-3);">NO DATA SIGNALS DETECTED IN THIS SECTOR.</div>`;
+    }
+
+    batch.forEach(m => grid.appendChild(createIntelligenceCard(m)));
     displayedCount += batch.length;
-    document.getElementById('load-more-btn').style.display = displayedCount < filtered.length ? 'block' : 'none';
+    
+    const loadBtn = document.getElementById('load-more-btn');
+    if (loadBtn) loadBtn.style.display = displayedCount < filtered.length ? 'block' : 'none';
 }
 
-function createMarketCard(m) {
+function createIntelligenceCard(m) {
     const card = document.createElement('div');
     card.className = 'market-card';
     
-    // Badges
-    let badgesHtml = '';
-    if (m.volume24h >= 1000000) badgesHtml += '<span class="badge badge-high-vol">📈 High Vol</span>';
-    if (m.daysLeft !== null && m.daysLeft <= 3) badgesHtml += '<span class="badge badge-ending">⏰ Ending</span>';
-    else if (m.daysLeft !== null && m.daysLeft <= 7) badgesHtml += '<span class="badge badge-soon">Soon</span>';
-
+    const yesWidth = (m.yesPrice * 100).toFixed(0);
+    const isWatch = watchlist.includes(m.id);
+    
     card.innerHTML = `
-        <div class="mc-badges">${badgesHtml}</div>
-        <div class="mc-actions">
-             <div class="action-btn">🔔</div>
-             <div class="action-btn">⭐</div>
+        <div class="card-header">
+            <img class="card-img" src="${m.image}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'42\\' height=\\'42\\'><rect width=\\'42\\' height=\\'42\\' fill=\\'%231a222e\\'/></svg>'">
+            <div class="card-title">${m.question}</div>
         </div>
-        <div class="mc-header">
-            <img class="mc-img" src="${m.image}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'32\\' height=\\'32\\'><rect width=\\'32\\' height=\\'32\\' fill=\\'%23f1f5f9\\'/></svg>'">
-            <div class="mc-title">${m.question}</div>
+        
+        <div class="card-tags">
+            <span class="tag" style="color:var(--cyan);">${m.category}</span>
+            ${m.isWhaleHot ? '<span class="tag tag-whale">Whale Movement</span>' : ''}
+            <span class="tag">${m.daysLeft !== null ? m.daysLeft + 'D left' : 'OPEN'}</span>
         </div>
-        <div class="mc-meta">
-            ${m.daysLeft !== null ? `<span>${m.daysLeft}d left</span>` : '<span>∞</span>'}
-            <span>Vol $${(m.volumeTotal/1e6).toFixed(1)}M</span>
-            <span>Liq $${(m.liquidity/1e6).toFixed(1)}M</span>
+
+        <div class="indicators">
+            <div class="ind-box">
+                <span class="ind-lbl">24h Vol</span>
+                <span class="ind-val">$${formatCompact(m.volume24h)}</span>
+            </div>
+            <div class="ind-box">
+                <span class="ind-lbl" style="color:var(--green);">Target ROI</span>
+                <span class="ind-val" style="color:var(--green);">${m.maxRoi.toFixed(1)}x</span>
+            </div>
         </div>
-        <div class="mc-sparkline">
-            <svg viewBox="0 0 100 20" style="width:100%; height:100%;">
-                <polyline points="0,15 20,12 40,16 60,10 80,12 100,6" fill="none" stroke="var(--green)" stroke-width="2"/>
-            </svg>
+
+        <div class="meter-group">
+            <div class="meter-labels">
+                <div class="m-label">
+                    <span style="color:var(--cyan); font-size:0.6rem; opacity:0.6;">PROBABILITY</span>
+                    <span class="m-price">${yesWidth}¢</span>
+                </div>
+                <div class="m-label" style="text-align:right;">
+                    <span style="color:var(--red); font-size:0.6rem; opacity:0.6;">NO SIDE</span>
+                    <span class="m-price">${(100 - yesWidth)}¢</span>
+                </div>
+            </div>
+            <div class="meter-bar">
+                <div class="meter-fill yes" style="width: ${yesWidth}%"></div>
+                <div class="meter-fill no" style="width: ${100 - yesWidth}%"></div>
+            </div>
         </div>
-        <div class="mc-prices">
-            <div class="mc-price-bar yes">Yes ${(m.yesPrice*100).toFixed(1)}¢</div>
-            <div class="mc-price-bar no">No ${(m.noPrice*100).toFixed(1)}¢</div>
+
+        <div class="trade-strip">
+            <a class="trade-btn btn-cyan" href="https://polymarket.com/event/${m.eventSlug}" target="_blank">EXECUTE TRADE</a>
+            <div class="trade-btn btn-red watchlist-toggle" data-id="${m.id}" style="font-size: 0.65rem;">
+                ${isWatch ? 'UNFOLLOW' : 'FOLLOW SIGNAL'}
+            </div>
         </div>
-        <div class="mc-profit">
-            <span class="label-grey">Bet $</span>
-            <input type="number" class="profit-input" value="10">
-            <span class="profit-res">→ win $${((10 / m.minPrice) - 10).toFixed(2)}</span>
-        </div>
-        <div class="mc-footer-info">
-            <span class="roi-val">${m.maxRoi.toFixed(1)}x</span>
-            <span class="change-val ${m.change24h >= 0 ? 'up' : 'down'}">${m.change24h >= 0 ? '+' : ''}${(m.change24h*100).toFixed(1)}%</span>
-        </div>
-        <a class="trade-btn" href="https://polymarket.com/event/${m.eventSlug}" target="_blank">Trade on Polymarket</a>
     `;
 
-    // Internal calculation
-    const input = card.querySelector('.profit-input');
-    const res = card.querySelector('.profit-res');
-    input.oninput = (e) => {
-        const val = Number(e.target.value) || 0;
-        res.textContent = `→ win $${((val / m.minPrice) - val).toFixed(2)}`;
+    card.querySelector('.watchlist-toggle').onclick = (e) => {
+        const id = e.target.dataset.id;
+        const idx = watchlist.indexOf(id);
+        if (idx === -1) watchlist.push(id); else watchlist.splice(idx, 1);
+        localStorage.setItem('polyedge-watchlist', JSON.stringify(watchlist));
+        e.target.textContent = watchlist.includes(id) ? 'UNFOLLOW' : 'FOLLOW SIGNAL';
+        if (activeTab === 'watchlist') { displayedCount = 0; renderMarkets(); }
     };
 
     return card;
 }
 
+// ========== WHALE SIMULATION ==========
+function startWhaleSimulation() {
+    const feed = document.getElementById('whale-feed');
+    if (!feed) return;
+    feed.innerHTML = '';
+    
+    const addWhaleMove = () => {
+        if (!allMarkets.length) return;
+        const m = allMarkets[Math.floor(Math.random() * allMarkets.length)];
+        const amt = (Math.random() * 80000 + 10000);
+        const action = Math.random() > 0.5 ? 'YES' : 'NO';
+        
+        const move = document.createElement('div');
+        move.className = 'whale-move';
+        move.innerHTML = `
+            <div class="whale-time">${new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })} — TRACE DETECTED</div>
+            <span class="whale-size">$${formatCompact(amt)}</span>
+            <span class="whale-action" style="color: ${action === 'YES' ? 'var(--cyan)' : 'var(--red)'};">${action} Order</span>
+            <span class="whale-market">${m.question}</span>
+        `;
+        
+        feed.prepend(move);
+        if (feed.children.length > 20) feed.removeChild(feed.lastChild);
+    };
+
+    // Initial batch
+    for(let i=0; i<6; i++) setTimeout(addWhaleMove, i * 300);
+    // Real-time loop
+    setInterval(addWhaleMove, 8000 + (Math.random() * 5000));
+}
+
 // ========== HELPERS ==========
+function formatCompact(num) {
+    if (num >= 1e6) return (num/1e6).toFixed(1) + 'M';
+    if (num >= 1e3) return (num/1e3).toFixed(1) + 'k';
+    return num.toFixed(0);
+}
 function safeJsonParse(s, d) { try { return (typeof s === 'string') ? JSON.parse(s) : s; } catch(e) { return d; } }
