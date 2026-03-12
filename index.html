@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge</title>
+    <title>PolyEdge — Whale Intelligence Terminal</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,10 +15,12 @@
     <header>
         <div class="header-container">
             <div class="logo-wrapper">
-                <button class="logo clickable" id="logo-refresh">
-                    <span class="logo-mark">P</span>
-                    <span class="logo-text">PolyEdge</span>
-                </button>
+                <div class="logo clickable" id="logo-refresh">
+                    <svg viewBox="0 0 100 100" class="logo-svg">
+                        <path d="M20 10 H85 C95 10 95 35 85 35 H45 C45 35 45 45 45 50 H75 C85 50 85 75 75 75 H45 L25 90 V50 H20 Z" fill="currentColor"/>
+                    </svg>
+                    <span>POLYEDGE</span>
+                </div>
             </div>
             
             <nav class="main-nav">
@@ -32,12 +34,11 @@
                     <div class="status-dot"></div>
                     REAL-TIME SYNC
                 </div>
-                <div class="world-clocks clickable" title="Global market session clocks">
+                <div class="world-clocks clickable">
                     <div class="clock-item">NYC <span id="clock-nyc">00:00</span></div>
                     <div class="clock-item">LDN <span id="clock-ldn">00:00</span></div>
                 </div>
                 <button class="theme-toggle" id="theme-toggle">
-                    <!-- Icon will be swapped via JS -->
                     <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                     <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
                 </button>
@@ -45,42 +46,26 @@
         </div>
     </header>
 
-    <!-- PRODUCT HERO / EXPLANATION -->
-    <section class="hero">
-        <div class="hero-main">
-            <h1 class="hero-title">Whale intelligence for Polymarket</h1>
-            <p class="hero-subtitle">
-                PolyEdge connects to live Polymarket order flow, highlights where large capital is moving
-                and turns it into clear, tradable signals. The terminal shows where <span>whales</span> cluster,
-                which sectors dominate right now and which markets offer the most asymmetric risk / reward.
-            </p>
-            <div class="hero-tags">
-                <span class="hero-tag">Whale tracking</span>
-                <span class="hero-tag">Order flow</span>
-                <span class="hero-tag">Sector heatmap</span>
-                <span class="hero-tag">Realtime terminal</span>
+    <main class="terminal-grid">
+        <!-- SIDEBAR LEFT: WHALE FEED -->
+        <aside class="panel">
+            <div class="panel-header">
+                <span class="panel-title">WHALE TRACKER</span>
+                <span class="pulse-text" style="font-size: 0.6rem; color: var(--green);">LIVE_FEED</span>
             </div>
-        </div>
-        <div class="hero-side">
-            <div class="hero-card">
-                <div class="hero-card-label">How traders use PolyEdge</div>
-                <ol class="hero-steps">
-                    <li>Pick a sector or focus filter in the stats bar above the grid.</li>
-                    <li>Watch the <strong>WHALE TRACKER</strong> feed for large ticket flow.</li>
-                    <li>Use the center cards to inspect pricing, volume and whale tags.</li>
-                    <li>Click <strong>EXECUTE</strong> to open the market on Polymarket in a new tab.</li>
-                </ol>
+            <div class="whale-feed scroll-container" id="whale-feed"></div>
+            <div class="panel-footer">
+                <span id="system-latency">> SYNC_STABLE (DELAY: 142MS)</span>
             </div>
-        </div>
-    </section>
+        </aside>
 
-    <main class="page-layout">
-        <section class="featured-column">
+        <!-- MAIN CENTER -->
+        <section class="main-content">
             <div class="stats-grid">
                 <div class="stat-box clickable active" data-filter="all">
                     <div class="stat-inner">
                         <span class="stat-val" id="stat-total-markets">...</span>
-                        <span class="stat-lbl">ACTIVE MARKETS TRACKED</span>
+                        <span class="stat-lbl">ACTIVE MARKETS</span>
                     </div>
                 </div>
                 <div class="stat-box clickable" data-filter="high_vol">
@@ -103,30 +88,10 @@
                 </div>
             </div>
 
-            <section class="alpha-snapshot" aria-label="High level alpha snapshot">
-                <div class="alpha-header">
-                    <h3 class="alpha-title">ALPHA SNAPSHOT</h3>
-                    <p class="alpha-caption">A quick read on where liquidity and whale attention are clustering right now.</p>
-                </div>
-                <div class="alpha-metrics">
-                    <div class="alpha-item">
-                        <span class="alpha-label">Dominant sector right now</span>
-                        <span class="alpha-value" id="alpha-dominant-sector">Scanning live feeds…</span>
-                    </div>
-                    <div class="alpha-item">
-                        <span class="alpha-label">Top whale market</span>
-                        <span class="alpha-value" id="alpha-top-market">Waiting for first trace…</span>
-                    </div>
-                </div>
-            </section>
-
-            <div class="markets-header">
-                <div class="markets-title-block">
-                    <h2 class="title-main">All markets</h2>
-                    <p class="markets-subtitle">Live Polymarket streams ranked by activity and whale interest.</p>
-                </div>
+            <div class="dashboard-controls">
+                <h2 class="title-main">GLOBAL INTELLIGENCE</h2>
                 <div class="filter-group">
-                    <select id="category-filter" class="terminal-select clickable" aria-label="Sector filter">
+                    <select id="category-filter" class="terminal-select clickable">
                         <option value="all">Sectors: All Items</option>
                         <option value="politics">Sectors: Politics</option>
                         <option value="crypto">Sectors: Crypto</option>
@@ -137,102 +102,38 @@
 
             <div class="markets-grid" id="markets-grid"></div>
 
-            <div class="load-more-wrap">
-                <button id="load-more-btn" class="btn-more clickable">LOAD MORE DATA SIGNALS</button>
-            </div>
-
-            <!-- SMART MONEY / CLUSTERS -->
-            <section class="tool-section" aria-label="Smart money clusters">
-                <div class="tool-header">
-                    <h3 class="tool-title">Smart money clusters</h3>
-                    <p class="tool-caption">Who is consistently right on Polymarket and where they are active now.</p>
+            <div class="terminal-log-container panel">
+                <div class="panel-header" style="padding: 8px 16px; min-height: auto; border-bottom: 1px solid var(--border);">
+                    <span class="panel-title" style="font-size: 0.6rem;">SYSTEM_LOG.TXT</span>
                 </div>
-                <div class="tool-grid" id="clusters-grid">
-                    <!-- filled from JS -->
-                </div>
-            </section>
-
-            <!-- ARB SCANNER -->
-            <section class="tool-section" aria-label="Cross-market arbitrage scanner">
-                <div class="tool-header">
-                    <h3 class="tool-title">Arb scanner</h3>
-                    <p class="tool-caption">Quick scan for probability mismatches across related markets.</p>
-                </div>
-                <div class="tool-card">
-                    <table class="tool-table" id="arb-table">
-                        <thead>
-                            <tr>
-                                <th>Bundle</th>
-                                <th>Type</th>
-                                <th>Edge</th>
-                                <th>Category</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- rows rendered via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- STRATEGY BACKTESTER -->
-            <section class="tool-section" aria-label="Simple strategy backtester">
-                <div class="tool-header">
-                    <h3 class="tool-title">Strategy sandbox</h3>
-                    <p class="tool-caption">Test simple rules on current market universe: whale activity, volume and pricing.</p>
-                </div>
-                <div class="tool-card strategy-card">
-                    <div class="strategy-controls">
-                        <label>
-                            Trigger
-                            <select id="strategy-trigger">
-                                <option value="whales">Whale tagged markets</option>
-                                <option value="high_volume">Top 20% by 24h volume</option>
-                                <option value="deep_value">High max ROI</option>
-                            </select>
-                        </label>
-                        <label>
-                            Direction
-                            <select id="strategy-direction">
-                                <option value="yes">Buy YES</option>
-                                <option value="no">Buy NO</option>
-                            </select>
-                        </label>
-                        <button id="run-backtest-btn" class="btn-more clickable">Run backtest</button>
-                    </div>
-                    <div class="strategy-result" id="strategy-result">
-                        Choose a rule and run a quick sandbox backtest.
-                    </div>
-                </div>
-            </section>
-
-            <!-- SENTIMENT / HEAT -->
-            <section class="tool-section" aria-label="Sentiment and heat">
-                <div class="tool-header">
-                    <h3 class="tool-title">Sentiment & heat</h3>
-                    <p class="tool-caption">Bullish vs bearish positioning by sector, based on current YES prices.</p>
-                </div>
-                <div class="tool-grid" id="sentiment-grid">
-                    <!-- filled via JS -->
-                </div>
-            </section>
-        </section>
-
-        <aside class="news-column">
-            <div class="news-card">
-                <div class="news-title">Trending themes</div>
-                <ul class="news-list">
-                    <li><span class="news-name">US politics</span><span class="news-metric">High volume</span></li>
-                    <li><span class="news-name">Crypto macro</span><span class="news-metric">Whales active</span></li>
-                    <li><span class="news-name">Rates & inflation</span><span class="news-metric">Event heavy</span></li>
-                    <li><span class="news-name">Sports</span><span class="news-metric">Weekend peak</span></li>
-                </ul>
-            </div>
-            <div class="news-card">
-                <div class="news-title">System activity</div>
                 <div class="terminal-log scroll-container" id="system-log">
                     <div class="log-entry">> Initializing PolyEdge protocols...</div>
                 </div>
+            </div>
+
+            <div class="load-more-wrap">
+                <button id="load-more-btn" class="btn-more clickable">LOAD MORE DATA SIGNALS</button>
+            </div>
+        </section>
+
+        <!-- SIDEBAR RIGHT: ALPHA -->
+        <aside class="panel">
+            <div class="panel-header">
+                <span class="panel-title">SYSTEM INSIGHTS</span>
+            </div>
+            <div class="insights-content scroll-container">
+                <div class="insight-block clickable">
+                    <span class="block-label cyan">SYNC METRICS</span>
+                    <div class="metrics-row">Network Latency: <span class="mono green" id="latency-val">~148ms</span></div>
+                    <div class="metrics-row">Node Drift: <span class="mono green"><0.02s</span></div>
+                </div>
+                <div class="insight-block clickable alert-gold">
+                    <span class="block-label gold">WHALE CLUSTER DETECTED</span>
+                    <p>Anomaly detected in Polymarket Sector nodes. Multi-wallet accumulation active.</p>
+                </div>
+            </div>
+            <div class="panel-bottom-actions">
+                <button class="btn-action-panel clickable" id="execute-scan-btn">EXECUTE API_SCAN</button>
             </div>
         </aside>
     </main>
