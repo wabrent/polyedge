@@ -3,106 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge | Risk Navigator</title>
+    <title>PolyEdge | Advanced Analytics</title>
+    <!-- Подключаем файл стилей -->
     <link rel="stylesheet" href="styles.css">
+    <!-- Шрифт Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Иконки -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-
-    <!-- LANDING VIEW -->
-    <div id="landing-view" class="container">
-        <div class="hero-glow"></div>
-        <div class="relative z-10 text-center">
-            <h1 class="hero-title">PolyEdge</h1>
-            <p class="hero-subtitle">Risk Navigator</p>
-            
-            <div class="max-w-2xl mx-auto mb-12 space-y-6">
-                <p class="text-xl font-light leading-relaxed">
-                    The unique risk navigator for <span class="text-white font-bold">Polymarket traders</span>.
-                </p>
-            </div>
-            
-            <div class="grid md:grid-cols-2 gap-8 mb-16 text-left max-w-4xl mx-auto">
-                <div class="p-6 bg-white/5 rounded-2xl border border-white/10">
-                    <h3 class="text-accent mb-2 font-black uppercase text-sm">AI Insights</h3>
-                    <p class="text-sm">Get insights others don’t see. Interactive alerts for profitable trades and risks.</p>
-                </div>
-                <div class="p-6 bg-white/5 rounded-2xl border border-white/10">
-                    <h3 class="text-accent mb-2 font-black uppercase text-sm">Analytics</h3>
-                    <p class="text-sm">Visualize hidden trends and market behavior to make decisions faster and smarter.</p>
-                </div>
-            </div>
-
-            <button id="launchBtn" class="cta-button">Start using PolyEdge</button>
-        </div>
-    </div>
-
-    <!-- MAIN APP VIEW -->
-    <div id="app-view" class="hidden">
-        <div class="container">
-            <header class="dashboard-header">
-                <div class="logo-small">POLY<span>EDGE</span></div>
-                <div class="flex items-center gap-6">
-                    <div class="text-[10px] uppercase font-bold text-dim tracking-widest">
-                        Node: <span class="text-white">Active</span> | 
-                        Latency: <span class="text-white">42ms</span>
-                    </div>
-                </div>
-            </header>
-
-            <div class="dashboard-grid">
-                <!-- BLOCK: OVERVIEW -->
-                <div class="panel block-overview">
-                    <div class="panel-title">
-                        <span>Current Markets & Signals</span>
-                        <span id="target-count" class="text-accent">Scanning...</span>
-                    </div>
-                    <div id="market-list">
-                        <!-- Dynamic items -->
-                    </div>
-                </div>
-
-                <!-- BLOCK: ALERTS -->
-                <div class="panel block-alerts">
-                    <div class="panel-title">
-                        <span>Top Profitable Trades</span>
-                        <span class="text-accent">Live</span>
-                    </div>
-                    <div id="alerts-container">
-                        <div class="alert-item">
-                            <span class="alert-time">NOW</span>
-                            <div class="alert-content">Initializing <b>Risk Insight Engine</b>...</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BLOCK: HEATMAP -->
-                <div class="panel block-heatmap">
-                    <div class="panel-title">
-                        <span>User Risk Mistakes</span>
-                        <span class="text-accent">Forensics</span>
-                    </div>
-                    <div class="heatmap-container" id="heatmap">
-                        <!-- Simulating heatmap with 49 cells -->
-                    </div>
-                </div>
-
-                <!-- BLOCK: CHARTS -->
-                <div class="panel block-charts">
-                    <div class="panel-title">
-                        <span>Event Probability vs AI Forecast</span>
-                        <span class="text-accent">Intelligence</span>
-                    </div>
-                    <div class="chart-sim" id="charts-bars">
-                        <!-- Simulating chart bars -->
-                    </div>
-                </div>
+    <header class="navbar">
+        <div class="logo-area">
+            <div class="logo">PolyEdge</div>
+            <div class="search-box">
+                <i data-lucide="search" size="18"></i>
+                <input type="text" placeholder="Search markets...">
             </div>
         </div>
+        <div class="nav-actions">
+            <button class="btn btn-primary">Connect Wallet</button>
+        </div>
+    </header>
+
+    <div class="wrapper">
+        <aside class="sidebar">
+            <nav id="sidebar-nav">
+                <!-- Сюда можно добавить ссылки -->
+                <a href="#" class="nav-link active"><i data-lucide="layout-grid"></i> Dashboard</a>
+                <a href="#" class="nav-link"><i data-lucide="users"></i> Whale Tracker</a>
+                <a href="#" class="nav-link"><i data-lucide="trending-up"></i> Market Scan</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Market Intelligence</h1>
+            </div>
+
+            <div class="market-grid" id="market-container">
+                <!-- Карточки рынков появятся здесь через скрипт -->
+            </div>
+
+            <div class="table-card">
+                <div class="table-title">Live Whale Activity</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Market</th>
+                            <th>Action</th>
+                            <th>Amount</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="whale-table-body">
+                        <!-- Данные подгрузятся из app.js -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
     </div>
 
-    <!-- UI Overlay for scanning effect -->
-    <div id="scanline" style="position: fixed; top: 0; left: 0; width: 100%; height: 2px; background: rgba(255, 61, 0, 0.2); pointer-events: none; z-index: 1000; animation: scanline 4s linear infinite;"></div>
-
+    <!-- Подключаем логику (app) -->
     <script src="app.js"></script>
 </body>
 </html>
