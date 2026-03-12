@@ -1,6 +1,6 @@
 /**
- * PolyEdge Pro Terminal Engine v12.5
- * Dual-Mode Landing & App Logic
+ * PolyEdge Pro Terminal Engine v13.0
+ * Authentication & Private State Management
  */
 
 const CONFIG = {
@@ -15,11 +15,14 @@ let state = {
     activeTab: 'market',
     timer: CONFIG.REFRESH_CYCLE,
     filters: { roi: 5, liq: 10000 },
-    userAddress: null
+    userAddress: null,
+    isLoggedIn: false,
+    walletMenuOpen: false
 };
 
 // --- CORE BOOTSTRAP ---
 document.addEventListener('DOMContentLoaded', () => {
+    initAuth();
     initViewSwitching();
     initNavigation();
     initControls();
@@ -32,7 +35,60 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchData();
 });
 
-// --- 1. VIEW SWITCHING & LANDING ---
+// --- 1. AUTHENTICATION ---
+function initAuth() {
+    const authModal = document.getElementById('auth-modal');
+    const authContent = document.getElementById('auth-content');
+    const loginBtns = ['loginGoogle', 'loginApple', 'loginMagic'];
+
+    loginBtns.forEach(id => {
+        const btn = document.getElementById(id);
+        if(btn) btn.onclick = () => {
+            state.isLoggedIn = true;
+            closeAuthModal();
+            enterApp();
+        };
+    });
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if(logoutBtn) logoutBtn.onclick = handleLogout;
+
+    window.openAuthModal = () => {
+        authModal.classList.remove('hidden');
+        authModal.classList.add('flex');
+        setTimeout(() => {
+            authContent.classList.remove('scale-95', 'opacity-0');
+            authContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    };
+
+    window.closeAuthModal = () => {
+        authContent.classList.replace('scale-100', 'scale-95');
+        authContent.classList.replace('opacity-100', 'opacity-0');
+        setTimeout(() => authModal.classList.add('hidden'), 300);
+    };
+}
+
+function handleLogout() {
+    state.isLoggedIn = false;
+    document.getElementById('app-view').classList.add('hidden');
+    document.getElementById('landing-view').classList.remove('hidden');
+    window.location.hash = '';
+}
+
+function enterApp() {
+    const landing = document.getElementById('landing-view');
+    const app = document.getElementById('app-view');
+    landing.classList.add('fade-out');
+    setTimeout(() => {
+        landing.style.display = 'none';
+        app.classList.remove('hidden');
+        app.classList.add('fade-in');
+        window.location.hash = '#market';
+    }, 400);
+}
+
+// --- 2. VIEW SWITCHING ---
 function initViewSwitching() {
     const launchBtn = document.getElementById('launchAppBtn');
     const landing = document.getElementById('landing-view');
@@ -40,26 +96,21 @@ function initViewSwitching() {
 
     if(launchBtn) {
         launchBtn.onclick = () => {
-            landing.classList.add('fade-out');
-            setTimeout(() => {
-                landing.style.display = 'none';
-                app.classList.remove('hidden');
-                app.classList.add('fade-in');
-                window.location.hash = '#market';
-            }, 600);
+            if(!state.isLoggedIn) openAuthModal();
+            else enterApp();
         };
     }
 
-    // Handle initial state on load
     const currentHash = window.location.hash.replace('#', '');
     if (currentHash) {
         landing.style.display = 'none';
         app.classList.remove('hidden');
         app.classList.add('flex');
+        state.isLoggedIn = true; // Auto-login if hash exists (simulated)
     }
 }
 
-// --- 2. NAVIGATION & HASH ROUTING ---
+// --- 3. NAVIGATION ---
 function initNavigation() {
     window.addEventListener('hashchange', handleHashRouting);
 }
@@ -68,12 +119,10 @@ function handleHashRouting() {
     let hash = window.location.hash.replace('#', '') || 'market';
     state.activeTab = hash;
     
-    // UI Tab Switching
     document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
     const target = document.getElementById('content-' + hash);
     if(target) target.classList.remove('hidden');
 
-    // Nav Active States
     document.querySelectorAll('.nav-link').forEach(l => {
         if(l.dataset.target === hash) {
             l.classList.add('bg-app-activeTab', 'text-white');
@@ -88,17 +137,10 @@ function handleHashRouting() {
         }
     });
 
-    // Scanner Controls Visibility
-    const sc = document.getElementById('scanner-controls');
-    if(sc) {
-        if(hash === 'scanner') sc.classList.remove('hidden');
-        else sc.classList.add('hidden');
-    }
-
     render();
 }
 
-// --- 3. CONTROLS ---
+// --- 4. CONTROLS ---
 function initControls() {
     const roiInput = document.getElementById('input-roi');
     const liqInput = document.getElementById('input-liq');
@@ -117,7 +159,7 @@ function initControls() {
     };
 }
 
-// --- 4. MODAL SYSTEM ---
+// --- 5. MODAL SYSTEM ---
 function initModal() {
     const modal = document.getElementById('copyTradeModal');
     const content = document.getElementById('modalContent');
@@ -133,8 +175,10 @@ function initModal() {
         
         modal.classList.remove('hidden');
         modal.classList.add('flex');
-        setTimeout(() => content.classList.replace('scale-95', 'scale-100'), 10);
-        setTimeout(() => content.classList.replace('opacity-0', 'opacity-100'), 10);
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
     };
 
     const closeModal = () => {
@@ -147,7 +191,7 @@ function initModal() {
     if(backdrop) backdrop.onclick = closeModal;
 
     if(sign) sign.onclick = () => {
-        sign.innerHTML = `<span class="animate-spin mr-2">◌</span> Confirming Wallet...`;
+        sign.innerHTML = `<span class="animate-spin mr-2 text-[10px]">◌</span> Confirming Wallet...`;
         sign.classList.add('pointer-events-none', 'bg-gray-600');
         setTimeout(() => {
             sign.innerHTML = `Transaction Finalized`;
@@ -164,10 +208,26 @@ function initModal() {
     };
 }
 
-// --- 5. WEB3 & WALLET ---
+// --- 6. WEB3 & WALLET MENU ---
 function initWeb3() {
     const btn = document.getElementById('connectWalletBtn');
-    const bal = document.getElementById('walletBalance');
+    const menu = document.getElementById('wallet-menu');
+    const disconnectBtn = document.getElementById('disconnectWalletBtn');
+    const balFull = document.getElementById('wallet-balance-full');
+    const addrFull = document.getElementById('wallet-address-full');
+    const icon = document.getElementById('wallet-icon');
+
+    const toggleMenu = (val) => {
+        state.walletMenuOpen = val !== undefined ? val : !state.walletMenuOpen;
+        menu.classList.toggle('hidden', !state.walletMenuOpen);
+    };
+
+    window.addEventListener('click', () => toggleMenu(false));
+    if(btn) btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(state.userAddress) toggleMenu();
+        else connect();
+    });
 
     const connect = async () => {
         if (typeof window.ethereum !== 'undefined') {
@@ -175,32 +235,42 @@ function initWeb3() {
                 btn.innerText = 'Connecting...';
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 state.userAddress = accounts[0];
-                const fmt = state.userAddress.slice(0, 6) + '...' + state.userAddress.slice(-4);
-                btn.innerText = fmt;
-                btn.classList.add('bg-[#1E2433]', 'text-blue-400', 'border-blue-500/30');
-                if(bal) bal.innerText = '12,450.00';
+                updateWalletUI();
             } catch (e) { btn.innerText = 'Connect'; }
         } else { alert('MetaMask not detected'); }
     };
 
-    if(btn) btn.onclick = connect;
+    function updateWalletUI() {
+        if(state.userAddress) {
+            const fmt = state.userAddress.slice(0, 6) + '...' + state.userAddress.slice(-4);
+            btn.innerText = fmt;
+            btn.classList.replace('bg-blue-600', 'bg-white/10');
+            btn.classList.add('text-blue-400');
+            if(addrFull) addrFull.innerText = state.userAddress;
+            if(icon) icon.innerText = state.userAddress.slice(2,4).toUpperCase();
+            if(balFull) balFull.innerText = '12,450.00';
+        } else {
+            btn.innerText = 'Connect';
+            btn.classList.replace('bg-white/10', 'bg-blue-600');
+            btn.classList.remove('text-blue-400');
+            toggleMenu(false);
+        }
+    }
+
+    if(disconnectBtn) disconnectBtn.onclick = () => {
+        state.userAddress = null;
+        updateWalletUI();
+    };
 
     if (window.ethereum) {
         window.ethereum.on('accountsChanged', (accounts) => {
-            if(accounts.length > 0) {
-                state.userAddress = accounts[0];
-                btn.innerText = state.userAddress.slice(0, 6) + '...' + state.userAddress.slice(-4);
-            } else {
-                state.userAddress = null;
-                btn.innerText = 'Connect';
-                btn.classList.remove('bg-[#1E2433]', 'text-blue-400', 'border-blue-500/30');
-                if(bal) bal.innerText = '0.00';
-            }
+            state.userAddress = accounts.length > 0 ? accounts[0] : null;
+            updateWalletUI();
         });
     }
 }
 
-// --- 6. WHALE ANALYZER ---
+// --- 7. WHALE ANALYZER ---
 function initWhaleAnalyzer() {
     const btn = document.getElementById('analyzeBtn');
     const inp = document.getElementById('whaleInput');
@@ -213,7 +283,7 @@ function initWhaleAnalyzer() {
             const val = inp.value.trim();
             if(!val) { inp.classList.add('border-red-500'); setTimeout(()=>inp.classList.remove('border-red-500'), 1000); return; }
             
-            btn.innerHTML = `<span class="animate-spin mr-2">◌</span> Fetching...`;
+            btn.innerHTML = `<span class="animate-spin mr-2 text-[10px]">◌</span> Fetching...`;
             dc.classList.add('opacity-0');
             
             setTimeout(() => {
@@ -225,11 +295,11 @@ function initWhaleAnalyzer() {
                 setTimeout(() => dc.classList.remove('opacity-0'), 50);
             }, 1500);
         };
-        inp.onkeypress = (e) => { if(e.key === 'Enter') btn.click(); };
+        if(inp) inp.onkeypress = (e) => { if(e.key === 'Enter') btn.click(); };
     }
 }
 
-// --- 7. DATA ENGINE ---
+// --- 8. DATA ENGINE ---
 async function fetchData() {
     try {
         const res = await fetch(CONFIG.PROXY + encodeURIComponent(CONFIG.API_URL));
@@ -264,28 +334,39 @@ function renderMarketList() {
     const list = document.getElementById('market-list');
     if(!list) return;
     state.filtered = state.markets.sort((a,b) => b.vol - a.vol);
-    const tc = document.getElementById('target-count');
-    if(tc) tc.innerText = `Found ${state.filtered.length} Targets`;
-    
     list.innerHTML = '';
     state.filtered.slice(0, 15).forEach((m, i) => {
         const whale = { name: ['0xMacroGenius', 'PolyWhale_V2', 'AlphaKing'][i%3], img: `https://ui-avatars.com/api/?name=${i}&background=3B82F6&color=fff` };
         list.innerHTML += `
-            <div class="bg-app-panel border border-app-border rounded-2xl p-6 flex flex-col xl:flex-row gap-6 hover:border-blue-500/50 transition-all group relative overflow-hidden animate-fadeInUp" style="animation-delay: ${i*0.05}s">
-                <div class="absolute -right-20 -top-20 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-blue-500/10 transition-all"></div>
-                <div class="flex-1 flex flex-col justify-between relative z-10 border-b xl:border-b-0 xl:border-r border-app-border pb-6 xl:pb-0 xl:pr-6">
-                    <div class="flex items-start gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center"><span class="text-purple-400 font-black text-xs">${m.smartScore}</span></div>
-                        <div><span class="text-[9px] text-purple-400 font-bold uppercase tracking-widest bg-purple-500/10 px-2 py-0.5 rounded-md">Smart Score: ${m.roi > 10 ? 'Alpha' : 'Beta'}</span><h3 class="text-lg font-bold text-white mt-1 leading-tight group-hover:text-blue-400 transition-colors">${m.title}</h3></div>
+            <div class="bg-app-panel border border-app-border rounded-3xl p-6 flex flex-col xl:flex-row gap-8 hover:border-[#3B82F6]/30 transition-all group animate-fadeInUp" style="animation-delay: ${i*0.1}s">
+                <div class="flex-1 space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20 text-blue-400 font-black text-xl italic">${m.title.charAt(0)}</div>
+                        <div>
+                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded">Smart Score: ${m.smartScore}</span>
+                            <h3 class="text-xl font-bold text-white mt-1 leading-snug group-hover:text-app-accent transition-colors">${m.title}</h3>
+                        </div>
                     </div>
-                    <div class="flex gap-4 text-xs text-app-text font-medium mb-6"><span>Vol: <b class="text-white">$${formatCompact(m.vol)}</b></span><span>Liq: <b class="text-white">$${formatCompact(m.liq)}</b></span><span class="text-blue-400">Ends: ${m.ends}d</span></div>
-                    <div class="flex gap-3 mt-auto">
-                        <button class="flex-1 bg-green-500/10 border border-green-500/20 hover:border-green-500/40 rounded-xl p-3 flex justify-between items-center transition-all" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')"><span class="text-[11px] text-green-500 font-bold uppercase">Yes</span><span class="text-green-500 font-bold text-xl leading-none">${m.price.toFixed(1)}¢</span></button>
-                        <button class="flex-1 bg-red-500/10 border border-red-500/20 hover:border-red-500/40 rounded-xl p-3 flex justify-between items-center transition-all" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')"><span class="text-[11px] text-red-500 font-bold uppercase">No</span><span class="text-red-500 font-bold text-xl leading-none">${(100-m.price).toFixed(1)}¢</span></button>
+                    <div class="flex gap-6 text-xs text-app-text font-bold uppercase tracking-wider">
+                        <span>Vol: <b class="text-white">$${formatCompact(m.vol)}</b></span>
+                        <span>Liq: <b class="text-white">$${formatCompact(m.liq)}</b></span>
+                        <span class="text-blue-500">Ends: ${m.ends}d</span>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button class="flex-1 bg-green-500/10 border border-green-500/20 hover:border-green-500/40 rounded-2xl py-4 flex justify-between px-6 items-center transition-all" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')"><span class="text-xs font-black uppercase text-green-500">YES</span><span class="text-xl font-black text-green-500">${m.price.toFixed(1)}¢</span></button>
+                        <button class="flex-1 bg-red-500/10 border border-red-500/20 hover:border-red-500/40 rounded-2xl py-4 flex justify-between px-6 items-center transition-all" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')"><span class="text-xs font-black uppercase text-red-500">NO</span><span class="text-xl font-black text-red-500">${(100-m.price).toFixed(1)}¢</span></button>
                     </div>
                 </div>
-                <div class="flex-1 relative z-10 flex flex-col justify-center border-b xl:border-b-0 xl:border-r border-app-border pb-6 xl:pb-0 xl:pr-6"><div class="flex justify-between items-center mb-3"><span class="text-[10px] font-bold text-app-text uppercase flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div> AI OSINT Radar</span><span class="text-[10px] font-mono text-green-400 bg-green-400/10 px-2 py-0.5 rounded">Bullish Bias +${m.bias}%</span></div><div class="bg-black/20 p-3 rounded-lg border border-white/5 flex gap-3 items-start"><div class="mt-1 text-blue-400"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></div><div class="flex-1 text-[11px] text-white/90 font-medium">Accumulation signal detected. Smart money moving to YES side.</div></div></div>
-                <div class="flex-1 relative z-10 flex flex-col justify-center"><div class="flex justify-between items-center mb-3"><span class="text-[10px] font-bold text-app-text uppercase">Smart Money</span><span class="text-[10px] text-app-text">Last 24h</span></div><div class="flex justify-between items-center bg-white/5 p-2 rounded-lg mb-4 border border-white/5"><div class="flex items-center gap-2"><img src="${whale.img}" class="w-6 h-6 rounded-full"><div><p class="text-xs font-bold text-white">${whale.name}</p><p class="text-[9px] text-green-400">Winrate: 82%</p></div></div><div class="text-right"><p class="text-xs font-bold text-green-500">+$45k <span class="text-[9px] text-app-text uppercase">YES</span></p></div></div><button onclick="window.openAlphaModal('${whale.name}', '${whale.img}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-black py-3 rounded-xl transition-all shadow-lg active:scale-95">1-Click Copy Whales</button></div>
+                <div class="w-full xl:w-[320px] bg-black/20 rounded-2xl border border-white/5 p-5 flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-4">Top Whale Move</p>
+                        <div class="flex items-center gap-3">
+                            <img src="${whale.img}" class="w-10 h-10 rounded-full">
+                            <div><p class="text-sm font-bold text-white">${whale.name}</p><p class="text-[10px] text-green-500 font-bold">+$45,000 Position</p></div>
+                        </div>
+                    </div>
+                    <button onclick="window.openAlphaModal('${whale.name}', '${whale.img}')" class="mt-6 w-full bg-blue-600 text-white font-black uppercase py-3 rounded-xl hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all active:scale-95">1-Click Copy</button>
+                </div>
             </div>`;
     });
 }
@@ -299,9 +380,9 @@ function renderScannerList() {
         list.innerHTML += `
             <div class="flex items-center bg-app-panel border border-app-border rounded-xl p-4 hover:border-gray-600 cursor-pointer transition-all animate-fadeInUp" style="animation-delay: ${i*0.02}s" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')">
                 <div class="w-10 text-gray-500 font-bold text-xs">#${i+1}</div>
-                <div class="flex-1"><h3 class="text-[15px] font-bold text-white mb-0.5 truncate max-w-[500px]">${m.title}</h3><div class="flex gap-4 text-[10px] text-app-text uppercase font-black"><span>LIQ: $${formatCompact(m.liq)}</span><span>ENDS: ${m.ends}d</span></div></div>
+                <div class="flex-1 min-w-0"><h3 class="text-[15px] font-bold text-white mb-0.5 truncate pr-4">${m.title}</h3><div class="flex gap-4 text-[10px] text-app-text uppercase font-black"><span>LIQ: $${formatCompact(m.liq)}</span><span>ENDS: ${m.ends}d</span></div></div>
                 <div class="w-32 text-right pr-6 border-r border-app-border"><div class="text-[16px] font-black text-green-500">${m.roi.toFixed(1)}x</div><div class="text-[9px] text-app-text uppercase font-bold mt-0.5">ROI Possible</div></div>
-                <button class="ml-6 bg-blue-600 text-white text-[11px] font-black py-2 px-6 rounded-lg hover:bg-blue-500 transition-all uppercase">Trade</button>
+                <button class="ml-6 bg-blue-600 text-white text-[11px] font-black py-2 px-6 rounded-lg hover:bg-blue-500 transition-all uppercase whitespace-nowrap">Trade</button>
             </div>`;
     });
 }

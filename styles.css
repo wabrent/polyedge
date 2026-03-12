@@ -1,4 +1,4 @@
-/* PolyEdge Intelligence Terminal Styles v10.0 */
+/* PolyEdge Intelligence Terminal Styles v13.0 */
 
 :root {
     --app-bg: #0A0E17;
@@ -12,6 +12,7 @@
 body { 
     background-color: var(--app-bg); 
     color: #FFFFFF; 
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
 }
 
 /* Scrollbar */
@@ -21,9 +22,11 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--app-accent); }
 
 /* Range Sliders */
-input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; }
 input[type=range]::-webkit-slider-thumb { 
-    -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; 
+    -webkit-appearance: none; 
+    appearance: none;
+    height: 16px; 
     background: #ffffff; cursor: pointer; margin-top: -6px; 
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
 }
@@ -31,8 +34,8 @@ input[type=range]::-webkit-slider-runnable-track {
     width: 100%; height: 4px; cursor: pointer; background: var(--app-border); border-radius: 2px; 
 }
 
-.slider-blue::-webkit-slider-runnable-track { background: linear-gradient(to right, #3B82F6 50%, var(--app-border) 50%); }
-.slider-green::-webkit-slider-runnable-track { background: linear-gradient(to right, #10B981 30%, var(--app-border) 30%); }
+.slider-blue::-webkit-slider-runnable-track { background: linear-gradient(to right, #3B82F6 100%, var(--app-border) 0%); }
+.slider-green::-webkit-slider-runnable-track { background: linear-gradient(to right, #10B981 100%, var(--app-border) 0%); }
 
 /* Animations */
 @keyframes fadeInUp {
@@ -53,8 +56,8 @@ input[type=range]::-webkit-slider-runnable-track {
 .market-card:hover { transform: translateY(-4px); border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
 
 /* Transitions & View Logic */
-.fade-out { animation: fadeOut 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-.fade-in { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; display: flex !important; }
+.fade-out { animation: fadeOut 0.5s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.fade-in { animation: fadeIn 0.5s cubic-bezier(0, 0, 0.2, 1) forwards; display: flex !important; }
 
 @keyframes fadeOut { 
     from { opacity: 1; transform: scale(1); filter: blur(0); } 
@@ -66,7 +69,21 @@ input[type=range]::-webkit-slider-runnable-track {
     to { opacity: 1; transform: scale(1); filter: blur(0); } 
 }
 
+/* Dropdown Animation */
+.dropdown-animate { animation: slideDown 0.2s cubic-bezier(0, 0, 0.2, 1); }
+@keyframes slideDown { 
+    from { opacity: 0; transform: translateY(-8px) scale(0.95); } 
+    to { opacity: 1; transform: translateY(0) scale(1); } 
+}
+
 /* Utilities */
 #refresh-progress { transition: stroke-dasharray 0.3s ease; }
 .blur-3xl { filter: blur(64px); }
 .tracking-tighter { letter-spacing: -0.05em; }
+.font-black { font-weight: 900; }
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
