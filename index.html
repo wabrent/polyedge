@@ -1,113 +1,121 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge — Global Intelligence Terminal</title>
+    <title>Whale Intelligence Terminal — Builder Edition</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
-        <!-- TOP NAVIGATION BAR -->
-        <header class="navbar">
-            <div class="nav-container">
-                <div class="nav-left">
-                    <div class="brand clickable" id="logo-main">
-                        <div class="logo-box">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M4 3h11a6.5 6.5 0 0 1 0 13h-3v5L2 11h6V7z M12 7h3a2.5 2.5 0 0 1 0 5h-3z"/>
-                            </svg>
-                        </div>
-                        <span class="brand-text">PolyEdge</span>
-                    </div>
-                    <nav class="nav-tabs">
-                        <a href="#" class="tab-link active" data-tab="markets">Markets</a>
-                        <a href="#" class="tab-link" data-tab="watchlist">Watchlist</a>
-                        <a href="#" class="tab-link" data-tab="scanner">Scanner</a>
-                        <a href="#" class="tab-link" data-tab="arbitrage">Arbitrage</a>
-                        <a href="#" class="tab-link" data-tab="simulator">Simulator</a>
-                    </nav>
+    <div class="app-shell">
+        <!-- GLOBAL NAVIGATION -->
+        <header class="header-nav">
+            <div class="nav-left">
+                <a href="#" class="brand-hub">
+                    <div class="logo-prime">P</div>
+                    <span class="brand-name">POLYEDGE</span>
+                </a>
+            </div>
+            <div class="status-cluster">
+                <div class="live-node">
+                    <div class="pulse"></div>
+                    REALTIME_CORE
                 </div>
-
-                <div class="nav-right">
-                    <div class="utility-icons">
-                        <button class="icon-btn clickable">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                        </button>
-                        <div class="timer-widget">
-                            <svg class="timer-svg" viewBox="0 0 36 36">
-                                <circle class="timer-bg" cx="18" cy="18" r="15.915"></circle>
-                                <circle class="timer-bar" cx="18" cy="18" r="15.915"></circle>
-                            </svg>
-                            <span class="timer-val">2s</span>
-                        </div>
-                        <button class="theme-btn clickable" id="theme-toggle">
-                            <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                            <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                        </button>
-                    </div>
-                    <div class="clock-display">
-                        <div class="clock-item">NYC <b id="nyc-time">08:36</b></div>
-                        <div class="clock-item">LDN <b id="ldn-time">12:36</b></div>
-                        <div class="clock-item">TKO <b id="tko-time">21:36</b></div>
-                    </div>
+                <div class="budget-node glass">
+                    <span style="color: var(--text-dim); font-size: 0.7rem; font-weight: 700; margin-right: 8px;">WALLET</span>
+                    <span style="font-weight: 800;">$1,000</span>
                 </div>
+                <button id="theme-toggle" class="clickable" style="background:none; border:none; color:var(--text-dim);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
             </div>
         </header>
 
-        <!-- MAIN CONTENT AREA -->
-        <main class="main-dashboard">
-            <!-- BIG SUMMARY CARDS -->
-            <div class="stats-row">
-                <div class="stat-card">
-                    <span class="stat-num" id="stat-markets">60</span>
-                    <span class="stat-label">Markets</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-card">
-                    <span class="stat-num" id="stat-volume">$79.5M</span>
-                    <span class="stat-label">24h Volume</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-card">
-                    <span class="stat-num" id="stat-opps">52</span>
-                    <span class="stat-label">Opportunities</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-card">
-                    <span class="stat-num" id="stat-roi">2000x</span>
-                    <span class="stat-label">Best ROI</span>
+        <!-- INTELLIGENCE SIDEBAR -->
+        <aside class="intel-sidebar">
+            <div class="nav-section">
+                <span class="nav-group-title">Terminal Access</span>
+                <nav>
+                    <a href="#" class="nav-item active" data-view="markets">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        Intelligence
+                    </a>
+                    <a href="#" class="nav-item" data-view="scanner">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        Alpha Scanner
+                    </a>
+                    <a href="#" class="nav-item" data-view="arbitrage">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        Arbitrage Node
+                    </a>
+                </nav>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-group-title">Whale Tracker</span>
+                <div class="whale-feed glass" id="whale-simulation-feed">
+                    <!-- Events will be injected here -->
+                    <div class="whale-event">
+                        <span class="w-size">$42,000 YES</span> on <span class="text-dim">US_Election</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- SEARCH & FILTER BAR -->
-            <div class="search-section">
-                <h2 class="page-title">Trending Markets</h2>
-                <div class="search-bar">
-                    <svg class="search-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                    <input type="text" placeholder="Search markets..." id="market-input">
+            <div class="nav-section mt-auto">
+                <div class="glass" style="padding: 16px; border-radius: 12px; font-size: 0.7rem;">
+                    <span style="color: var(--text-muted); display: block; margin-bottom: 8px;">SYSTEM_LOAD</span>
+                    <div style="height: 4px; background: var(--glass-border); border-radius: 2px;">
+                        <div style="width: 42%; height: 100%; background: var(--accent-primary); border-radius: 2px;"></div>
+                    </div>
                 </div>
-                <div class="filter-controls">
-                    <select class="filter-dropdown clickable"><option>All</option></select>
-                    <select class="filter-dropdown clickable"><option>Any Volume</option></select>
-                    <select class="filter-dropdown clickable"><option>Volume 24h</option></select>
+            </div>
+        </aside>
+
+        <!-- DATA TERMINAL MAIN -->
+        <main class="terminal-main">
+            <!-- REALTIME METRICS -->
+            <div class="metrics-row">
+                <div class="metric-box glass">
+                    <span class="m-label">Active Nodes</span>
+                    <span class="m-val counter" id="stat-count">0</span>
+                </div>
+                <div class="metric-box glass" style="border-left: 4px solid var(--accent-primary);">
+                    <span class="m-label">24H Volume</span>
+                    <span class="m-val" id="stat-volume">$0.0M</span>
+                </div>
+                <div class="metric-box glass">
+                    <span class="m-label">High Yield</span>
+                    <span class="m-val counter" id="stat-alpha">0</span>
+                </div>
+                <div class="metric-box glass">
+                    <span class="m-label">Terminal Latency</span>
+                    <span class="m-val mono" style="font-size: 1.2rem; color: var(--pos);">34ms</span>
                 </div>
             </div>
 
-            <!-- MARKET CARDS GRID -->
-            <div class="markets-grid" id="markets-container">
-                <!-- Cards injected via JS -->
+            <!-- CONTENT HEADER -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px;">
+                <div>
+                    <h1 style="font-size: 1.8rem; font-weight: 900;">Intelligence Dashboard</h1>
+                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 4px;">Intercepting Polymarket signals...</p>
+                </div>
+                <div class="glass" style="display: flex; border-radius: 12px; padding: 4px;">
+                    <button class="clickable active" style="background: var(--pos-bg); color: var(--pos); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.8rem;">All Flows</button>
+                    <button class="clickable" style="background: none; border: none; color: var(--text-dim); padding: 8px 16px; font-weight: 700; font-size: 0.8rem;">Trending</button>
+                </div>
             </div>
 
-            <div class="load-more-wrap">
-                <button class="btn-outline clickable" id="load-btn">Load more markets</button>
+            <!-- MAIN GRID -->
+            <div class="cards-grid" id="markets-container">
+                <!-- Advanced Intelligence Cards will be injected by JS -->
             </div>
         </main>
     </div>
 
+    <!-- SCRIPTS -->
     <script src="app.js"></script>
 </body>
 </html>
