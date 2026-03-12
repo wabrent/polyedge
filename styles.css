@@ -1,4 +1,4 @@
-/* PolyEdge Intelligence Terminal Styles v13.0 */
+/* PolyEdge Institutional Terminal Styles v14.0 */
 
 :root {
     --app-bg: #0A0E17;
@@ -8,82 +8,80 @@
     --app-accent: #3B82F6;
 }
 
-/* Background Fix */
 body { 
     background-color: var(--app-bg); 
     color: #FFFFFF; 
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
 }
 
-/* Scrollbar */
+/* Institutional Typography */
+.font-black { font-weight: 900; }
+.italic { font-style: italic; }
+.tracking-tighter { letter-spacing: -0.05em; }
+.uppercase { text-transform: uppercase; }
+
+/* Scrollbar Engineering */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--app-border); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--app-accent); }
 
-/* Range Sliders */
-input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; }
-input[type=range]::-webkit-slider-thumb { 
-    -webkit-appearance: none; 
-    appearance: none;
-    height: 16px; 
-    background: #ffffff; cursor: pointer; margin-top: -6px; 
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
-}
-input[type=range]::-webkit-slider-runnable-track { 
-    width: 100%; height: 4px; cursor: pointer; background: var(--app-border); border-radius: 2px; 
-}
-
-.slider-blue::-webkit-slider-runnable-track { background: linear-gradient(to right, #3B82F6 100%, var(--app-border) 0%); }
-.slider-green::-webkit-slider-runnable-track { background: linear-gradient(to right, #10B981 100%, var(--app-border) 0%); }
-
-/* Animations */
+/* Animations: Production Grade */
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(15px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
-.animate-fadeInUp { animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.animate-fadeInUp { animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
-@keyframes spin-slow {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
-.animate-spin-slow { animation: spin-slow 8s linear infinite; }
+.animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
 
-/* Transitions */
-.nav-link { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-.market-card { transition: all 0.3s ease; }
-.market-card:hover { transform: translateY(-4px); border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+/* Market Card Transitions */
+.market-card { transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.market-card:hover { 
+    border-color: rgba(59, 130, 246, 0.4); 
+    background-color: #1a202e;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6); 
+}
 
 /* Transitions & View Logic */
 .fade-out { animation: fadeOut 0.5s cubic-bezier(0.4, 0, 1, 1) forwards; }
 .fade-in { animation: fadeIn 0.5s cubic-bezier(0, 0, 0.2, 1) forwards; display: flex !important; }
 
 @keyframes fadeOut { 
-    from { opacity: 1; transform: scale(1); filter: blur(0); } 
-    to { opacity: 0; transform: scale(0.98); filter: blur(10px); visibility: hidden; } 
+    from { opacity: 1; filter: blur(0); } 
+    to { opacity: 0; filter: blur(20px); visibility: hidden; } 
 }
 
-@keyframes fadeIn { 
-    from { opacity: 0; transform: scale(1.02); filter: blur(10px); } 
-    to { opacity: 1; transform: scale(1); filter: blur(0); } 
-}
-
-/* Dropdown Animation */
-.dropdown-animate { animation: slideDown 0.2s cubic-bezier(0, 0, 0.2, 1); }
-@keyframes slideDown { 
-    from { opacity: 0; transform: translateY(-8px) scale(0.95); } 
-    to { opacity: 1; transform: translateY(0) scale(1); } 
-}
-
-/* Utilities */
+/* Header Components */
 #refresh-progress { transition: stroke-dasharray 0.3s ease; }
-.blur-3xl { filter: blur(64px); }
-.tracking-tighter { letter-spacing: -0.05em; }
-.font-black { font-weight: 900; }
 
+/* Utility Classes */
+.truncate-2-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.shadow-3xl {
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+}
+
+/* Input Overrides */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* Active Nav State */
+.nav-link.bg-app-activeTab {
+    background-color: var(--app-panel);
+    color: white;
+    box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
 }

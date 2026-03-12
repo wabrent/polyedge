@@ -4,257 +4,203 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="logo.svg">
-    <title>PolyEdge | Pro Intelligence Terminal</title>
+    <title>PolyEdge | Institutional Terminal</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        app: {
-                            bg: '#0A0E17',
-                            panel: '#131823',
-                            activeTab: '#1E2433',
-                            border: '#1F2937',   
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
+                    colors: { 
+                        app: { 
+                            bg: '#0A0E17', 
+                            panel: '#131823', 
+                            border: '#1F2937', 
                             text: '#9CA3AF',
-                            accent: '#3B82F6',
-                        }
-                    }
-                }
+                            accent: '#3B82F6'
+                        } 
+                    } 
+                } 
             }
         }
     </script>
 </head>
 <body class="antialiased h-screen w-full relative bg-app-bg text-white overflow-hidden">
 
-    <!-- AUTH MODAL -->
-    <div id="auth-modal" class="fixed inset-0 z-[300] hidden items-center justify-center">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" id="auth-backdrop"></div>
-        <div class="relative bg-app-panel border border-white/10 w-full max-w-[400px] rounded-[32px] p-8 shadow-2xl scale-95 opacity-0 transition-all duration-300" id="auth-content">
-            <div class="text-center mb-8">
-                <img src="logo.svg" class="w-16 h-16 mx-auto rounded-2xl mb-4 shadow-lg border border-white/10 p-2">
-                <h2 class="text-2xl font-black text-white">Welcome to PolyEdge</h2>
-                <p class="text-gray-400 text-sm mt-2">Sign in to access the pro terminal</p>
-            </div>
-
-            <div class="space-y-3">
-                <button id="loginGoogle" class="w-full bg-white text-black font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-200 transition-all">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" class="w-5 h-5">
-                    Continue with Google
-                </button>
-                <button id="loginApple" class="w-full bg-[#222] text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 hover:bg-[#333] transition-all border border-white/5">
-                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.057 12.871c.019 2.536 2.203 3.385 2.227 3.396-.021.066-.346 1.185-1.151 2.362-.697 1.018-1.42 2.031-2.557 2.053-1.116.021-1.474-.662-2.75-.662-1.277 0-1.674.64-2.73.682-1.1.041-1.928-.971-2.628-1.983-1.433-2.071-2.531-5.842-1.055-8.405.733-1.272 2.042-2.076 3.454-2.097 1.072-.021 2.083.722 2.741.722.657 0 1.889-.9 3.16-.767.534.022 2.034.215 2.997 1.625-.077.048-1.789 1.042-1.77 3.074zm-2.316-8.774c.571-.693.956-1.656.85-2.618-.828.033-1.829.551-2.422 1.245-.534.619-.997 1.597-.872 2.538.922.072 1.873-.472 2.444-1.165z"/></svg>
-                    Continue with Apple
-                </button>
-                
-                <div class="flex items-center gap-4 py-2">
-                    <div class="h-[1px] bg-white/10 flex-1"></div>
-                    <span class="text-[10px] text-gray-500 font-bold uppercase">or email</span>
-                    <div class="h-[1px] bg-white/10 flex-1"></div>
-                </div>
-
-                <input type="email" placeholder="name@email.com" class="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:outline-none focus:border-blue-500 transition-all">
-                <button id="loginMagic" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">
-                    Sign in with Magic Link
-                </button>
-            </div>
-            
-            <p class="text-[10px] text-gray-600 text-center mt-6 uppercase tracking-widest leading-relaxed">By signing in you agree to our<br>Terms of Service & Privacy Policy</p>
-        </div>
-    </div>
-
     <!-- LANDING VIEW -->
-    <div id="landing-view" class="absolute inset-0 z-[200] flex flex-col bg-[#0A0E17] transition-all duration-500 overflow-y-auto">
-        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+    <div id="landing-view" class="absolute inset-0 z-[200] flex flex-col bg-[#0A0E17] transition-all duration-700 overflow-y-auto">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
         
-        <div class="relative z-10 flex flex-col items-center justify-center text-center max-w-4xl px-6 mx-auto flex-grow pt-20 pb-16">
-            <div class="w-24 h-24 mx-auto mb-8 rounded-3xl bg-white/5 border border-white/10 p-2.5 shadow-[0_0_60px_rgba(59,130,246,0.2)] flex items-center justify-center group overflow-hidden relative">
-                <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <img src="logo.svg" alt="PolyEdge Logo" class="w-full h-full object-contain relative z-10">
+        <div class="relative z-10 flex flex-col items-center justify-center text-center max-w-4xl px-6 mx-auto flex-grow pt-20">
+            <div class="w-24 h-24 mb-8 rounded-3xl bg-white/5 border border-white/10 p-2 shadow-2xl relative group overflow-hidden">
+                <div class="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <img src="logo.svg" class="w-full h-full object-contain relative z-10 transition-transform group-hover:scale-105">
             </div>
-            
-            <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 leading-none italic animate-fadeInUp">PolyEdge</h1>
-            <p class="text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-extrabold uppercase tracking-[0.2em] mb-12">
-                Prediction Market Terminal
-            </p>
-            
-            <button id="launchAppBtn" class="group relative inline-flex items-center justify-center gap-4 px-12 py-5 font-black text-white bg-blue-600 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_50px_rgba(59,130,246,0.6)] active:scale-95">
-                <span class="relative text-xl tracking-wide uppercase">Launch Terminal</span>
-                <svg class="relative w-6 h-6 transition-transform group-hover:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            <h1 class="text-7xl md:text-9xl font-black text-white tracking-tighter mb-4 italic uppercase animate-fadeInUp">PolyEdge</h1>
+            <p class="text-xl md:text-2xl text-blue-400 font-extrabold uppercase tracking-[0.4em] mb-12 opacity-0 animate-fadeInUp" style="animation-delay: 0.2s">Institutional Prediction Terminal</p>
+            <button id="launchAppBtn" class="group px-14 py-6 font-black text-white bg-blue-600 rounded-full hover:scale-105 hover:shadow-[0_0_50px_rgba(59,130,246,0.6)] transition-all uppercase tracking-widest text-lg active:scale-95">
+                Enter Terminal
             </button>
         </div>
-        
-        <div class="relative z-10 w-full max-w-6xl mx-auto px-6 pb-12 mt-auto">
-            <div class="bg-app-panel/50 border border-app-border rounded-3xl p-8 backdrop-blur-lg grid md:grid-cols-2 gap-10 shadow-2xl shadow-black/30 relative overflow-hidden group hover:border-white/10 transition-colors">
-                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-blue-500/15 transition-all"></div>
-                <div class="relative z-10">
-                    <h3 class="text-2xl font-bold text-white mb-4">About PolyEdge</h3>
-                    <p class="text-gray-400 text-[15px] leading-relaxed mb-4">PolyEdge is a professional-grade terminal designed specifically for prediction market traders. We aggregate fragmented blockchain data into a single, high-performance interface.</p>
-                    <p class="text-gray-400 text-[15px] leading-relaxed">Platform provides advanced tools for market liquidity analysis, arbitrage discovery, and whale tracking. Our goal is to give you an information edge.</p>
-                </div>
-                <div class="relative z-10">
-                    <h3 class="text-2xl font-bold text-white mb-4">How to Get Started</h3>
-                    <ul class="space-y-4 text-gray-400 text-[15px]">
-                        <li class="flex items-start gap-3"><span class="font-bold text-blue-400 text-lg">1.</span><div><b class="text-white">Click "Launch Terminal":</b> Enter the main dashboard.</div></li>
-                        <li class="flex items-start gap-3"><span class="font-bold text-blue-400 text-lg">2.</span><div><b class="text-white">Connect Wallet:</b> Link MetaMask/Rabby for execution.</div></li>
-                        <li class="flex items-start gap-3"><span class="font-bold text-blue-400 text-lg">3.</span><div><b class="text-white">Analyze & Trade:</b> Track Smart Money movements.</div></li>
-                    </ul>
-                </div>
+
+        <div class="relative z-10 w-full max-w-6xl mx-auto px-6 pb-12 grid md:grid-cols-2 gap-8 mt-auto opacity-0 animate-fadeInUp" style="animation-delay: 0.4s">
+            <div class="bg-app-panel/40 border border-app-border rounded-3xl p-8 backdrop-blur-xl group hover:border-white/10 transition-colors">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+                    Real-time Analytics
+                </h3>
+                <p class="text-app-text text-sm leading-relaxed">Direct connection to Polymarket CLOB. Live orderbooks, volume tracking, and AI-driven sentiment analysis without latency.</p>
             </div>
-            <div class="text-center w-full text-[10px] text-gray-700 font-mono tracking-widest uppercase mt-8 pointer-events-none">
-                System Status: <span class="text-green-500/80 font-bold animate-pulse">Online</span> • Latency: <span class="text-blue-400/80 font-bold">42ms</span> • API v1.2
+            <div class="bg-app-panel/40 border border-app-border rounded-3xl p-8 backdrop-blur-xl group hover:border-white/10 transition-colors">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
+                    Smart Money Tracker
+                </h3>
+                <p class="text-app-text text-sm leading-relaxed">Advanced wallet OSINT level intelligence. Analyze PnL, win rate, and active positions of any address on Polygon infrastructure.</p>
             </div>
         </div>
     </div>
 
     <!-- APP VIEW -->
-    <div id="app-view" class="hidden h-screen flex-col overflow-hidden bg-app-bg relative z-10 transition-all duration-300">
+    <div id="app-view" class="hidden h-screen flex-col bg-app-bg relative z-10 transition-all duration-500">
         <header class="h-[64px] flex-shrink-0 border-b border-app-border bg-app-bg flex items-center justify-between px-6 z-50">
-            <div class="flex items-center gap-8">
-                <div class="flex items-center gap-2 cursor-pointer group" onclick="window.location.hash = '#market'">
-                    <img src="logo.svg" class="w-8 h-8 rounded-md object-contain group-hover:scale-105 transition-transform">
-                    <span class="font-bold text-lg tracking-tight group-hover:text-blue-400 transition-colors">PolyEdge</span>
+            <div class="flex items-center gap-10">
+                <div class="flex items-center gap-2 cursor-pointer group" onclick="window.location.reload()">
+                    <img src="logo.svg" class="w-8 h-8 rounded-lg group-hover:scale-105 transition-transform">
+                    <span class="font-bold text-lg tracking-tight uppercase italic text-white group-hover:text-blue-400 transition-colors">PolyEdge</span>
                 </div>
-                
-                <nav class="hidden md:flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-app-text" id="main-nav">
-                    <a href="#market" data-target="market" data-title="Markets" data-subtitle="Active filtering for markets nodes..." class="nav-link px-4 py-2 rounded-xl transition-all">Markets</a>
-                    <a href="#watchlist" data-target="watchlist" data-title="Whale Analyzer" data-subtitle="Track high-priority wallet movements..." class="nav-link px-4 py-2 rounded-xl transition-all">Watchlist</a>
-                    <a href="#scanner" data-target="scanner" data-title="Opportunity Scanner" data-subtitle="Find high-potential ROI markets..." class="nav-link px-4 py-2 rounded-xl transition-all">Scanner</a>
-                    <a href="#arbitrage" data-target="arbitrage" data-title="Arbitrage Dashboard" data-subtitle="Cross-platform odds discrepancies..." class="nav-link px-4 py-2 rounded-xl transition-all">Arbitrage</a>
+                <nav class="hidden md:flex gap-4 text-[11px] font-black uppercase tracking-widest text-app-text" id="main-nav">
+                    <a href="#market" data-target="market" class="nav-link px-3 py-1.5 rounded-lg hover:text-white transition-all">Markets</a>
+                    <a href="#watchlist" data-target="watchlist" class="nav-link px-3 py-1.5 rounded-lg hover:text-white transition-all">Watchlist</a>
+                    <a href="#scanner" data-target="scanner" class="nav-link px-3 py-1.5 rounded-lg hover:text-white transition-all">Scanner</a>
+                    <a href="#arbitrage" data-target="arbitrage" class="nav-link px-3 py-1.5 rounded-lg hover:text-white transition-all">Arbitrage</a>
                 </nav>
             </div>
 
             <div class="flex items-center gap-6">
-                <div class="hidden xl:flex gap-4 text-[10px] font-mono text-app-text pr-6 border-r border-app-border">
-                    <div class="flex flex-col items-end"><span>NYC</span><span class="font-bold text-white" id="clock-nyc">00:00</span></div>
-                    <div class="flex flex-col items-end"><span>LDN</span><span class="font-bold text-white" id="clock-ldn">00:00</span></div>
+                <div class="hidden xl:flex gap-4 text-[10px] font-mono text-gray-500 border-r border-app-border pr-6">
+                    <div class="text-right">NYC <span class="text-white font-bold" id="nyc-time">--:--</span></div>
+                    <div class="text-right">LDN <span class="text-white font-bold" id="ldn-time">--:--</span></div>
                 </div>
-                
-                <div class="relative" id="wallet-container">
-                    <div class="flex items-center gap-3">
-                        <div class="relative w-8 h-8 mr-2 hidden md:block">
-                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-border" stroke-width="2"></circle>
-                                <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-accent" stroke-width="2" stroke-dasharray="0 100" id="refresh-progress"></circle>
-                            </svg>
-                            <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-app-accent" id="refresh-timer">15s</span>
-                        </div>
-                        <button id="connectWalletBtn" class="bg-blue-600 text-white px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-blue-500 transition-all border border-blue-400/20">Connect</button>
+                <div class="flex items-center gap-3">
+                    <div class="relative w-8 h-8 hidden md:block">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-border" stroke-width="2"></circle>
+                            <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-accent" stroke-width="2" stroke-dasharray="0 100" id="refresh-progress"></circle>
+                        </svg>
+                        <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-app-accent" id="refresh-timer">15s</span>
                     </div>
-                    
-                    <div id="wallet-menu" class="hidden absolute right-0 top-[calc(100%+12px)] w-64 bg-[#11141D] border border-white/10 rounded-2xl p-4 shadow-2xl dropdown-animate z-[100]">
-                        <div class="flex items-center gap-3 mb-4 pb-4 border-b border-white/5">
-                            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-black text-sm" id="wallet-icon">P</div>
-                            <div>
-                                <p class="text-[10px] text-gray-500 font-bold uppercase">Connected Wallet</p>
-                                <p id="wallet-address-full" class="text-xs text-white font-mono font-bold">0x0...000</p>
-                            </div>
-                        </div>
-                        <div class="space-y-1 mb-4">
-                            <div class="flex justify-between items-center py-2 px-3 hover:bg-white/5 rounded-lg transition-all cursor-pointer">
-                                <span class="text-xs text-gray-400">Balance</span>
-                                <span class="text-xs font-bold text-white"><span id="wallet-balance-full">0.00</span> USDC</span>
-                            </div>
-                            <div class="flex justify-between items-center py-2 px-3 hover:bg-white/5 rounded-lg transition-all cursor-pointer">
-                                <span class="text-xs text-gray-400">Network</span>
-                                <span class="text-xs font-bold text-green-500 flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-green-500"></div> Polygon</span>
-                            </div>
-                        </div>
-                        <button id="disconnectWalletBtn" class="w-full bg-red-500/10 text-red-500 border border-red-500/20 py-2.5 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition-all">
-                            Disconnect Wallet
-                        </button>
-                    </div>
+                    <button id="connectWalletBtn" class="bg-blue-600 text-white px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all active:scale-95 truncate max-w-[160px]">Connect Wallet</button>
                 </div>
-                
-                <button id="logoutBtn" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/20 transition-all group">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" class="text-app-text group-hover:text-red-500" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                </button>
             </div>
         </header>
 
-        <main class="flex-grow overflow-y-auto px-6 lg:px-10 py-10">
+        <main class="flex-grow overflow-y-auto px-6 lg:px-10 py-8">
             <div class="max-w-[1400px] mx-auto">
-                <div class="mb-8 flex justify-between items-end">
-                    <div>
-                        <h1 id="page-title" class="text-3xl font-bold text-white mb-2 tracking-tight italic">Markets</h1>
-                        <p id="page-subtitle" class="text-sm text-app-text">Active nodes scanning...</p>
+                <!-- Market Tab -->
+                <div id="content-market" class="tab-content hidden space-y-6">
+                    <div class="flex justify-between items-end mb-8">
+                        <div>
+                            <h1 class="text-4xl font-black italic uppercase tracking-tighter">Active Markets</h1>
+                            <p class="text-sm text-app-text mt-1">Real-time data synchronization with Polymarket Gamma Protocol</p>
+                        </div>
+                        <div class="hidden md:block text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-5 py-2.5 rounded-full border border-blue-500/20">
+                            Node Status: <span class="animate-pulse">Connected</span>
+                        </div>
+                    </div>
+                    <div id="market-list" class="grid gap-4">
+                        <div class="animate-pulse bg-app-panel h-32 rounded-3xl border border-app-border"></div>
+                        <div class="animate-pulse bg-app-panel h-32 rounded-3xl border border-app-border"></div>
+                        <div class="animate-pulse bg-app-panel h-32 rounded-3xl border border-app-border"></div>
                     </div>
                 </div>
 
-                <div id="content-market" class="tab-content hidden">
-                    <div id="market-list" class="space-y-4"></div>
-                </div>
-
-                <div id="content-watchlist" class="tab-content hidden max-w-[1200px] animate-fadeInUp">
-                    <div class="flex items-center gap-4 bg-app-panel border border-app-border p-4 rounded-2xl mb-6 shadow-lg shadow-black/20 focus-within:border-blue-500/50 transition-colors">
-                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
-                        <input type="text" id="whaleInput" placeholder="Enter Polymarket Wallet Address (0x...) or ENS..." class="flex-1 bg-transparent text-white font-mono focus:outline-none text-sm placeholder-gray-600">
-                        <button id="analyzeBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg active:scale-95">Analyze</button>
+                <!-- Watchlist / Whale Analyzer Tab -->
+                <div id="content-watchlist" class="tab-content hidden space-y-8 animate-fadeIn">
+                    <div class="mb-4">
+                        <h1 class="text-4xl font-black italic uppercase tracking-tighter">Whale Analyzer</h1>
+                        <p class="text-sm text-app-text mt-1">Real-time profitability forensics for high-volume addresses.</p>
                     </div>
-                    <div id="whaleEmptyState" class="p-20 border border-dashed border-app-border rounded-3xl text-center bg-app-panel/30">
-                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 italic text-2xl font-black">?</div>
-                        <p class="text-app-text font-medium">Awaiting wallet address for Alpha Intelligence analysis...</p>
+                    
+                    <div class="bg-app-panel border border-app-border rounded-[32px] p-4 flex gap-4 shadow-2xl focus-within:border-blue-600/50 transition-all">
+                        <input id="whaleInput" type="text" placeholder="Enter Wallet Address (0x...) or ENS..." class="flex-1 bg-black/40 border border-white/5 rounded-2xl px-6 py-4 text-white font-mono text-sm focus:border-blue-600/50 outline-none transition-all placeholder-gray-600">
+                        <button id="analyzeBtn" class="bg-blue-600 px-12 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-500 transition-all active:scale-95 shadow-lg">Analyze</button>
                     </div>
-                    <div id="whaleDataContainer" class="hidden transition-all duration-500 space-y-8">
+                    
+                    <div id="whaleStats" class="hidden transition-all duration-500 opacity-0 space-y-8">
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div class="bg-app-panel border border-app-border p-6 rounded-2xl group hover:border-green-500/30 transition-all"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Total Net Profit</p><h3 id="dynamicProfit" class="text-3xl font-black text-green-500">+$0</h3></div>
-                            <div class="bg-app-panel border border-app-border p-6 rounded-2xl"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Global Win Rate</p><h3 class="text-3xl font-black text-white">68.4%</h3></div>
-                            <div class="bg-app-panel border border-app-border p-6 rounded-2xl"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Volume Traded</p><h3 class="text-3xl font-black text-white">$1.24M</h3></div>
-                            <div class="bg-app-panel border border-app-border p-6 rounded-2xl"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Top Category Edge</p><h3 class="text-xl font-bold text-blue-400 mt-2">US Politics</h3></div>
+                            <div class="bg-app-panel border border-app-border p-8 rounded-[32px] relative overflow-hidden group">
+                                <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-green-500/5 rounded-full blur-2xl group-hover:bg-green-500/10 transition-all"></div>
+                                <p class="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Total Net Profit</p>
+                                <h3 id="stat-pnl" class="text-4xl font-black italic text-green-500">--</h3>
+                            </div>
+                            <div class="bg-app-panel border border-app-border p-8 rounded-[32px]">
+                                <p class="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Alpha Win Rate</p>
+                                <h3 id="stat-win" class="text-4xl font-black italic text-white">--</h3>
+                            </div>
+                            <div class="bg-app-panel border border-app-border p-8 rounded-[32px]">
+                                <p class="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Volume Traded</p>
+                                <h3 class="text-4xl font-black italic text-white" id="stat-vol">--</h3>
+                            </div>
+                            <div class="bg-app-panel border border-app-border p-8 rounded-[32px]">
+                                <p class="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Trade Frequency</p>
+                                <h3 class="text-4xl font-black italic text-blue-400" id="stat-freq">N/A</h3>
+                            </div>
                         </div>
-                        <div id="whale-positions" class="space-y-3"></div>
+                        <div id="whale-positions" class="space-y-4"></div>
                     </div>
-                </div>
-
-                <div id="content-scanner" class="tab-content hidden space-y-4">
-                    <div id="scanner-controls" class="flex items-end gap-10 pb-6">
-                        <div class="flex-1">
-                            <div class="flex justify-between mb-3"><span class="text-xs font-semibold text-app-text">Min ROI</span><span class="text-xs font-bold text-blue-500" id="val-roi">5x</span></div>
-                            <input type="range" min="1" max="20" value="5" class="slider-blue w-full" id="input-roi">
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex justify-between mb-3"><span class="text-xs font-semibold text-app-text">Min Liquidity</span><span class="text-xs font-bold text-green-500" id="val-liq">$10K</span></div>
-                            <input type="range" min="1" max="500" value="10" class="slider-green w-full" id="input-liq">
-                        </div>
-                        <button class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold py-2 px-6 rounded-lg h-10 transition-all active:scale-95" onclick="fetchData()">Scan</button>
+                    
+                    <div id="whaleEmptyState" class="p-24 border border-dashed border-app-border rounded-[40px] text-center bg-app-panel/20">
+                        <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-600 italic text-3xl font-black">?</div>
+                        <p class="text-app-text font-bold text-lg">Awaiting node input for forensics...</p>
+                        <p class="text-xs text-gray-600 mt-2 uppercase tracking-widest">Connect your wallet or enter an address to start scanning.</p>
                     </div>
-                    <div id="scanner-list" class="space-y-4"></div>
-                </div>
-                
-                <div id="content-arbitrage" class="tab-content hidden text-center p-20 border border-dashed border-app-border rounded-3xl opacity-50">
-                    <h3 class="text-xl font-bold mb-2">Arbitrage Detection Offline</h3>
-                    <p class="text-sm">Connect to external exchange nodes to enable live spreads.</p>
                 </div>
             </div>
         </main>
     </div>
 
     <!-- EXECUTION MODAL -->
-    <div id="copyTradeModal" class="fixed inset-0 z-[400] hidden items-center justify-center">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" id="modalBackdrop"></div>
-        <div class="relative bg-app-panel border border-app-border w-full max-w-md rounded-[32px] p-8 shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
-            <div class="flex justify-between items-center mb-6">
-                <div><h3 class="text-xl font-bold text-white italic">Alpha Execution</h3><p class="text-xs text-app-text">Confirming smart-contract parameters</p></div>
-                <button id="closeModalBtn" class="text-gray-500 hover:text-white transition-colors bg-white/5 p-2 rounded-lg">X</button>
-            </div>
-            <div class="bg-black/40 border border-white/5 rounded-2xl p-4 mb-6 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <img id="modalWhaleImg" src="https://ui-avatars.com/api/?name=W&background=3B82F6&color=fff" class="w-10 h-10 rounded-full">
-                    <div><p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Target Whale</p><p class="text-sm font-bold text-white" id="modalWhaleName">-</p></div>
+    <div id="copyTradeModal" class="fixed inset-0 z-[300] hidden items-center justify-center">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity" id="modalBackdrop"></div>
+        <div class="relative bg-[#11141D] border border-white/10 w-full max-w-[440px] rounded-[40px] p-10 shadow-3xl transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
+            <h3 class="text-3xl font-black mb-1 italic">Confirm Order</h3>
+            <p class="text-sm text-gray-400 mb-8 uppercase tracking-widest font-bold">Smart-Contract Direct Execution</p>
+            
+            <div class="space-y-6">
+                <div class="bg-black/40 border border-white/5 rounded-2xl p-4 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-black italic">!</div>
+                        <div><p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">Selected Side</p><p class="text-md font-black text-white italic" id="modalChoice">YES SIDE</p></div>
+                    </div>
+                    <span class="bg-green-500/10 text-green-500 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-green-500/10">Buy Signal</span>
                 </div>
-                <span class="bg-green-500/10 text-green-500 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Buy Yes</span>
+
+                <div>
+                    <div class="flex justify-between items-end mb-3">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Amount (USDC)</label>
+                        <span class="text-[10px] font-black text-gray-400">Balance: <span id="real-usdc-bal" class="text-white">0.00</span></span>
+                    </div>
+                    <div class="relative">
+                        <input id="tradeAmount" type="number" value="1000" class="w-full bg-black/60 border border-white/10 rounded-2xl p-6 text-4xl font-black italic outline-none focus:border-blue-600/50 transition-all">
+                        <button class="absolute right-4 top-1/2 -translate-y-1/2 bg-blue-600/20 text-blue-400 text-[10px] font-black px-4 py-2 rounded-xl border border-blue-500/20 hover:bg-blue-600/40 transition-all">MAX</button>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-600/10 border border-blue-500/20 p-5 rounded-2xl text-[10px] text-blue-400 leading-relaxed italic font-bold">
+                    Signing this transaction interacts with the Polymarket CTF contract on Polygon. Ensure adequate GAS (POL).
+                </div>
+
+                <button id="confirmTxBtn" class="w-full bg-blue-600 py-6 rounded-2xl font-black text-xl shadow-[0_15px_40px_rgba(59,130,246,0.4)] hover:bg-blue-500 transition-all uppercase tracking-widest italic active:scale-95">
+                    Sign & Execute
+                </button>
             </div>
-            <div class="mb-8">
-                <div class="flex justify-between mb-2"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Investment</label><span class="text-[10px] font-bold text-app-text">Max: 12.4K</span></div>
-                <input type="number" id="modalAmount" value="1000" class="w-full bg-black/40 border border-app-border rounded-xl py-4 px-4 text-white font-mono text-lg font-black focus:outline-none focus:border-blue-500">
-            </div>
-            <button id="confirmTxBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl shadow-lg active:scale-95">Sign & Execute</button>
+            <button id="closeModalBtn" class="absolute top-6 right-8 text-gray-600 hover:text-white transition-colors text-2xl font-black italic">X</button>
         </div>
     </div>
 
