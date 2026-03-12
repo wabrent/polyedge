@@ -16,8 +16,9 @@
         <div class="header-container">
             <div class="logo-wrapper">
                 <div class="logo clickable" id="logo-refresh">
-                    <svg width="24" height="24" viewBox="0 0 100 100" fill="currentColor">
-                        <path d="M20 10 L80 10 Q100 10 100 35 Q100 60 80 60 L45 60 L45 90 L20 70 Z M45 35 L70 35 Q75 35 75 42 Q75 50 70 50 L45 50 Z" />
+                    <svg viewBox="0 0 100 100" class="logo-svg">
+                        <!-- Precise 'P' Silhouette from reference image -->
+                        <path d="M20 10 H85 C95 10 95 35 85 35 H45 C45 35 45 45 45 50 H75 C85 50 85 75 75 75 H45 L25 90 V50 H20 Z" fill="currentColor"/>
                     </svg>
                     <span>POLYEDGE</span>
                 </div>
@@ -39,7 +40,9 @@
                     <div class="clock-item">LDN <span id="clock-ldn">00:00</span></div>
                 </div>
                 <button class="theme-toggle" id="theme-toggle">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                    <!-- Icon will be swapped via JS -->
+                    <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
                 </button>
             </div>
         </div>
@@ -52,9 +55,7 @@
                 <span class="panel-title">WHALE TRACKER</span>
                 <span class="pulse-text" style="font-size: 0.6rem; color: var(--green);">LIVE_FEED</span>
             </div>
-            <div class="whale-feed scroll-container" id="whale-feed">
-                <!-- Data streamed via JS -->
-            </div>
+            <div class="whale-feed scroll-container" id="whale-feed"></div>
             <div class="panel-footer">
                 <span id="system-latency">> SYNC_STABLE (DELAY: 142MS)</span>
             </div>
@@ -71,7 +72,7 @@
                 </div>
                 <div class="stat-box clickable" data-filter="high_vol">
                     <div class="stat-inner">
-                        <span class="stat-val" id="stat-total-volume">$0</span>
+                        <span class="stat-val" id="stat-total-volume">$0.0M</span>
                         <span class="stat-lbl">24H VOLUME</span>
                     </div>
                 </div>
@@ -101,19 +102,14 @@
                 </div>
             </div>
 
-            <div class="markets-grid" id="markets-grid">
-                <!-- Intelligence cards loaded via JS -->
-            </div>
+            <div class="markets-grid" id="markets-grid"></div>
 
-            <!-- INTELLIGENCE LOG (FOOTER) -->
             <div class="terminal-log-container panel">
                 <div class="panel-header" style="padding: 8px 16px; min-height: auto; border-bottom: 1px solid var(--border);">
                     <span class="panel-title" style="font-size: 0.6rem;">SYSTEM_LOG.TXT</span>
                 </div>
                 <div class="terminal-log scroll-container" id="system-log">
-                    <div class="log-entry">> Initializing PolyEdge Intelligence Protocol...</div>
-                    <div class="log-entry">> Connecting to gamma-api.polymarket.com via cluster nodes...</div>
-                    <div class="log-entry">> Sub-second sync established.</div>
+                    <div class="log-entry">> Initializing PolyEdge protocols...</div>
                 </div>
             </div>
 
@@ -128,28 +124,18 @@
                 <span class="panel-title">SYSTEM INSIGHTS</span>
             </div>
             <div class="insights-content scroll-container">
-                <div class="insight-block clickable" id="sync-metrics-block">
+                <div class="insight-block clickable">
                     <span class="block-label cyan">SYNC METRICS</span>
                     <div class="metrics-row">Network Latency: <span class="mono green" id="latency-val">~148ms</span></div>
                     <div class="metrics-row">Node Drift: <span class="mono green"><0.02s</span></div>
                 </div>
-                <div class="insight-block clickable alert-gold" id="whale-alert-block">
+                <div class="insight-block clickable alert-gold">
                     <span class="block-label gold">WHALE CLUSTER DETECTED</span>
-                    <p id="whale-insight">Scanning for cluster anomalies in Crypto...</p>
-                </div>
-                <div class="insight-block clickable">
-                    <span class="block-label cyan">VOLATILITY ALERT</span>
-                    <p>US Election liquidity +12% in last 10m. Whale activity scaling.</p>
+                    <p>Anomaly detected in Polymarket Sector nodes. Multi-wallet accumulation active.</p>
                 </div>
             </div>
             <div class="panel-bottom-actions">
                 <button class="btn-action-panel clickable" id="execute-scan-btn">EXECUTE API_SCAN</button>
-                <div class="mini-graph-mock">
-                    <svg viewBox="0 0 100 30" class="sparkline-trend">
-                        <path d="M0,25 Q10,15 20,20 T40,10 T60,18 T80,5 T100,22" fill="none" stroke="var(--cyan)" stroke-width="2"/>
-                    </svg>
-                    <span style="font-size: 0.5rem; color: var(--text-3); display: block; text-align: center;">NETWORK LOAD</span>
-                </div>
             </div>
         </aside>
     </main>

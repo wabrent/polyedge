@@ -1,6 +1,6 @@
 /**
- * PolyEdge — Whale Intelligence Terminal (v3.4)
- * URL FIX: Improved Link Routing & Market Path Detection.
+ * PolyEdge — Whale Intelligence Terminal (v3.5)
+ * CRITICAL FIX: Theme Toggle, Logo Persistence, and Data Loading.
  */
 
 const API_BASE = 'https://gamma-api.polymarket.com';
@@ -23,6 +23,7 @@ let watchlist = JSON.parse(localStorage.getItem('polyedge-watchlist') || '[]');
 
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     initTabs();
     initClocks();
     initRefresh();
@@ -30,10 +31,33 @@ window.addEventListener('DOMContentLoaded', () => {
     initInteraction();
     loadMarkets();
     
-    document.getElementById('load-more-btn').onclick = () => renderMarkets(currentFilter);
-    document.getElementById('category-filter').onchange = () => { displayedCount = 0; renderMarkets(currentFilter); };
-    document.getElementById('logo-refresh').onclick = () => window.location.reload();
+    // Core Buttons
+    const loadBtn = document.getElementById('load-more-btn');
+    if (loadBtn) loadBtn.onclick = () => renderMarkets(currentFilter);
+    
+    const catSel = document.getElementById('category-filter');
+    if (catSel) catSel.onchange = () => { displayedCount = 0; renderMarkets(currentFilter); };
+    
+    const logoRefresh = document.getElementById('logo-refresh');
+    if (logoRefresh) logoRefresh.onclick = () => window.location.reload();
 });
+
+// ========== THEME ENGINE ==========
+function initTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (!themeToggle) return;
+
+    const savedTheme = localStorage.getItem('polyedge-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    themeToggle.onclick = () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('polyedge-theme', next);
+        addLog(`Theme switched to: ${next.toUpperCase()}`, 'var(--cyan)');
+    };
+}
 
 // ========== TERMINAL LOG ENGINE ==========
 function addLog(msg, color = 'var(--text-2)') {
@@ -45,14 +69,14 @@ function addLog(msg, color = 'var(--text-2)') {
     entry.innerHTML = `[${new Date().toLocaleTimeString([], { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' })}] > ${msg}`;
     log.appendChild(entry);
     log.scrollTop = log.scrollHeight;
-    if (log.children.length > 35) log.removeChild(log.firstChild);
+    if (log.children.length > 30) log.removeChild(log.firstChild);
 }
 
 function initLogEngine() {
     setInterval(() => {
-        const events = ['Route verification: SUCCEEDED', 'Data Integrity: 100%', 'Packet Latency: 142ms', 'Node clustering... active'];
-        if (Math.random() > 0.9) addLog(events[Math.floor(Math.random() * events.length)]);
-    }, 6000);
+        const events = ['Packet verified', 'Delta-sync: OK', 'Buffer cleared', 'Node_4 active'];
+        if (Math.random() > 0.92) addLog(events[Math.floor(Math.random() * events.length)]);
+    }, 5000);
 }
 
 // ========== INTERACTION ==========
@@ -72,20 +96,20 @@ function initInteraction() {
     const scanBtn = document.getElementById('execute-scan-btn');
     if (scanBtn) {
         scanBtn.onclick = () => {
-            addLog('API SCAN: RE-CALIBRATING NODES...', 'var(--gold)');
+            addLog('API SCAN REQUESTED...', 'var(--gold)');
             loadMarkets();
         };
     }
 }
 
-// ========== API & DATA ==========
+// ========== API LOGIC ==========
 async function loadMarkets() {
     if (isLoading) return; isLoading = true;
     addLog('Connecting to Poly Intelligence Grid...', 'var(--cyan)');
     
     const endpoints = [
         `${API_BASE}/markets?closed=false&limit=100&active=true&order=volume24hr&ascending=false`,
-        `${API_BASE}/markets?active=true&limit=60`
+        `${API_BASE}/markets?active=true&limit=80`
     ];
 
     let success = false;
@@ -93,7 +117,7 @@ async function loadMarkets() {
         const data = await fetchWithProxy(url);
         if (data) {
             allMarkets = processMarkets(Array.isArray(data) ? data : (data.markets || []));
-            if (allMarkets.length > 0) { success = true; break; }
+            if (allMarkets.length > 10) { success = true; break; }
         }
     }
 
@@ -102,9 +126,9 @@ async function loadMarkets() {
         displayedCount = 0;
         renderMarkets(currentFilter);
         startWhaleSimulation();
-        addLog(`Sync established. ${allMarkets.length} live alpha pipelines.`, 'var(--green)');
+        addLog(`Sync established. ${allMarkets.length} live channels.`, 'var(--green)');
     } else {
-        addLog('Sync timeout. Loading terminal fallback data...', 'var(--gold)');
+        addLog('Sync failed. Loading emergency fallback...', 'var(--gold)');
         useFallbackData();
     }
     isLoading = false;
@@ -129,12 +153,8 @@ function processMarkets(raw) {
         const yesPrice = prices[0] || 0.5;
         const noPrice = prices[1] || 0.5;
         const minPrice = Math.min(yesPrice, noPrice);
-        
-        // Polymarket URL Logic: Use /market/ for individual slugs
-        // if it's an event index, use /event/
         const finalSlug = m.slug || m.eventSlug || '';
-        const tradeUrl = `https://polymarket.com/market/${finalSlug}`;
-
+        
         return {
             id: m.id || m.clobTokenId || Math.random(),
             question: m.question,
@@ -144,8 +164,8 @@ function processMarkets(raw) {
             volume24h: Number(m.volume24h) || 0,
             volumeTotal: Number(m.volumeTotal) || 0,
             maxRoi: minPrice > 0 ? (1 / minPrice) : 1,
-            tradeUrl: tradeUrl,
-            isWhaleHot: Math.random() > 0.85
+            tradeUrl: `https://polymarket.com/market/${finalSlug}`,
+            isWhaleHot: Math.random() > 0.82
         };
     });
 }
@@ -168,9 +188,6 @@ function updateStats() {
     set('stat-total-volume', '$' + (vol/1e6).toFixed(1) + 'M');
     set('stat-whales', allMarkets.filter(m => m.isWhaleHot).length);
     set('stat-opportunities', allMarkets.filter(m => m.maxRoi >= 2.5).length);
-    
-    const latency = document.getElementById('latency-val');
-    if (latency) latency.textContent = `~${(120 + Math.random() * 40).toFixed(0)}ms`;
 }
 
 // ========== RENDERER ==========
@@ -192,10 +209,6 @@ function renderMarkets(activeFilter = 'all') {
     if (displayedCount === 0) grid.innerHTML = '';
     const batch = filtered.slice(displayedCount, displayedCount + BATCH_SIZE);
     
-    if (batch.length === 0 && displayedCount === 0) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 100px; text-align: center; color: var(--text-3); font-family:'JetBrains Mono'; font-size:0.8rem;">> NO_SIGNALS_DETECTED_IN_SECTOR</div>`;
-    }
-
     batch.forEach(m => grid.appendChild(createIntelligenceCard(m)));
     displayedCount += batch.length;
     
@@ -242,15 +255,9 @@ function createIntelligenceCard(m) {
         if (idx === -1) watchlist.push(m.id); else watchlist.splice(idx, 1);
         localStorage.setItem('polyedge-watchlist', JSON.stringify(watchlist));
         toggle.textContent = watchlist.includes(m.id) ? 'UNFOLLOW' : 'FOLLOW';
-        addLog(`Watchlist modified: ${m.id}`);
     };
 
-    card.onclick = (e) => { 
-        if (!e.target.closest('.trade-btn')) {
-            addLog(`Launching secure route: ${m.tradeUrl.substring(0, 30)}...`, 'var(--cyan)');
-            window.open(m.tradeUrl, '_blank'); 
-        }
-    };
+    card.onclick = (e) => { if (!e.target.closest('.trade-btn')) window.open(m.tradeUrl, '_blank'); };
     return card;
 }
 
@@ -268,10 +275,7 @@ function startWhaleSimulation() {
             <span class="whale-size">$${formatCompact(Math.random()*50000+10000)}</span>
             <span class="whale-action" style="color:var(--cyan);">YES BUY</span>
             <span class="whale-market">${m.question}</span>`;
-        move.onclick = () => {
-            addLog(`Tracing whale action: ${m.tradeUrl.substring(0, 30)}...`, 'var(--gold)');
-            window.open(m.tradeUrl, '_blank');
-        };
+        move.onclick = () => window.open(m.tradeUrl, '_blank');
         feed.prepend(move);
         if (feed.children.length > 20) feed.removeChild(feed.lastChild);
     };
@@ -305,7 +309,6 @@ function initTabs() {
              btn.classList.add('active');
              activeTab = btn.dataset.tab;
              displayedCount = 0; renderMarkets(currentFilter);
-             addLog(`Navigating to sector: ${btn.dataset.tab.toUpperCase()}`, 'var(--cyan)');
         }
     });
 }
