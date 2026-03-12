@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge — Whale Intelligence Terminal</title>
+    <title>PolyEdge</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,8 +17,8 @@
             <div class="logo-wrapper">
                 <div class="logo clickable" id="logo-refresh">
                     <svg viewBox="0 0 100 100" class="logo-svg">
-                        <!-- Precise 'P' Silhouette from reference image -->
-                        <path d="M20 10 H85 C95 10 95 35 85 35 H45 C45 35 45 45 45 50 H75 C85 50 85 75 75 75 H45 L25 90 V50 H20 Z" fill="currentColor"/>
+                        <!-- Simplified PolyEdge "F" chat mark -->
+                        <path d="M22 18 H76 C82 18 86 22 86 28 C86 34 82 38 76 38 H40 V46 H64 C70 46 74 50 74 56 C74 62 70 66 64 66 H46 L34 82 V66 H22 Z" fill="currentColor"/>
                     </svg>
                     <span>POLYEDGE</span>
                 </div>
@@ -77,21 +77,8 @@
         </div>
     </section>
 
-    <main class="terminal-grid">
-        <!-- SIDEBAR LEFT: WHALE FEED -->
-        <aside class="panel">
-            <div class="panel-header">
-                <span class="panel-title">WHALE TRACKER</span>
-                <span class="pulse-text" style="font-size: 0.6rem; color: var(--green);">LIVE_FEED</span>
-            </div>
-            <div class="whale-feed scroll-container" id="whale-feed"></div>
-            <div class="panel-footer">
-                <span id="system-latency">> SYNC_STABLE (DELAY: 142MS)</span>
-            </div>
-        </aside>
-
-        <!-- MAIN CENTER -->
-        <section class="main-content">
+    <main class="page-layout">
+        <section class="featured-column">
             <div class="stats-grid">
                 <div class="stat-box clickable active" data-filter="all">
                     <div class="stat-inner">
@@ -119,19 +106,6 @@
                 </div>
             </div>
 
-            <div class="dashboard-controls">
-                <h2 class="title-main">GLOBAL INTELLIGENCE</h2>
-                <div class="filter-group">
-                    <select id="category-filter" class="terminal-select clickable" aria-label="Sector filter">
-                        <option value="all">Sectors: All Items</option>
-                        <option value="politics">Sectors: Politics</option>
-                        <option value="crypto">Sectors: Crypto</option>
-                        <option value="sports">Sectors: Sports</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- NEW: HIGH-LEVEL SNAPSHOT OF WHERE ALPHA LIVES -->
             <section class="alpha-snapshot" aria-label="High level alpha snapshot">
                 <div class="alpha-header">
                     <h3 class="alpha-title">ALPHA SNAPSHOT</h3>
@@ -149,40 +123,43 @@
                 </div>
             </section>
 
-            <div class="markets-grid" id="markets-grid"></div>
-
-            <div class="terminal-log-container panel">
-                <div class="panel-header" style="padding: 8px 16px; min-height: auto; border-bottom: 1px solid var(--border);">
-                    <span class="panel-title" style="font-size: 0.6rem;">SYSTEM_LOG.TXT</span>
+            <div class="markets-header">
+                <div class="markets-title-block">
+                    <h2 class="title-main">All markets</h2>
+                    <p class="markets-subtitle">Live Polymarket streams ranked by activity and whale interest.</p>
                 </div>
-                <div class="terminal-log scroll-container" id="system-log">
-                    <div class="log-entry">> Initializing PolyEdge protocols...</div>
+                <div class="filter-group">
+                    <select id="category-filter" class="terminal-select clickable" aria-label="Sector filter">
+                        <option value="all">Sectors: All Items</option>
+                        <option value="politics">Sectors: Politics</option>
+                        <option value="crypto">Sectors: Crypto</option>
+                        <option value="sports">Sectors: Sports</option>
+                    </select>
                 </div>
             </div>
+
+            <div class="markets-grid" id="markets-grid"></div>
 
             <div class="load-more-wrap">
                 <button id="load-more-btn" class="btn-more clickable">LOAD MORE DATA SIGNALS</button>
             </div>
         </section>
 
-        <!-- SIDEBAR RIGHT: ALPHA -->
-        <aside class="panel">
-            <div class="panel-header">
-                <span class="panel-title">SYSTEM INSIGHTS</span>
+        <aside class="news-column">
+            <div class="news-card">
+                <div class="news-title">Trending themes</div>
+                <ul class="news-list">
+                    <li><span class="news-name">US politics</span><span class="news-metric">High volume</span></li>
+                    <li><span class="news-name">Crypto macro</span><span class="news-metric">Whales active</span></li>
+                    <li><span class="news-name">Rates & inflation</span><span class="news-metric">Event heavy</span></li>
+                    <li><span class="news-name">Sports</span><span class="news-metric">Weekend peak</span></li>
+                </ul>
             </div>
-            <div class="insights-content scroll-container">
-                <div class="insight-block clickable">
-                    <span class="block-label cyan">SYNC METRICS</span>
-                    <div class="metrics-row">Network Latency: <span class="mono green" id="latency-val">~148ms</span></div>
-                    <div class="metrics-row">Node Drift: <span class="mono green"><0.02s</span></div>
+            <div class="news-card">
+                <div class="news-title">System activity</div>
+                <div class="terminal-log scroll-container" id="system-log">
+                    <div class="log-entry">> Initializing PolyEdge protocols...</div>
                 </div>
-                <div class="insight-block clickable alert-gold">
-                    <span class="block-label gold">WHALE CLUSTER DETECTED</span>
-                    <p>Anomaly detected in Polymarket Sector nodes. Multi-wallet accumulation active.</p>
-                </div>
-            </div>
-            <div class="panel-bottom-actions">
-                <button class="btn-action-panel clickable" id="execute-scan-btn">EXECUTE API_SCAN</button>
             </div>
         </aside>
     </main>
