@@ -138,6 +138,9 @@ async function loadMarkets() {
         displayedCount = 0;
         renderMarkets(currentFilter);
         startWhaleSimulation();
+        updateSmartMoneyClusters();
+        updateArbScanner();
+        updateSentimentHeat();
         addLog(`Protocol active: ${allMarkets.length} sensors detected.`, 'var(--green)');
     } else {
         addLog('Sync timeout. Switching to Static Alpha Feed.', 'var(--gold)');
@@ -193,6 +196,9 @@ function useFallbackData() {
     updateStats();
     displayedCount = 0;
     renderMarkets(currentFilter);
+    updateSmartMoneyClusters();
+    updateArbScanner();
+    updateSentimentHeat();
 }
 
 function updateStats() {
@@ -244,6 +250,194 @@ function updateAlphaSnapshot() {
         .sort((a, b) => b.volume24h - a.volume24h)[0]) || allMarkets[0];
 
     marketEl.textContent = topWhale ? topWhale.question : 'No markets loaded';
+}
+
+// ========== SMART MONEY / CLUSTERS ==========
+function updateSmartMoneyClusters() {
+    const grid = document.getElementById('clusters-grid');
+    if (!grid || !allMarkets.length) return;
+    grid.innerHTML = '';
+
+    // Rough "clusters" by category using volume & whale density
+    const byCategory = allMarkets.reduce((acc, m) => {
+        const key = (m.category || 'other').toLowerCase();
+        if (!acc[key]) acc[key] = { volume: 0, count: 0, whales: 0, roi: 0 };
+        acc[key].volume += m.volume24h;
+        acc[key].count += 1;
+        acc[key].whales += m.isWhaleHot ? 1 : 0;
+        acc[key].roi += m.maxRoi;
+        return acc;
+    }, {});
+
+    const clusters = Object.entries(byCategory)
+        .map(([category, stats]) => ({
+            category,
+            avgRoi: stats.roi / stats.count,
+            whaleShare: stats.whales / stats.count,
+            volume: stats.volume
+        }))
+        .sort((a, b) => b.volume - a.volume)
+        .slice(0, 4);
+
+    clusters.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'tool-card cluster-card';
+        card.innerHTML = `
+            <div class="cluster-title">${c.category}</div>
+            <div class="cluster-metrics">
+                <span>Whale density: ${(c.whaleShare * 100).toFixed(0)}%</span>
+                <span>Avg ROI: ${c.avgRoi.toFixed(1)}x</span>
+            </div>
+            <div class="cluster-metrics">
+                <span>24h volume: $${formatCompact(c.volume)}</span>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+// ========== ARB SCANNER ==========
+function updateArbScanner() {
+    const table = document.querySelector('#arb-table tbody');
+    if (!table || !allMarkets.length) return;
+    table.innerHTML = '';
+
+    // Naive: look for pairs in same category with inverted odds that leave gap
+    const opps = [];
+    const grouped = allMarkets.reduce((acc, m) => {
+        const key = (m.category || 'other').toLowerCase();
+        (acc[key] = acc[key] || []).push(m);
+        return acc;
+    }, {});
+
+    Object.entries(grouped).forEach(([cat, arr]) => {
+        for (let i = 0; i < arr.length; i++) {
+            for (let j = i + 1; j < arr.length; j++) {
+                const a = arr[i], b = arr[j];
+                const p1 = a.yesPrice;
+                const p2 = b.noPrice;
+                const edge = 1 - (p1 + p2);
+                if (edge > 0.12) {
+                    opps.push({
+                        bundle: `${shorten(a.question)} / ${shorten(b.question)}`,
+                        type: 'Long YES / Long NO',
+                        edge,
+                        category: cat
+                    });
+                }
+            }
+        }
+    });
+
+    opps
+        .sort((a, b) => b.edge - a.edge)
+        .slice(0, 5)
+        .forEach(o => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${o.bundle}</td>
+                <td>${o.type}</td>
+                <td>${(o.edge * 100).toFixed(1)}%</td>
+                <td>${o.category}</td>
+            `;
+            table.appendChild(row);
+        });
+}
+
+// ========== SENTIMENT / HEAT ==========
+function updateSentimentHeat() {
+    const grid = document.getElementById('sentiment-grid');
+    if (!grid || !allMarkets.length) return;
+    grid.innerHTML = '';
+
+    const tagged = allMarkets.map(m => ({
+        ...m,
+        sentiment: m.yesPrice > 0.6 ? 'bullish' : m.yesPrice < 0.4 ? 'bearish' : 'neutral'
+    }));
+
+    const bullish = tagged.filter(m => m.sentiment === 'bullish')
+        .sort((a, b) => b.volume24h - a.volume24h)
+        .slice(0, 3);
+    const bearish = tagged.filter(m => m.sentiment === 'bearish')
+        .sort((a, b) => b.volume24h - a.volume24h)
+        .slice(0, 3);
+
+    const makeBlock = (title, items, tone) => {
+        const card = document.createElement('div');
+        card.className = 'tool-card sentiment-card';
+        card.innerHTML = `<div class="sentiment-title">${title}</div>`;
+        const body = document.createElement('div');
+        body.className = 'sentiment-body';
+        if (!items.length) {
+            body.textContent = 'No clear signals yet.';
+        } else {
+            items.forEach(m => {
+                const row = document.createElement('div');
+                row.innerHTML = `
+                    <span class="tool-tag ${tone}">${tone.toUpperCase()}</span>
+                    <span> ${shorten(m.question, 70)} </span>
+                `;
+                body.appendChild(row);
+            });
+        }
+        card.appendChild(body);
+        grid.appendChild(card);
+    };
+
+    makeBlock('Bullish flows', bullish, 'bullish');
+    makeBlock('Bearish flows', bearish, 'bearish');
+}
+
+// ========== STRATEGY SANDBOX ==========
+window.addEventListener('DOMContentLoaded', () => {
+    const runBtn = document.getElementById('run-backtest-btn');
+    if (runBtn) {
+        runBtn.onclick = () => runStrategyBacktest();
+    }
+});
+
+function runStrategyBacktest() {
+    if (!allMarkets.length) return;
+    const trigger = document.getElementById('strategy-trigger')?.value || 'whales';
+    const direction = document.getElementById('strategy-direction')?.value || 'yes';
+    const out = document.getElementById('strategy-result');
+    if (!out) return;
+
+    let universe = [...allMarkets];
+    const volSorted = [...allMarkets].sort((a, b) => b.volume24h - a.volume24h);
+    const topCut = Math.max(1, Math.floor(universe.length * 0.2));
+
+    if (trigger === 'whales') {
+        universe = universe.filter(m => m.isWhaleHot);
+    } else if (trigger === 'high_volume') {
+        universe = volSorted.slice(0, topCut);
+    } else if (trigger === 'deep_value') {
+        universe = universe.filter(m => m.maxRoi >= 3);
+    }
+
+    if (!universe.length) {
+        out.textContent = 'No markets match this rule yet.';
+        return;
+    }
+
+    const trades = universe.length;
+    const avgPrice = universe.reduce((s, m) => s + (direction === 'yes' ? m.yesPrice : m.noPrice), 0) / trades;
+    const winRate = direction === 'yes'
+        ? Math.min(92, 40 + avgPrice * 100 * 0.6)
+        : Math.min(92, 40 + (1 - avgPrice) * 100 * 0.6);
+
+    const expectedRoi = (direction === 'yes'
+        ? (1 / avgPrice) - 1
+        : (1 / (1 - avgPrice)) - 1) * 0.4;
+
+    out.innerHTML = `
+        <div><strong>Virtual trades:</strong> ${trades}</div>
+        <div><strong>Estimated hit rate:</strong> ${winRate.toFixed(0)}%</div>
+        <div><strong>Estimated edge:</strong> ${(expectedRoi * 100).toFixed(1)}% over stake</div>
+        <div style="margin-top:4px; color:var(--text-3); font-size:0.75rem;">
+            Sandbox only — numbers are based on current prices and simple heuristics, not real historical PnL.
+        </div>
+    `;
 }
 
 // ========== RENDERER ==========
@@ -397,3 +591,8 @@ function formatCompact(num) {
     return num.toFixed(0);
 }
 function safeJsonParse(s, d) { try { return (typeof s === 'string') ? JSON.parse(s) : s; } catch(e) { return d; } }
+
+function shorten(str, len = 80) {
+    if (!str) return '';
+    return str.length > len ? str.slice(0, len - 3) + '...' : str;
+}

@@ -288,6 +288,156 @@ header {
 .btn-cyan { background: var(--blue); color: #fff; box-shadow: 0 4px 15px rgba(59, 130, 255, 0.2); }
 .btn-red { background: transparent; border: 1px solid var(--border); color: var(--text-2); }
 
+/* TOOL SECTIONS */
+.tool-section {
+    margin-bottom: 32px;
+}
+
+.tool-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.tool-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.tool-caption {
+    font-size: 0.8rem;
+    color: var(--text-3);
+}
+
+.tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.tool-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+}
+
+.cluster-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cluster-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.cluster-metrics {
+    display: flex;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--text-3);
+}
+
+.tool-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+}
+
+.tool-table th,
+.tool-table td {
+    padding: 8px 6px;
+    text-align: left;
+}
+
+.tool-table thead th {
+    font-weight: 600;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+}
+
+.tool-table tbody tr + tr td {
+    border-top: 1px solid rgba(229, 231, 235, 0.4);
+}
+
+.tool-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    border: 1px solid var(--border);
+}
+
+.tool-tag.bullish {
+    color: var(--green);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.tool-tag.bearish {
+    color: var(--red);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.tool-tag.neutral {
+    color: var(--text-3);
+}
+
+.sentiment-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sentiment-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.sentiment-body {
+    font-size: 0.78rem;
+    color: var(--text-3);
+}
+
+.strategy-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.strategy-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.strategy-controls label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.78rem;
+    color: var(--text-3);
+}
+
+.strategy-controls select {
+    margin-top: 2px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 0.78rem;
+    background: var(--bg-surface);
+    color: var(--text-2);
+}
+
+.strategy-result {
+    font-size: 0.8rem;
+    color: var(--text-2);
+}
+
 /* LOGS */
 .terminal-log-container { height: 140px; background: var(--bg-surface) !important; position: static !important; }
 .terminal-log { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-2); overflow-y: auto; padding: 16px; }

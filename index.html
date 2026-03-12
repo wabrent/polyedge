@@ -140,6 +140,82 @@
             <div class="load-more-wrap">
                 <button id="load-more-btn" class="btn-more clickable">LOAD MORE DATA SIGNALS</button>
             </div>
+
+            <!-- SMART MONEY / CLUSTERS -->
+            <section class="tool-section" aria-label="Smart money clusters">
+                <div class="tool-header">
+                    <h3 class="tool-title">Smart money clusters</h3>
+                    <p class="tool-caption">Who is consistently right on Polymarket and where they are active now.</p>
+                </div>
+                <div class="tool-grid" id="clusters-grid">
+                    <!-- filled from JS -->
+                </div>
+            </section>
+
+            <!-- ARB SCANNER -->
+            <section class="tool-section" aria-label="Cross-market arbitrage scanner">
+                <div class="tool-header">
+                    <h3 class="tool-title">Arb scanner</h3>
+                    <p class="tool-caption">Quick scan for probability mismatches across related markets.</p>
+                </div>
+                <div class="tool-card">
+                    <table class="tool-table" id="arb-table">
+                        <thead>
+                            <tr>
+                                <th>Bundle</th>
+                                <th>Type</th>
+                                <th>Edge</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- rows rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- STRATEGY BACKTESTER -->
+            <section class="tool-section" aria-label="Simple strategy backtester">
+                <div class="tool-header">
+                    <h3 class="tool-title">Strategy sandbox</h3>
+                    <p class="tool-caption">Test simple rules on current market universe: whale activity, volume and pricing.</p>
+                </div>
+                <div class="tool-card strategy-card">
+                    <div class="strategy-controls">
+                        <label>
+                            Trigger
+                            <select id="strategy-trigger">
+                                <option value="whales">Whale tagged markets</option>
+                                <option value="high_volume">Top 20% by 24h volume</option>
+                                <option value="deep_value">High max ROI</option>
+                            </select>
+                        </label>
+                        <label>
+                            Direction
+                            <select id="strategy-direction">
+                                <option value="yes">Buy YES</option>
+                                <option value="no">Buy NO</option>
+                            </select>
+                        </label>
+                        <button id="run-backtest-btn" class="btn-more clickable">Run backtest</button>
+                    </div>
+                    <div class="strategy-result" id="strategy-result">
+                        Choose a rule and run a quick sandbox backtest.
+                    </div>
+                </div>
+            </section>
+
+            <!-- SENTIMENT / HEAT -->
+            <section class="tool-section" aria-label="Sentiment and heat">
+                <div class="tool-header">
+                    <h3 class="tool-title">Sentiment & heat</h3>
+                    <p class="tool-caption">Bullish vs bearish positioning by sector, based on current YES prices.</p>
+                </div>
+                <div class="tool-grid" id="sentiment-grid">
+                    <!-- filled via JS -->
+                </div>
+            </section>
         </section>
 
         <aside class="news-column">
