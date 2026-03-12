@@ -3,124 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="logo.svg">
-    <title>PolyEdge | Pro Terminal</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <title>PolyEdge | Risk Navigator</title>
     <link rel="stylesheet" href="styles.css">
-    
-    <script>
-        tailwind.config = {
-            theme: { 
-                extend: { 
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
-                    colors: { app: { bg: '#0A0E17', panel: '#131823', border: '#1F2937', text: '#9CA3AF' } } 
-                } 
-            }
-        }
-    </script>
 </head>
-<body class="antialiased h-screen w-full relative">
-
-    <!-- AUTH MODAL -->
-    <div id="auth-modal" class="fixed inset-0 z-[300] hidden items-center justify-center">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
-        <div class="relative bg-[#11141D] border border-white/10 w-full max-w-[400px] rounded-[32px] p-8 shadow-2xl">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 mx-auto rounded-2xl mb-4 border border-white/10 shadow-lg flex items-center justify-center overflow-hidden">
-                    <img src="logo.svg" class="w-full h-full object-contain">
-                </div>
-                <h2 class="text-2xl font-black text-white italic uppercase">PolyEdge</h2>
-                <p class="text-gray-400 text-sm mt-2">Sign in to unlock terminal</p>
-            </div>
-            <div class="space-y-3">
-                <button onclick="handleLogin('Google')" class="w-full bg-white text-black font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-200 transition-all transition-all active:scale-95">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" class="w-5 h-5">
-                    Continue with Google
-                </button>
-                <button onclick="handleLogin('Apple')" class="w-full bg-[#222] text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 hover:bg-[#333] transition-all border border-white/5 active:scale-95">
-                    Continue with Apple
-                </button>
-                <div class="py-2 opacity-20"><div class="h-[1px] bg-white"></div></div>
-                <input type="email" placeholder="whale@polyedge.app" class="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 px-4 text-white outline-none focus:border-blue-500 font-mono text-sm">
-                <button onclick="handleLogin('Email')" class="w-full bg-blue-600 font-bold py-3.5 rounded-xl hover:bg-blue-500 shadow-lg shadow-blue-600/20 active:scale-95 uppercase tracking-widest text-xs">Launch</button>
-            </div>
-        </div>
-    </div>
+<body>
 
     <!-- LANDING VIEW -->
-    <div id="landing-view" class="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-[#0A0E17] transition-all duration-700">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-        <div class="relative z-10 flex flex-col items-center text-center px-6">
-            <div class="w-20 h-20 mb-10 rounded-2xl bg-[#11141D] border border-white/5 shadow-2xl flex items-center justify-center overflow-hidden p-3 group">
-                <img src="logo.svg" class="w-full h-full object-contain group-hover:scale-110 transition-transform">
+    <div id="landing-view" class="container">
+        <div class="hero-glow"></div>
+        <div class="relative z-10 text-center">
+            <h1 class="hero-title">PolyEdge</h1>
+            <p class="hero-subtitle">Risk Navigator</p>
+            
+            <div class="max-w-2xl mx-auto mb-12 space-y-6">
+                <p class="text-xl font-light leading-relaxed">
+                    The unique risk navigator for <span class="text-white font-bold">Polymarket traders</span>.
+                </p>
             </div>
-            <h1 class="text-7xl md:text-8xl font-black text-white tracking-tighter mb-2 italic">PolyEdge</h1>
-            <p class="text-[13px] md:text-[15px] font-black uppercase tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-12">Prediction Market Terminal</p>
-            <button id="launchAppBtn" class="group flex items-center gap-3 px-10 py-4 font-black text-white bg-[#2563EB] rounded-full hover:scale-105 transition-all uppercase tracking-widest text-sm shadow-[0_0_40px_rgba(37,99,235,0.3)] active:scale-95">
-                Launch Terminal <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </button>
+            
+            <div class="grid md:grid-cols-2 gap-8 mb-16 text-left max-w-4xl mx-auto">
+                <div class="p-6 bg-white/5 rounded-2xl border border-white/10">
+                    <h3 class="text-accent mb-2 font-black uppercase text-sm">AI Insights</h3>
+                    <p class="text-sm">Get insights others don’t see. Interactive alerts for profitable trades and risks.</p>
+                </div>
+                <div class="p-6 bg-white/5 rounded-2xl border border-white/10">
+                    <h3 class="text-accent mb-2 font-black uppercase text-sm">Analytics</h3>
+                    <p class="text-sm">Visualize hidden trends and market behavior to make decisions faster and smarter.</p>
+                </div>
+            </div>
+
+            <button id="launchBtn" class="cta-button">Start using PolyEdge</button>
         </div>
     </div>
 
-    <!-- APP VIEW -->
-    <div id="app-view" class="hidden h-screen flex-col bg-app-bg relative z-10">
-        <header class="h-[64px] border-b border-app-border bg-app-bg flex items-center justify-between px-6 z-50">
-            <div class="flex items-center gap-10">
-                <div class="flex items-center gap-2 cursor-pointer group" onclick="location.reload()">
-                    <img src="logo.svg" class="w-8 h-8 rounded-lg group-hover:scale-110 transition-all">
-                    <span class="font-black text-lg tracking-tight uppercase italic group-hover:text-blue-400">PolyEdge</span>
+    <!-- MAIN APP VIEW -->
+    <div id="app-view" class="hidden">
+        <div class="container">
+            <header class="dashboard-header">
+                <div class="logo-small">POLY<span>EDGE</span></div>
+                <div class="flex items-center gap-6">
+                    <div class="text-[10px] uppercase font-bold text-dim tracking-widest">
+                        Node: <span class="text-white">Active</span> | 
+                        Latency: <span class="text-white">42ms</span>
+                    </div>
                 </div>
-                <nav class="flex gap-2 text-[11px] font-black uppercase tracking-widest text-app-text">
-                    <a href="#market" data-target="market" class="nav-link px-4 py-2 rounded-xl transition-all hover:text-white">Markets</a>
-                    <a href="#watchlist" data-target="watchlist" class="nav-link px-4 py-2 rounded-xl transition-all hover:text-white">Watchlist</a>
-                    <a href="#scanner" data-target="scanner" class="nav-link px-4 py-2 rounded-xl transition-all hover:text-white">Scanner</a>
-                    <a href="#arbitrage" data-target="arbitrage" class="nav-link px-4 py-2 rounded-xl transition-all hover:text-white">Arbitrage</a>
-                </nav>
-            </div>
-            <div class="flex items-center gap-6">
-                <div class="flex gap-4 text-[10px] font-mono text-gray-500 border-r border-app-border pr-6">
-                    <div>NYC <span class="text-white font-bold" id="nyc-time">--:--</span></div>
-                    <div>LDN <span class="text-white font-bold" id="ldn-time">--:--</span></div>
-                </div>
-                <button id="connectWalletBtn" class="bg-blue-600 text-white px-6 py-2 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all active:scale-95">Connect Wallet</button>
-            </div>
-        </header>
+            </header>
 
-        <main class="flex-grow overflow-y-auto px-6 lg:px-10 py-8">
-            <div class="max-w-[1400px] mx-auto">
-                <div id="content-market" class="tab-content hidden space-y-6">
-                    <h1 class="text-3xl font-black italic mb-6">Active Markets</h1>
-                    <div id="market-list" class="grid gap-4">
-                        <div class="animate-pulse bg-app-panel h-32 rounded-3xl border border-app-border"></div>
+            <div class="dashboard-grid">
+                <!-- BLOCK: OVERVIEW -->
+                <div class="panel block-overview">
+                    <div class="panel-title">
+                        <span>Current Markets & Signals</span>
+                        <span id="target-count" class="text-accent">Scanning...</span>
+                    </div>
+                    <div id="market-list">
+                        <!-- Dynamic items -->
                     </div>
                 </div>
-                <div id="content-watchlist" class="tab-content hidden space-y-6">
-                    <h1 class="text-3xl font-black italic mb-6">Whale Analyzer</h1>
-                    <div class="bg-app-panel border border-app-border rounded-[32px] p-4 flex gap-4">
-                        <input id="whaleInput" type="text" placeholder="Enter Wallet Address..." class="flex-1 bg-black/40 border border-white/5 rounded-2xl px-6 py-4 text-white font-mono focus:border-blue-600 outline-none">
-                        <button id="analyzeBtn" class="bg-blue-600 px-12 rounded-2xl font-black uppercase text-sm">Analyze</button>
+
+                <!-- BLOCK: ALERTS -->
+                <div class="panel block-alerts">
+                    <div class="panel-title">
+                        <span>Top Profitable Trades</span>
+                        <span class="text-accent">Live</span>
                     </div>
-                    <div id="whaleStats" class="hidden grid grid-cols-2 gap-4 mt-6">
-                        <div class="bg-app-panel border border-app-border p-6 rounded-3xl">
-                            <p class="text-[10px] font-bold uppercase text-gray-500 mb-1">Total PnL</p>
-                            <h3 id="stat-pnl" class="text-3xl font-black text-green-500">--</h3>
-                        </div>
-                        <div class="bg-app-panel border border-app-border p-6 rounded-3xl">
-                            <p class="text-[10px] font-bold uppercase text-gray-500 mb-1">Win Rate</p>
-                            <h3 id="stat-win" class="text-3xl font-black">--</h3>
+                    <div id="alerts-container">
+                        <div class="alert-item">
+                            <span class="alert-time">NOW</span>
+                            <div class="alert-content">Initializing <b>Risk Insight Engine</b>...</div>
                         </div>
                     </div>
                 </div>
-                <div id="content-scanner" class="tab-content hidden py-20 text-center text-gray-600 font-bold uppercase tracking-widest border border-dashed border-app-border rounded-3xl">Scanner Engine Offline</div>
-                <div id="content-arbitrage" class="tab-content hidden py-20 text-center text-gray-600 font-bold uppercase tracking-widest border border-dashed border-app-border rounded-3xl">Scanning Orderbooks...</div>
+
+                <!-- BLOCK: HEATMAP -->
+                <div class="panel block-heatmap">
+                    <div class="panel-title">
+                        <span>User Risk Mistakes</span>
+                        <span class="text-accent">Forensics</span>
+                    </div>
+                    <div class="heatmap-container" id="heatmap">
+                        <!-- Simulating heatmap with 49 cells -->
+                    </div>
+                </div>
+
+                <!-- BLOCK: CHARTS -->
+                <div class="panel block-charts">
+                    <div class="panel-title">
+                        <span>Event Probability vs AI Forecast</span>
+                        <span class="text-accent">Intelligence</span>
+                    </div>
+                    <div class="chart-sim" id="charts-bars">
+                        <!-- Simulating chart bars -->
+                    </div>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
 
-    <!-- SCRIPT BRIDGE -->
+    <!-- UI Overlay for scanning effect -->
+    <div id="scanline" style="position: fixed; top: 0; left: 0; width: 100%; height: 2px; background: rgba(255, 61, 0, 0.2); pointer-events: none; z-index: 1000; animation: scanline 4s linear infinite;"></div>
+
     <script src="app.js"></script>
 </body>
 </html>

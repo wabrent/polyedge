@@ -1,193 +1,201 @@
 /**
- * PolyEdge Terminal Engine v15.5
- * Refined Routing & Institutional Data Sync
+ * PolyEdge - Risk Navigator Engine v1.0
+ * Logic based on Python package provided by USER.
  */
 
 const CONFIG = {
-    GAMMA_API: "https://gamma-api.polymarket.com",
-    REFRESH_CYCLE: 15
+    // Using Gamma API as it's the current standard for Polymarket
+    API_URL: 'https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=40&order=volume&dir=desc',
+    REFRESH_RATE: 30000 // 30s
 };
 
 let state = {
-    isLoggedIn: false,
-    userAddress: null,
-    activeTab: 'market'
+    markets: [],
+    signals: [],
+    isAppLaunched: false
 };
 
-// --- BOOTSTRAP ---
+// --- CORE BOOTSTRAP ---
 document.addEventListener('DOMContentLoaded', () => {
-    updateTime();
-    setInterval(updateTime, 1000);
-    initAuth();
+    initLaunch();
+    initSimulations();
+    
+    // Check if hash exists to skip landing
+    if (window.location.hash === '#active') {
+        launchApp();
+    }
 });
 
-// --- 1. CLOCK ---
-function updateTime() {
-    const opt = { hour: '2-digit', minute: '2-digit', hour12: false };
-    const ny = document.getElementById('nyc-time');
-    const ld = document.getElementById('ldn-time');
-    if(ny) ny.innerText = new Date().toLocaleTimeString('en-US', { ...opt, timeZone: 'America/New_York' });
-    if(ld) ld.innerText = new Date().toLocaleTimeString('en-GB', { ...opt, timeZone: 'Europe/London' });
+// --- 1. USER AUTH & LAUNCH FLOW ---
+function initLaunch() {
+    const launchBtn = document.getElementById('launchBtn');
+    if (launchBtn) {
+        launchBtn.onclick = () => {
+            launchApp();
+        }
+    }
 }
 
-// --- 2. AUTH & LAUNCH ---
-function initAuth() {
-    const launchBtn = document.getElementById('launchAppBtn');
+function launchApp() {
     const landing = document.getElementById('landing-view');
     const app = document.getElementById('app-view');
-    const authModal = document.getElementById('auth-modal');
-
-    if(launchBtn) {
-        launchBtn.onclick = () => {
-            authModal.classList.remove('hidden');
-            authModal.classList.add('flex');
-        };
-    }
-
-    // Exported for HTML onclick
-    window.handleLogin = () => {
-        state.isLoggedIn = true;
-        authModal.classList.add('hidden');
-        landing.classList.add('fade-out');
-        setTimeout(() => {
-            landing.style.display = 'none';
-            app.classList.remove('hidden');
-            app.classList.add('fade-in');
-            initApp();
-        }, 400);
-    };
-
-    if (window.location.hash) {
+    
+    landing.classList.add('fade-out');
+    window.location.hash = '#active';
+    
+    setTimeout(() => {
         landing.style.display = 'none';
         app.classList.remove('hidden');
-        app.classList.add('flex');
-        initApp();
+        app.classList.add('fade-in');
+        state.isAppLaunched = true;
+        fetchData();
+    }, 500);
+}
+
+// --- 2. ANALYTICS ENGINE (Translating User's Python Logic) ---
+function analyzeMarket(market) {
+    // Extract probability from prices (outcomePrices[0] is typically YES)
+    let prices = [0.5, 0.5];
+    if (market.outcomePrices) {
+        prices = (typeof market.outcomePrices === 'string' ? JSON.parse(market.outcomePrices) : market.outcomePrices).map(Number);
     }
+    
+    const probability = prices[0] || 0.5;
+    
+    // USER'S LOGIC: probability - 0.1
+    const hiddenTrend = probability - 0.1;
+    
+    // USER'S LOGIC: HIGH RISK if < 0.5 else OPPORTUNITY
+    const signal = hiddenTrend < 0.5 ? "HIGH RISK" : "OPPORTUNITY";
+    
+    return {
+        id: market.id,
+        name: market.question || market.name || "Unknown Event",
+        signal: signal,
+        prob: (probability * 100).toFixed(1),
+        trend: hiddenTrend,
+        vol: market.volume || 0,
+        slug: market.slug
+    };
 }
 
-function initApp() {
-    if(!window.location.hash) window.location.hash = 'market';
-    initNavigation();
-    initWeb3();
-    initWhaleAnalyzer();
-    handleRouting();
-}
-
-// --- 3. ROUTING ---
-function initNavigation() {
-    window.addEventListener('hashchange', handleRouting);
-}
-
-function handleRouting() {
-    const target = window.location.hash.replace('#', '') || 'market';
-    state.activeTab = target;
-
-    const contents = document.querySelectorAll('.tab-content');
-    const navLinks = document.querySelectorAll('.nav-link');
-
-    contents.forEach(c => c.classList.add('hidden'));
-    const activeContent = document.getElementById(`content-${target}`);
-    if (activeContent) activeContent.classList.remove('hidden');
-
-    navLinks.forEach(link => {
-        const isTarget = link.getAttribute('data-target') === target;
-        link.classList.toggle('active', isTarget);
-    });
-
-    if(target === 'market') fetchMarkets();
-}
-
-// --- 4. MARKETS (Real-time with fallback) ---
-async function fetchMarkets() {
-    const list = document.getElementById('market-list');
-    if(!list) return;
-
-    const fallbackMarkets = [
-        { question: "Will the Fed decrease interest rates by 50+ bps in March?", volume: 6400000, outcomePrices: [0.32, 0.68], slug: '#' },
-        { question: "Will Bitcoin hit $100k before April 2026?", volume: 12500000, outcomePrices: [0.85, 0.15], slug: '#' }
-    ];
-
+// --- 3. DATA ACQUISITION ---
+async function fetchData() {
     try {
-        const res = await fetch(`${CONFIG.GAMMA_API}/markets?active=true&limit=10&order=volume&dir=desc`);
-        if(!res.ok) throw new Error();
-        const data = await res.json();
-        renderMarkets(data);
+        const response = await fetch(CONFIG.API_URL);
+        const data = await response.json();
+        
+        state.markets = data;
+        state.signals = data.map(m => analyzeMarket(m));
+        
+        renderOverview();
+        generateAlerts();
     } catch (e) {
-        console.warn("Polymarket API unreachable, using secondary shard data.");
-        renderMarkets(fallbackMarkets);
+        console.warn("API Node Shard Offline. Using fallback forensics.");
+        deployFallback();
     }
 }
 
-function renderMarkets(data) {
+// --- 4. UI RENDERING ---
+function renderOverview() {
     const list = document.getElementById('market-list');
-    list.innerHTML = data.map((m, i) => `
-        <div class="bg-app-panel border border-app-border rounded-3xl p-6 flex justify-between items-center hover:border-blue-600/50 transition-all group animate-fadeInUp" style="animation-delay: ${i*0.05}s">
-            <div class="flex-1">
-                <span class="text-[9px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded">Vol: $${(m.volume/1000000).toFixed(1)}M</span>
-                <h3 class="text-lg font-bold text-white mt-1 italic group-hover:text-blue-400 transition-colors">${m.question}</h3>
-            </div>
-            <div class="flex gap-3 ml-6 text-center">
-                <div class="px-5 py-3 bg-green-500/5 border border-green-500/20 rounded-2xl group-hover:border-green-500/40 transition-all">
-                    <p class="text-[8px] font-black text-green-500 uppercase">Yes</p>
-                    <p class="text-lg font-black text-green-500">${(m.outcomePrices[0]*100).toFixed(1)}¢</p>
-                </div>
-                <div class="px-5 py-3 bg-red-500/5 border border-red-500/20 rounded-2xl group-hover:border-red-500/40 transition-all">
-                    <p class="text-[8px] font-black text-red-500 uppercase">No</p>
-                    <p class="text-lg font-black text-red-500">${(m.outcomePrices[1]*100).toFixed(1)}¢</p>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
+    const count = document.getElementById('target-count');
+    if (!list) return;
 
-// --- 5. WHALE ANALYZER ---
-function initWhaleAnalyzer() {
-    const btn = document.getElementById('analyzeBtn');
-    const inp = document.getElementById('whaleInput');
-    const stats = document.getElementById('whaleStats');
-    const pnl = document.getElementById('stat-pnl');
-    const win = document.getElementById('stat-win');
+    count.innerText = `Targets: ${state.signals.length}`;
+    list.innerHTML = '';
 
-    if(!btn) return;
-
-    btn.onclick = async () => {
-        const addr = inp.value.trim();
-        if(!addr) return;
+    state.signals.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'market-item animate-fadeInUp';
+        item.style.animationDelay = `${i * 0.05}s`;
         
-        btn.innerText = "QUERYING...";
-        try {
-            const res = await fetch(`${CONFIG.GAMMA_API}/profiles/${addr}`);
-            const data = await res.json();
-            stats.classList.remove('hidden');
-            pnl.innerText = `$${(data.profit || 0).toLocaleString()}`;
-            pnl.className = (data.profit >= 0) ? "text-3xl font-black text-green-500" : "text-3xl font-black text-red-500";
-            win.innerText = `${(data.winRate || 0).toFixed(1)}%`;
-        } catch (e) {
-            stats.classList.remove('hidden');
-            pnl.innerText = "$0.00";
-            win.innerText = "0%";
-        } finally {
-            btn.innerText = "Analyze";
-        }
-    };
-    if(inp) inp.onkeypress = (e) => { if(e.key === 'Enter') btn.click(); };
+        const signalStyle = s.signal === 'OPPORTUNITY' ? 'pill-signal-opp' : 'pill-signal-high';
+        
+        item.innerHTML = `
+            <div class="market-info">
+                <h3 class="truncate" title="${s.name}">${s.name}</h3>
+                <div class="market-pills">
+                    <span class="pill pill-prob">${s.prob}% Prob</span>
+                    <span class="pill ${signalStyle}">${s.signal}</span>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-[10px] text-dim uppercase">Trend</div>
+                <div class="text-xs font-bold ${s.signal === 'OPPORTUNITY' ? 'text-green-400' : 'text-accent'}">
+                    ${s.trend.toFixed(2)}
+                </div>
+            </div>
+        `;
+        
+        item.onclick = () => {
+            if (s.slug && s.slug !== '#') {
+                window.open(`https://polymarket.com/market/${s.slug}`, '_blank');
+            }
+        };
+        
+        list.appendChild(item);
+    });
 }
 
-// --- 6. WEB3 ---
-function initWeb3() {
-    const btn = document.getElementById('connectWalletBtn');
-    if(!btn) return;
+function generateAlerts() {
+    const container = document.getElementById('alerts-container');
+    if (!container) return;
 
-    btn.onclick = async () => {
-        if (window.ethereum) {
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                state.userAddress = accounts[0];
-                btn.innerText = state.userAddress.slice(0,6) + '...' + state.userAddress.slice(-4);
-                btn.classList.add('text-blue-400', 'bg-white/5');
-            } catch (e) { console.error("Web3 node rejection."); }
-        } else {
-            alert("Digital identity node (MetaMask) not detected.");
+    // Filter opportunities
+    const opps = state.signals.filter(s => s.signal === 'OPPORTUNITY').slice(0, 5);
+    
+    if (opps.length > 0) {
+        container.innerHTML = '';
+        opps.forEach(o => {
+            const alert = document.createElement('div');
+            alert.className = 'alert-item';
+            alert.innerHTML = `
+                <span class="alert-time">${new Date().toLocaleTimeString()}</span>
+                <div class="alert-content">Insight: <b>${o.name}</b> detected as a high-value signal.</div>
+            `;
+            container.appendChild(alert);
+        });
+    }
+}
+
+// --- 5. VISUAL SIMULATIONS (Heatmap & Charts) ---
+function initSimulations() {
+    // Heatmap
+    const heatmap = document.getElementById('heatmap');
+    if (heatmap) {
+        for (let i = 0; i < 49; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'heatmap-cell';
+            const intensity = Math.random();
+            cell.style.backgroundColor = `rgba(255, 61, 0, ${intensity * 0.5})`;
+            if (intensity > 0.8) cell.style.border = '1px solid rgba(255, 61, 0, 0.5)';
+            heatmap.appendChild(cell);
         }
-    };
+    }
+
+    // Charts
+    const charts = document.getElementById('charts-bars');
+    if (charts) {
+        for (let i = 0; i < 12; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            const height = 20 + Math.random() * 80;
+            bar.style.height = `${height}%`;
+            bar.style.opacity = 0.3 + Math.random() * 0.7;
+            charts.appendChild(bar);
+        }
+    }
+}
+
+function deployFallback() {
+    const dummy = [
+        { question: "Fed Rate Cut in March?", volume: 1000000, outcomePrices: [0.65, 0.35] },
+        { question: "BTC Above $100k?", volume: 5000000, outcomePrices: [0.85, 0.15] },
+        { question: "US GDP Growth Exceeds 3%?", volume: 200000, outcomePrices: [0.3, 0.7] }
+    ];
+    state.markets = dummy;
+    state.signals = dummy.map(m => analyzeMarket(m));
+    renderOverview();
+    generateAlerts();
 }
