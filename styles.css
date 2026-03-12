@@ -52,6 +52,21 @@ input[type=range]::-webkit-slider-runnable-track {
 .market-card { transition: all 0.3s ease; }
 .market-card:hover { transform: translateY(-4px); border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
 
+/* Transitions & View Logic */
+.fade-out { animation: fadeOut 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.fade-in { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; display: flex !important; }
+
+@keyframes fadeOut { 
+    from { opacity: 1; transform: scale(1); filter: blur(0); } 
+    to { opacity: 0; transform: scale(0.98); filter: blur(10px); visibility: hidden; } 
+}
+
+@keyframes fadeIn { 
+    from { opacity: 0; transform: scale(1.02); filter: blur(10px); } 
+    to { opacity: 1; transform: scale(1); filter: blur(0); } 
+}
+
 /* Utilities */
 #refresh-progress { transition: stroke-dasharray 0.3s ease; }
 .blur-3xl { filter: blur(64px); }
+.tracking-tighter { letter-spacing: -0.05em; }

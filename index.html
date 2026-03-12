@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/jpeg" href="/logo.jpg">
-    <title>PolyEdge | Terminal</title>
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <title>PolyEdge | Pro Terminal</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     
     <script>
@@ -32,181 +32,184 @@
         }
     </script>
 </head>
-<body class="antialiased h-screen flex flex-col overflow-hidden bg-app-bg text-white">
+<body class="antialiased h-screen w-full relative bg-app-bg text-white overflow-hidden">
 
-    <header class="h-[60px] flex-shrink-0 border-b border-app-border bg-app-bg flex items-center justify-between px-6 z-50">
-        <div class="flex items-center gap-8">
-            <div class="flex items-center gap-3 cursor-pointer group" onclick="window.location.hash = '#market'">
-                <div class="w-8 h-8 flex items-center justify-center bg-transparent group-hover:scale-105 transition-transform">
-                    <img src="logo.svg" alt="PolyEdge" class="w-full h-full object-contain">
-                </div>
-                <span class="font-extrabold text-xl tracking-tight text-white group-hover:text-blue-400 transition-colors">PolyEdge</span>
+    <!-- LANDING VIEW -->
+    <div id="landing-view" class="absolute inset-0 z-[200] flex flex-col bg-[#0A0E17] transition-all duration-500 overflow-y-auto">
+        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div class="relative z-10 flex flex-col items-center justify-center text-center max-w-4xl px-6 mx-auto flex-grow pt-20 pb-16">
+            <div class="w-24 h-24 mx-auto mb-8 rounded-3xl bg-white/5 border border-white/10 p-2.5 shadow-[0_0_60px_rgba(59,130,246,0.2)] flex items-center justify-center relative overflow-hidden group">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <img src="logo.svg" alt="PolyEdge Logo" class="w-full h-full object-contain relative z-10">
             </div>
             
-            <nav class="hidden md:flex items-center gap-2 text-[14px] font-medium text-app-text" id="main-nav">
-                <a href="#market" data-target="market" data-title="Markets" data-subtitle="Active filtering for markets nodes..." class="nav-link px-4 py-2 rounded-xl transition-colors">Markets</a>
-                <a href="#watchlist" data-target="watchlist" data-title="Whale Analyzer" data-subtitle="Track high-priority wallet movements and active positions." class="nav-link px-4 py-2 rounded-xl transition-colors">Watchlist</a>
-                <a href="#scanner" data-target="scanner" data-title="Opportunity Scanner" data-subtitle="Find high-potential markets based on ROI, liquidity, and time horizon." class="nav-link px-4 py-2 rounded-xl transition-colors">Scanner</a>
-                <a href="#arbitrage" data-target="arbitrage" data-title="Arbitrage Dashboard" data-subtitle="Detecting cross-platform odds discrepancies..." class="nav-link px-4 py-2 rounded-xl transition-colors">Arbitrage</a>
-            </nav>
-        </div>
-
-        <div class="flex items-center gap-4">
-             <div class="flex gap-4 text-[10px] font-mono text-app-text mr-4 border-r border-app-border pr-4">
-                <div class="flex flex-col items-center"><span>NYC</span><span class="font-bold text-white text-[11px]" id="clock-nyc">00:00</span></div>
-                <div class="flex flex-col items-center"><span>LDN</span><span class="font-bold text-white text-[11px]" id="clock-ldn">00:00</span></div>
-            </div>
+            <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 leading-none">PolyEdge</h1>
+            <p class="text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-extrabold uppercase tracking-[0.2em] mb-12">Prediction Market Terminal</p>
             
-            <div class="flex items-center gap-3">
-                <div class="relative w-8 h-8">
-                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                        <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-border" stroke-width="2"></circle>
-                        <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-accent" stroke-width="2" stroke-dasharray="0 100" id="refresh-progress"></circle>
-                    </svg>
-                    <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-app-accent" id="refresh-timer">15s</span>
+            <button id="launchAppBtn" class="group relative inline-flex items-center justify-center gap-4 px-12 py-5 font-black text-white bg-blue-600 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_50px_rgba(59,130,246,0.6)] active:scale-95">
+                <span class="relative text-xl tracking-wide uppercase">Launch Terminal</span>
+                <svg class="relative w-6 h-6 transition-transform group-hover:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+        </div>
+        
+        <div class="relative z-10 w-full max-w-6xl mx-auto px-6 pb-12 mt-auto">
+            <div class="bg-app-panel/50 border border-app-border rounded-3xl p-8 backdrop-blur-lg grid md:grid-cols-2 gap-10 shadow-2xl shadow-black/30 relative overflow-hidden group hover:border-white/10 transition-colors">
+                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-blue-500/15 transition-all"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white">О проекте PolyEdge</h3>
+                    </div>
+                    <p class="text-gray-400 text-[15px] leading-relaxed mb-4">PolyEdge — это профессиональный терминал, созданный специально для трейдеров на рынках предсказаний. Мы агрегируем разрозненные данные блокчейна в единый высокопроизводительный интерфейс.</p>
+                    <p class="text-gray-400 text-[15px] leading-relaxed">Платформа предоставляет передовые инструменты для анализа ликвидности событий, выявления безрисковых арбитражных сделок и отслеживания активности китов.</p>
                 </div>
-                <button id="connectWalletBtn" class="bg-white text-black px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-200 transition-colors uppercase tracking-widest">Connect</button>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white">Как начать работу</h3>
+                    </div>
+                    <ul class="space-y-4 text-gray-400 text-[15px]">
+                        <li class="flex items-start gap-3"><span class="font-bold text-blue-400 text-lg">1.</span><div><b class="text-white">Нажмите «Launch Terminal»:</b> Вы перейдете в основной интерфейс платформы.</div></li>
+                        <li class="flex items-start gap-3"><span class="font-bold text-blue-400 text-lg">2.</span><div><b class="text-white">Подключите кошелек:</b> Нажмите «Connect» в шапке, чтобы активировать функции кошелька.</div></li>
+                        <li class="flex items-start gap-3"><span class="font-bold text-blue-400 text-lg">3.</span><div><b class="text-white">Используйте Scanner & Watchlist:</b> Находите лучшие рынки и копируйте сделки китов.</div></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center w-full text-[10px] text-gray-700 font-mono tracking-widest uppercase mt-8 pointer-events-none">
+                System Status: <span class="text-green-500/80 font-bold animate-pulse">Online</span> • Latency: <span class="text-blue-400/80 font-bold">42ms</span> • API v1.2
             </div>
         </div>
-    </header>
+    </div>
 
-    <main class="flex-grow overflow-y-auto px-6 lg:px-10 py-10">
-        <div class="max-w-[1400px] mx-auto">
-            
-            <div class="mb-8 flex justify-between items-end">
-                <div>
-                    <h1 id="page-title" class="text-3xl font-bold text-white mb-2 tracking-tight">Initializing...</h1>
-                    <p id="page-subtitle" class="text-sm text-app-text font-medium">Connecting to Gamma Protocol nodes...</p>
+    <!-- APP VIEW -->
+    <div id="app-view" class="hidden h-screen flex-col overflow-hidden bg-app-bg relative z-10 transition-all duration-300">
+        <header class="h-[60px] flex-shrink-0 border-b border-app-border bg-app-bg flex items-center justify-between px-6 z-50">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="window.location.hash = '#market'">
+                    <div class="w-8 h-8 flex items-center justify-center bg-transparent group-hover:scale-105 transition-transform">
+                        <img src="logo.svg" alt="PolyEdge" class="w-full h-full object-contain">
+                    </div>
+                    <span class="font-extrabold text-xl tracking-tight text-white group-hover:text-blue-400 transition-colors">PolyEdge</span>
                 </div>
-                <div id="scanner-controls" class="hidden flex items-end gap-10 pb-2 flex-grow max-w-[800px] ml-10">
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-3"><span class="text-xs font-semibold text-app-text">Min ROI</span><span class="text-xs font-bold text-blue-500" id="val-roi">5x</span></div>
-                        <input type="range" min="1" max="20" value="5" class="slider-blue" id="input-roi">
+                <nav class="hidden md:flex items-center gap-2 text-[14px] font-medium text-app-text" id="main-nav">
+                    <a href="#market" data-target="market" data-title="Markets" data-subtitle="Active filtering for markets nodes..." class="nav-link px-4 py-2 rounded-xl transition-colors">Markets</a>
+                    <a href="#watchlist" data-target="watchlist" data-title="Whale Analyzer" data-subtitle="Track high-priority wallet movements and active positions." class="nav-link px-4 py-2 rounded-xl transition-colors">Watchlist</a>
+                    <a href="#scanner" data-target="scanner" data-title="Opportunity Scanner" data-subtitle="Find high-potential markets based on ROI, liquidity." class="nav-link px-4 py-2 rounded-xl transition-colors">Scanner</a>
+                    <a href="#arbitrage" data-target="arbitrage" data-title="Arbitrage Dashboard" data-subtitle="Detecting cross-platform odds discrepancies..." class="nav-link px-4 py-2 rounded-xl transition-colors">Arbitrage</a>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                 <div class="flex gap-4 text-[10px] font-mono text-app-text mr-4 border-r border-app-border pr-4">
+                    <div class="flex flex-col items-center"><span>NYC</span><span class="font-bold text-white text-[11px]" id="clock-nyc">00:00</span></div>
+                    <div class="flex flex-col items-center"><span>LDN</span><span class="font-bold text-white text-[11px]" id="clock-ldn">00:00</span></div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="relative w-8 h-8">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-border" stroke-width="2"></circle>
+                            <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-accent" stroke-width="2" stroke-dasharray="0 100" id="refresh-progress"></circle>
+                        </svg>
+                        <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-app-accent" id="refresh-timer">15s</span>
                     </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between mb-3"><span class="text-xs font-semibold text-app-text">Min Liquidity</span><span class="text-xs font-bold text-green-500" id="val-liq">$10K</span></div>
-                        <input type="range" min="1" max="500" value="10" class="slider-green" id="input-liq">
-                    </div>
-                    <button class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold py-2 px-6 rounded-lg h-10 transition-all active:scale-95" onclick="fetchData()">Scan</button>
+                    <button id="connectWalletBtn" class="bg-white text-black px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-200 transition-colors uppercase tracking-widest">Connect</button>
                 </div>
             </div>
+        </header>
 
-            <div id="content-market" class="tab-content block">
-                <div class="text-[11px] text-app-text mb-4 uppercase tracking-[0.2em] font-black opacity-60" id="target-count">Found 0 Targets</div>
-                <div id="market-list" class="space-y-4"></div>
-            </div>
-
-            <div id="content-scanner" class="tab-content hidden space-y-4">
-                <div id="scanner-list" class="space-y-4"></div>
-            </div>
-
-            <div id="content-watchlist" class="tab-content hidden max-w-[1200px] animate-fadeInUp">
-                <div class="flex items-center gap-4 bg-app-panel border border-app-border p-4 rounded-2xl mb-6 shadow-lg shadow-black/20">
-                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <main class="flex-grow overflow-y-auto px-6 lg:px-10 py-10">
+            <div class="max-w-[1400px] mx-auto">
+                <div class="mb-8 flex justify-between items-end">
+                    <div>
+                        <h1 id="page-title" class="text-3xl font-bold text-white mb-2 tracking-tight">Initializing...</h1>
+                        <p id="page-subtitle" class="text-sm text-app-text font-medium">Connecting to Gamma Protocol nodes...</p>
                     </div>
-                    <input type="text" placeholder="Enter Polymarket Wallet Address (0x...) or ENS to analyze..." class="flex-1 bg-transparent text-white font-mono focus:outline-none text-sm placeholder-gray-600" value="0xMacroGenius...a9F" id="whale-input">
-                    <button class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)]" onclick="fetchWhaleData()">Analyze</button>
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-                    <div class="relative overflow-hidden bg-white/[0.02] border border-white/5 backdrop-blur-xl p-6 rounded-3xl hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 group cursor-pointer shadow-2xl shadow-black/50">
-                        <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all duration-700 pointer-events-none"></div>
-                        <div class="relative z-10">
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-2">Total Net Profit</p>
-                            <h3 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">+$142,500</h3>
-                            <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-                                <span class="text-xs text-gray-500">Win Rate: <b class="text-green-400">68%</b></span>
-                                <svg width="60" height="20" viewBox="0 0 60 20" fill="none" class="opacity-70">
-                                    <path d="M0 15C5 15 10 5 15 5C20 5 25 10 30 10C35 10 40 2 45 2C50 2 55 8 60 8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
-                                    <path d="M0 15C5 15 10 5 15 5C20 5 25 10 30 10C35 10 40 2 45 2C50 2 55 8 60 8V20H0V15Z" fill="url(#paint0_linear_stat)" opacity="0.2"/>
-                                    <defs><linearGradient id="paint0_linear_stat" x1="30" y1="2" x2="30" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#10B981"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs>
-                                </svg>
-                            </div>
+                    <div id="scanner-controls" class="hidden flex items-end gap-10 pb-2 flex-grow max-w-[800px] ml-10">
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-3"><span class="text-xs font-semibold text-app-text">Min ROI</span><span class="text-xs font-bold text-blue-500" id="val-roi">5x</span></div>
+                            <input type="range" min="1" max="20" value="5" class="slider-blue" id="input-roi">
                         </div>
-                    </div>
-                    
-                    <div class="bg-app-panel border border-app-border p-5 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-colors">
-                        <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all"></div>
-                        <p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1 relative z-10">Global Win Rate</p>
-                        <h3 class="text-3xl font-bold text-white relative z-10">68.4%</h3>
-                    </div>
-                    
-                    <div class="bg-app-panel border border-app-border p-5 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-colors">
-                        <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all"></div>
-                        <p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1 relative z-10">Volume Traded</p>
-                        <h3 class="text-3xl font-bold text-white relative z-10">$1.24M</h3>
-                    </div>
-                    
-                    <div class="bg-app-panel border border-app-border p-5 rounded-2xl relative overflow-hidden group hover:border-blue-500/30 transition-colors">
-                        <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-all"></div>
-                        <p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1 relative z-10">Top Category Edge</p>
-                        <h3 class="text-xl font-bold text-blue-400 mt-2 relative z-10">US Politics</h3>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-3"><span class="text-xs font-semibold text-app-text">Min Liquidity</span><span class="text-xs font-bold text-green-500" id="val-liq">$10K</span></div>
+                            <input type="range" min="1" max="500" value="10" class="slider-green" id="input-liq">
+                        </div>
+                        <button class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold py-2 px-6 rounded-lg h-10 transition-all active:scale-95" onclick="fetchData()">Scan</button>
                     </div>
                 </div>
 
-                <div class="text-xs text-app-text mb-4 uppercase tracking-widest font-bold">Active Positions (3)</div>
-                <div class="space-y-3" id="whale-positions">
-                    <div class="flex items-center bg-app-panel border border-transparent hover:border-[#3B82F6]/30 rounded-xl p-4 transition-all group">
-                        <div class="w-14 text-center">
-                            <span class="text-[10px] font-bold text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded">YES</span>
+                <div id="content-market" class="tab-content block">
+                    <div class="text-[11px] text-app-text mb-4 uppercase tracking-[0.2em] font-black opacity-60" id="target-count">Found 0 Targets</div>
+                    <div id="market-list" class="space-y-4"></div>
+                </div>
+                <div id="content-scanner" class="tab-content hidden space-y-4"><div id="scanner-list" class="space-y-4"></div></div>
+                
+                <div id="content-watchlist" class="tab-content hidden max-w-[1200px] animate-fadeInUp">
+                    <div class="flex items-center gap-4 bg-app-panel border border-app-border p-4 rounded-2xl mb-6 shadow-lg shadow-black/20 focus-within:border-blue-500/50 transition-colors">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
+                        <input type="text" id="whaleInput" placeholder="Enter Polymarket Wallet Address (0x...) or ENS..." class="flex-1 bg-transparent text-white font-mono focus:outline-none text-sm placeholder-gray-600" value="0xMacroGenius...a9F">
+                        <button id="analyzeBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)]">Analyze</button>
+                    </div>
+                    <div id="whaleEmptyState" class="p-20 border border-dashed border-app-border rounded-3xl text-center bg-app-panel/30">
+                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4"><svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="text-app-text"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
+                        <p class="text-app-text font-medium">Awaiting wallet address for Alpha Intelligence analysis...</p>
+                    </div>
+                    <div id="whaleDataContainer" class="hidden transition-all duration-500 space-y-8">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div class="bg-app-panel border border-app-border p-6 rounded-2xl group hover:border-green-500/30 transition-all"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Total Net Profit</p><h3 id="dynamicProfit" class="text-3xl font-black text-green-500">+$142,500</h3></div>
+                            <div class="bg-app-panel border border-app-border p-6 rounded-2xl group hover:border-white/20 transition-all"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Global Win Rate</p><h3 class="text-3xl font-black text-white">68.4%</h3></div>
+                            <div class="bg-app-panel border border-app-border p-6 rounded-2xl group hover:border-white/20 transition-all"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Volume Traded</p><h3 class="text-3xl font-black text-white">$1.24M</h3></div>
+                            <div class="bg-app-panel border border-app-border p-6 rounded-2xl group hover:border-blue-500/30 transition-all"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Top Category Edge</p><h3 class="text-xl font-bold text-blue-400 mt-2">US Politics</h3></div>
                         </div>
-                        <div class="flex-1 ml-4">
-                            <h3 class="text-[15px] font-bold text-white mb-1 group-hover:text-blue-400 transition-colors truncate max-w-[500px]">Will the Fed decrease interest rates by 50+ bps?</h3>
-                            <div class="flex gap-4 text-[11px] text-app-text font-medium font-mono">
-                                <span>Avg Entry: <b class="text-white">0.24¢</b></span>
-                                <span>Current: <b class="text-green-500">0.30¢</b></span>
-                            </div>
+                        <div class="text-xs text-app-text mb-4 uppercase tracking-widest font-bold">Active Positions (3)</div>
+                        <div id="whale-positions" class="space-y-3">
+                            <div class="flex items-center bg-app-panel border border-transparent hover:border-blue-500/30 rounded-xl p-4 transition-all"><div class="w-14 text-center"><span class="text-[10px] font-bold text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded">YES</span></div><div class="flex-1 ml-4"><h3 class="text-[15px] font-bold text-white mb-1 truncate max-w-[500px]">Will the Fed decrease interest rates by 50+ bps?</h3><div class="flex gap-4 text-[11px] text-app-text font-mono font-medium"><span>Entry: 0.24¢</span><span>PnL: <b class="text-green-500">+$11,250</b></span></div></div><button class="copy-whale-btn ml-6 bg-blue-600/10 text-blue-500 border border-blue-600/30 hover:bg-blue-600 hover:text-white text-[12px] uppercase tracking-widest font-bold py-2.5 px-6 rounded-lg transition-all">Copy Trade</button></div>
                         </div>
-                        <div class="w-32 text-right pr-6 border-r border-app-border">
-                            <div class="text-[16px] font-mono font-bold text-white">$45,000</div>
-                            <div class="text-[9px] text-app-text font-bold uppercase mt-1 tracking-wider">Position Size</div>
-                        </div>
-                        <div class="w-32 text-right pr-6 ml-6">
-                            <div class="text-[16px] font-mono font-bold text-green-500">+$11,250</div>
-                            <div class="text-[9px] text-app-text font-bold uppercase mt-1 tracking-wider">Unrealized PnL</div>
-                        </div>
-                        <button class="ml-6 bg-blue-600/10 text-blue-500 border border-blue-600/30 hover:bg-blue-600 hover:text-white text-[12px] uppercase tracking-widest font-bold py-2.5 px-6 rounded-lg transition-all" onclick="openAlphaModal('0xMacroGenius', 'https://ui-avatars.com/api/?name=M&background=3B82F6&color=fff', 4.1)">
-                            Copy Trade
-                        </button>
+                    </div>
+                </div>
+
+                <div id="content-arbitrage" class="tab-content hidden max-w-[1200px] space-y-6">
+                    <div class="grid grid-cols-3 gap-6">
+                        <div class="bg-app-panel border border-app-border p-6 rounded-2xl"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Active Opportunities</p><h3 class="text-3xl font-black text-white">14</h3></div>
+                        <div class="bg-app-panel border border-app-border p-6 rounded-2xl"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Max Spread</p><h3 class="text-3xl font-black text-green-500">+4.8%</h3></div>
+                        <div class="bg-app-panel border border-app-border p-6 rounded-2xl"><p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1">Total Arb Liq</p><h3 class="text-3xl font-black text-white">$425.2K</h3></div>
+                    </div>
+                    <div class="flex items-center bg-app-panel border border-transparent hover:border-blue-500/30 rounded-xl p-6 transition-all group">
+                        <div class="flex-1 pr-6 border-r border-app-border"><h3 class="text-[15px] font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">US Presidential Election 2024 Winner</h3><div class="flex gap-4 text-[11px] text-app-text font-mono"><span>Vol: $1.2B</span><span>Ends: <b class="text-red-400">2d</b></span></div></div>
+                        <div class="w-48 text-right px-6 border-r border-app-border"><div class="text-[24px] font-mono font-bold text-green-500">+4.8%</div><div class="text-[9px] text-app-text font-bold uppercase mt-1 tracking-wider">Net Spread</div></div>
+                        <button class="ml-6 bg-blue-600/10 text-blue-500 border border-blue-600/30 hover:bg-blue-600 hover:text-white text-[11px] uppercase tracking-widest font-bold py-4 px-8 rounded-xl transition-all">Execute Arb</button>
                     </div>
                 </div>
             </div>
+        </main>
+    </div>
 
-            <div id="content-arbitrage" class="tab-content hidden">
-                <div class="p-20 border border-dashed border-app-border rounded-3xl text-center bg-app-panel/30">
-                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin-slow">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="text-app-accent"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    </div>
-                    <p class="text-app-text font-medium">Scanning cross-chain orderbooks (Polymarket vs Azuro vs Betfair)...</p>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- Copy Trade Modal -->
-    <div id="copyTradeModal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+    <!-- Modals -->
+    <div id="copyTradeModal" class="fixed inset-0 z-[300] hidden items-center justify-center">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-md" id="modalBackdrop"></div>
-        <div class="relative bg-app-panel border border-app-border w-full max-w-md rounded-2xl p-6 shadow-[0_0_60px_rgba(59,130,246,0.2)] transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
+        <div class="relative bg-app-panel border border-app-border w-full max-w-md rounded-2xl p-6 shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
             <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-xl font-bold text-white flex items-center gap-2">Alpha Execution</h3>
-                    <p class="text-xs text-app-text font-medium">Confirming smart-contract parameters</p>
-                </div>
+                <div><h3 class="text-xl font-bold text-white">Alpha Execution</h3><p class="text-xs text-app-text font-medium">Confirming smart-contract parameters</p></div>
                 <button id="closeModalBtn" class="text-gray-500 hover:text-white transition-colors bg-white/5 p-2 rounded-lg"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
-            <div class="bg-black/40 border border-white/5 rounded-xl p-4 mb-5 flex justify-between items-center">
-                <div class="flex items-center gap-3"><img id="modalWhaleImg" src="" class="w-10 h-10 rounded-full border border-blue-500/30"><div><p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Target Whale</p><p class="text-sm font-bold text-white" id="modalWhaleName">-</p></div></div>
-                <div class="text-right"><p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Signal</p><p class="text-[10px] font-black text-green-500 bg-green-500/10 px-2.5 py-1.5 rounded-lg border border-green-500/10 mt-1 uppercase">BUY YES</p></div>
+            <div class="bg-black/40 border border-white/5 rounded-xl p-4 mb-6 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img id="modalWhaleImg" src="https://ui-avatars.com/api/?name=W&background=3B82F6&color=fff" class="w-10 h-10 rounded-full border border-blue-500/30">
+                    <div><p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Target Whale</p><p class="text-sm font-bold text-white" id="modalWhaleName">-</p></div>
+                </div>
+                <div class="bg-green-500/10 text-green-500 border border-green-500/10 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">Buy Yes</div>
             </div>
-            <div class="space-y-4 mb-6">
+            <div class="space-y-4 mb-8">
                 <div>
-                    <div class="flex justify-between mb-2"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Investment (USDC)</label><span class="text-[10px] font-bold text-app-text">Bal: <span id="walletBalance">12,450.00</span></span></div>
-                    <div class="relative"><input type="number" id="modalAmount" value="1000" class="w-full bg-black/40 border border-app-border rounded-xl py-3.5 px-4 text-white font-mono focus:outline-none focus:border-blue-500 text-lg font-black"><button class="absolute right-3 top-3 bg-blue-500/10 text-blue-400 text-[10px] font-black px-3 py-1.5 rounded-lg border border-blue-500/20">MAX</button></div>
+                    <div class="flex justify-between mb-2"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Investment (USDC)</label><span class="text-[10px] font-bold text-app-text">Bal: <span id="walletBalance">0.00</span></span></div>
+                    <div class="relative"><input type="number" id="modalAmount" value="1000" class="w-full bg-black/40 border border-app-border rounded-xl py-4 px-4 text-white font-mono focus:outline-none focus:border-blue-500 text-lg font-black"><button class="absolute right-3 top-3.5 bg-blue-500/10 text-blue-400 text-[10px] font-black px-3 py-1.5 rounded-lg border border-blue-500/20">MAX</button></div>
                 </div>
             </div>
-            <button id="confirmTxBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-95">Sign & Execute Alpha</button>
+            <button id="confirmTxBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl transition-all shadow-[0_10px_30px_rgba(59,130,246,0.3)] active:scale-95">Sign & Execute Alpha</button>
         </div>
     </div>
 
