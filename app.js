@@ -291,7 +291,48 @@ function formatCompact(n) {
     return n.toFixed(0);
 }
 
-function deployFallback() {
-    state.markets = [{ title:'BTC hit $100k?', liq:12000000, vol:8000000, roi:6.6, price:15.0, ends:14, slug:'#', smartScore:94, bias:12.4 }];
-    render();
+// --- 3. WEB3 ЛОГИКА КОШЕЛЬКА (MetaMask) ---
+const connectBtn = document.getElementById('connectWalletBtn');
+const walletBalanceDisplay = document.getElementById('walletBalance');
+let userAddress = null;
+
+async function connectWallet() {
+    if (typeof window.ethereum !== 'undefined') {
+        try {
+            connectBtn.innerText = 'Connecting...';
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            userAddress = accounts[0];
+            const formattedAddress = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
+            
+            connectBtn.innerText = formattedAddress;
+            connectBtn.classList.remove('bg-white', 'text-black');
+            connectBtn.classList.add('bg-[#1E2433]', 'text-blue-400', 'border', 'border-blue-500/30');
+
+            if(walletBalanceDisplay) walletBalanceDisplay.innerText = '12,450.00';
+
+        } catch (error) {
+            console.error("Пользователь отклонил запрос", error);
+            connectBtn.innerText = 'Connect';
+        }
+    } else {
+        alert('Please install MetaMask or Rabby Wallet to use PolyEdge!');
+    }
+}
+
+if(connectBtn) {
+    connectBtn.addEventListener('click', connectWallet);
+}
+
+if (typeof window.ethereum !== 'undefined') {
+    window.ethereum.on('accountsChanged', function (accounts) {
+        if (accounts.length > 0) {
+            userAddress = accounts[0];
+            connectBtn.innerText = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
+        } else {
+            connectBtn.innerText = 'Connect';
+            connectBtn.classList.add('bg-white', 'text-black');
+            connectBtn.classList.remove('bg-[#1E2433]', 'text-blue-400', 'border', 'border-blue-500/30');
+            if(walletBalanceDisplay) walletBalanceDisplay.innerText = '0.00';
+        }
+    });
 }

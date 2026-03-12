@@ -65,7 +65,7 @@
                     </svg>
                     <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-app-accent" id="refresh-timer">15s</span>
                 </div>
-                <button class="bg-white text-black px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-200 transition-colors uppercase tracking-widest">Connect</button>
+                <button id="connectWalletBtn" class="bg-white text-black px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-200 transition-colors uppercase tracking-widest">Connect</button>
             </div>
         </div>
     </header>
@@ -202,7 +202,7 @@
             </div>
             <div class="space-y-4 mb-6">
                 <div>
-                    <div class="flex justify-between mb-2"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Investment (USDC)</label><span class="text-[10px] font-bold text-app-text">Bal: 12,450.00</span></div>
+                    <div class="flex justify-between mb-2"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Investment (USDC)</label><span class="text-[10px] font-bold text-app-text">Bal: <span id="walletBalance">12,450.00</span></span></div>
                     <div class="relative"><input type="number" id="modalAmount" value="1000" class="w-full bg-black/40 border border-app-border rounded-xl py-3.5 px-4 text-white font-mono focus:outline-none focus:border-blue-500 text-lg font-black"><button class="absolute right-3 top-3 bg-blue-500/10 text-blue-400 text-[10px] font-black px-3 py-1.5 rounded-lg border border-blue-500/20">MAX</button></div>
                 </div>
             </div>
