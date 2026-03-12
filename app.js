@@ -1,6 +1,6 @@
 /**
- * PolyEdge OS Alpha Intelligence Engine v10.0
- * Unified Dynamic Terminal Hub
+ * PolyEdge OS Alpha Intelligence Engine v11.0
+ * Hash-Based Unified Terminal Hub
  */
 
 const CONFIG = {
@@ -24,38 +24,34 @@ document.addEventListener('DOMContentLoaded', () => {
     initModal();
     startClocks();
     startRefreshCycle();
-    handleRouting();
+    handleHashRouting();
     fetchData();
 });
 
-// --- NAVIGATION & ROUTING ---
+// --- NAVIGATION & HASH ROUTING ---
 function initNavigation() {
-    window.addEventListener('popstate', handleRouting);
+    window.addEventListener('hashchange', handleHashRouting);
     
+    // Smooth scroll and handle link clicks
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const href = link.getAttribute('href');
-            window.history.pushState({}, '', href);
-            handleRouting();
+            // Hash propagation handles routing
         });
     });
 }
 
-function handleRouting() {
-    let path = window.location.pathname.replace(/^\/|\/$/g, '');
-    if (!path || path === 'index.html' || path.includes('.html')) path = 'market';
-    
-    state.activeTab = path;
+function handleHashRouting() {
+    let hash = window.location.hash.replace('#', '') || 'market';
+    state.activeTab = hash;
     
     // UI Tab Switching
     document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-    const target = document.getElementById('content-' + path);
+    const target = document.getElementById('content-' + hash);
     if(target) target.classList.remove('hidden');
 
     // Nav Active States
     document.querySelectorAll('.nav-link').forEach(l => {
-        if(l.dataset.target === path) {
+        if(l.dataset.target === hash) {
             l.classList.add('bg-app-activeTab', 'text-white');
             l.classList.remove('text-app-text');
             document.getElementById('page-title').innerText = l.dataset.title;
@@ -68,7 +64,7 @@ function handleRouting() {
 
     // Scanner Controls Visibility
     const sc = document.getElementById('scanner-controls');
-    if(path === 'scanner') sc.classList.remove('hidden');
+    if(hash === 'scanner') sc.classList.remove('hidden');
     else sc.classList.add('hidden');
 
     render();
@@ -104,7 +100,6 @@ function initModal() {
     window.openAlphaModal = (name, img, roi) => {
         document.getElementById('modalWhaleName').innerText = name;
         document.getElementById('modalWhaleImg').src = img;
-        document.getElementById('modalPayout').innerText = '$' + (1000 * roi).toLocaleString();
         
         modal.classList.remove('hidden');
         modal.classList.add('flex');
@@ -118,14 +113,14 @@ function initModal() {
         setTimeout(() => modal.classList.add('hidden'), 300);
     };
 
-    close.onclick = closeModal;
-    backdrop.onclick = closeModal;
+    if(close) close.onclick = closeModal;
+    if(backdrop) backdrop.onclick = closeModal;
 
-    sign.onclick = () => {
-        sign.innerHTML = `<span class="animate-spin mr-2">◌</span> Executing Node...`;
+    if(sign) sign.onclick = () => {
+        sign.innerHTML = `<span class="animate-spin mr-2">◌</span> Executing Alpha...`;
         sign.classList.add('pointer-events-none', 'bg-gray-600');
         setTimeout(() => {
-            sign.innerHTML = `Transaction Finalized`;
+            sign.innerHTML = `Alpha Finalized`;
             sign.classList.replace('bg-gray-600', 'bg-green-500');
             setTimeout(() => {
                 closeModal();
@@ -176,10 +171,11 @@ function renderMarketList() {
     if(!list) return;
 
     state.filtered = state.markets.sort((a,b) => b.vol - a.vol);
-    document.getElementById('target-count').innerText = `Found ${state.filtered.length} Targets`;
+    const count = document.getElementById('target-count');
+    if(count) count.innerText = `Found ${state.filtered.length} Targets`;
     
     list.innerHTML = '';
-    state.filtered.slice(0, 20).forEach((m, i) => {
+    state.filtered.slice(0, 15).forEach((m, i) => {
         const whale = { name: ['0xMacroGenius', 'PolyWhale_V2', 'AlphaKing'][i%3], img: `https://ui-avatars.com/api/?name=${i}&background=3B82F6&color=fff` };
         
         list.innerHTML += `
@@ -202,8 +198,8 @@ function renderMarketList() {
                         <span class="text-blue-400">Ends: ${m.ends}d</span>
                     </div>
                     <div class="flex gap-3 mt-auto">
-                        <button class="flex-1 bg-green-510/10 border border-green-500/20 hover:border-green-500/40 rounded-xl p-3 flex justify-between items-center transition-all" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')"><span class="text-[11px] text-green-500 font-bold uppercase">Yes</span><span class="text-green-500 font-bold text-xl leading-none">${m.price.toFixed(1)}¢</span></button>
-                        <button class="flex-1 bg-red-510/10 border border-red-500/20 hover:border-red-500/40 rounded-xl p-3 flex justify-between items-center transition-all" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')"><span class="text-[11px] text-red-500 font-bold uppercase">No</span><span class="text-red-500 font-bold text-xl leading-none">${(100-m.price).toFixed(1)}¢</span></button>
+                        <button class="flex-1 bg-green-500/10 border border-green-500/20 hover:border-green-500/40 rounded-xl p-3 flex justify-between items-center transition-all" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')"><span class="text-[11px] text-green-500 font-bold uppercase">Yes</span><span class="text-green-500 font-bold text-xl leading-none">${m.price.toFixed(1)}¢</span></button>
+                        <button class="flex-1 bg-red-500/10 border border-red-500/20 hover:border-red-500/40 rounded-xl p-3 flex justify-between items-center transition-all" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')"><span class="text-[11px] text-red-500 font-bold uppercase">No</span><span class="text-red-500 font-bold text-xl leading-none">${(100-m.price).toFixed(1)}¢</span></button>
                     </div>
                 </div>
 
@@ -213,7 +209,7 @@ function renderMarketList() {
                         <span class="text-[10px] font-mono text-green-400 bg-green-400/10 px-2 py-0.5 rounded">Bullish Bias +${m.bias}%</span>
                     </div>
                     <div class="bg-black/20 p-3 rounded-lg border border-white/5 flex gap-3 items-start">
-                        <div class="mt-1 text-blue-400"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg></div>
+                        <div class="mt-1 text-blue-400"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></div>
                         <div class="flex-1"><p class="text-[11px] text-white/90 font-medium">Accumulation signal detected. Smart money moving to YES side.</p></div>
                     </div>
                 </div>
@@ -253,13 +249,27 @@ function renderScannerList() {
     });
 }
 
+// --- WHALE ANALYZER ---
+window.fetchWhaleData = () => {
+    const btn = document.querySelector('#content-watchlist button');
+    if(!btn) return;
+    btn.innerHTML = `<span class="animate-spin mr-2">◌</span> Analyzing Hub...`;
+    btn.classList.add('pointer-events-none', 'opacity-70');
+    setTimeout(() => {
+        btn.innerHTML = `Analyze`;
+        btn.classList.remove('pointer-events-none', 'opacity-70');
+    }, 1500);
+};
+
 // --- UTILS ---
 function startClocks() {
     const update = () => {
         const now = new Date();
-        const f = (tz) => now.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute:'1-digit', timeZone: tz });
-        document.getElementById('clock-nyc').innerText = f('America/New_York');
-        document.getElementById('clock-ldn').innerText = f('Europe/London');
+        const f = (tz) => now.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute:'2-digit', timeZone: tz });
+        const ct_nyc = document.getElementById('clock-nyc');
+        const ct_ldn = document.getElementById('clock-ldn');
+        if(ct_nyc) ct_nyc.innerText = f('America/New_York');
+        if(ct_ldn) ct_ldn.innerText = f('Europe/London');
     };
     update(); setInterval(update, 10000);
 }
@@ -268,8 +278,10 @@ function startRefreshCycle() {
     setInterval(() => {
         state.timer--;
         if(state.timer < 0) { state.timer = CONFIG.REFRESH_CYCLE; fetchData(); }
-        document.getElementById('refresh-timer').innerText = state.timer + 's';
-        document.getElementById('refresh-progress').style.strokeDasharray = `${100 - (state.timer/CONFIG.REFRESH_CYCLE)*100}, 100`;
+        const rt = document.getElementById('refresh-timer');
+        const rp = document.getElementById('refresh-progress');
+        if(rt) rt.innerText = state.timer + 's';
+        if(rp) rp.style.strokeDasharray = `${100 - (state.timer/CONFIG.REFRESH_CYCLE)*100}, 100`;
     }, 1000);
 }
 
@@ -278,23 +290,6 @@ function formatCompact(n) {
     if (n >= 1e3) return (n/1e3).toFixed(1) + 'k';
     return n.toFixed(0);
 }
-
-// --- WHALE ANALYZER ---
-window.fetchWhaleData = () => {
-    const btn = document.querySelector('#content-watchlist button');
-    const input = document.getElementById('whale-input');
-    
-    btn.innerHTML = `<span class="animate-spin mr-2">◌</span> Analyzing Hub...`;
-    btn.classList.add('pointer-events-none', 'opacity-70');
-
-    setTimeout(() => {
-        btn.innerHTML = `Analyze`;
-        btn.classList.remove('pointer-events-none', 'opacity-70');
-        // In a real app, this would fetch from a custom indexer. 
-        // Here we just re-trigger a layout refresh to show it's "interactive".
-        console.log("Whale analysis complete for: " + input.value);
-    }, 1500);
-};
 
 function deployFallback() {
     state.markets = [{ title:'BTC hit $100k?', liq:12000000, vol:8000000, roi:6.6, price:15.0, ends:14, slug:'#', smartScore:94, bias:12.4 }];
