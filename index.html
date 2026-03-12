@@ -4,160 +4,248 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="logo.svg">
-    <title>PolyEdge | Prediction Market Terminal</title>
+    <title>PolyEdge | Pro Terminal</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     
     <script>
         tailwind.config = {
-            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { app: { bg: '#0A0E17', panel: '#131823', border: '#1F2937', text: '#9CA3AF' } } } }
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
+                    colors: { 
+                        app: { 
+                            bg: '#0A0E17', 
+                            panel: '#131823', 
+                            border: '#1F2937', 
+                            text: '#9CA3AF',
+                            accent: '#3B82F6',
+                            activeTab: '#1E2433'
+                        } 
+                    } 
+                } 
+            }
         }
     </script>
 </head>
-<body class="antialiased h-screen w-full relative bg-app-bg text-white">
+<body class="antialiased h-screen w-full relative bg-app-bg text-white overflow-hidden font-sans">
 
+    <!-- AUTH MODAL -->
+    <div id="auth-modal" class="fixed inset-0 z-[400] hidden items-center justify-center">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md" id="authBackdrop"></div>
+        <div class="relative bg-[#11141D] border border-white/10 w-full max-w-[420px] rounded-[40px] p-10 shadow-3xl transform scale-95 opacity-0 transition-all duration-300" id="authContent">
+            <div class="text-center mb-10">
+                <div class="w-20 h-20 mx-auto rounded-3xl bg-white/5 border border-white/10 p-4 mb-6 shadow-2xl">
+                    <img src="logo.svg" class="w-full h-full object-contain">
+                </div>
+                <h2 class="text-3xl font-black text-white italic">PolyEdge Access</h2>
+                <p class="text-gray-400 text-sm mt-3 uppercase tracking-widest font-bold">Institutional Portal</p>
+            </div>
+            <div class="space-y-4">
+                <button id="loginGoogle" class="w-full bg-white text-black font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-gray-200 transition-all active:scale-95 uppercase text-xs tracking-widest">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" class="w-5 h-5">
+                    Continue with Google
+                </button>
+                <button id="loginApple" class="w-full bg-[#222] text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-[#333] transition-all border border-white/5 active:scale-95 uppercase text-xs tracking-widest">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.057 12.871c.019 2.536 2.203 3.385 2.227 3.396-.021.066-.346 1.185-1.151 2.362-.697 1.018-1.42 2.031-2.557 2.053-1.116.021-1.474-.662-2.75-.662-1.277 0-1.674.64-2.73.682-1.1.041-1.928-.971-2.628-1.983-1.433-2.071-2.531-5.842-1.055-8.405.733-1.272 2.042-2.076 3.454-2.097 1.072-.021 2.083.722 2.741.722.657 0 1.889-.9 3.16-.767.534.022 2.034.215 2.997 1.625-.077.048-1.789 1.042-1.77 3.074zm-2.316-8.774c.571-.693.956-1.656.85-2.618-.828.033-1.829.551-2.422 1.245-.534.619-.997 1.597-.872 2.538.922.072 1.873-.472 2.444-1.165z"/></svg>
+                    Continue with Apple
+                </button>
+                <div class="flex items-center gap-4 py-4 opacity-30">
+                    <div class="h-[1px] bg-white flex-1"></div>
+                    <span class="text-[10px] font-black uppercase tracking-widest">OR</span>
+                    <div class="h-[1px] bg-white flex-1"></div>
+                </div>
+                <input type="email" placeholder="Institutional Email" class="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-blue-600 transition-all font-mono text-sm placeholder-gray-600">
+                <button id="loginMagic" class="w-full bg-blue-600 text-white font-black py-4 rounded-2xl hover:bg-blue-500 shadow-xl shadow-blue-600/20 active:scale-95 uppercase text-xs tracking-widest italic">
+                    Send Access Link
+                </button>
+            </div>
+            <button id="closeAuthBtn" class="absolute top-6 right-8 text-gray-600 hover:text-white transition-colors text-2xl font-black italic">X</button>
+        </div>
+    </div>
+
+    <!-- LANDING VIEW -->
     <div id="landing-view" class="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-[#0A0E17] transition-all duration-700">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none"></div>
         
         <div class="relative z-10 flex flex-col items-center text-center px-6">
-            <div class="w-20 h-20 mb-10 rounded-2xl bg-[#11141D] border border-white/5 shadow-2xl flex items-center justify-center overflow-hidden p-2">
-                <img src="logo.svg" class="w-full h-full object-contain">
+            <div class="w-24 h-24 mb-10 rounded-3xl bg-[#11141D] border border-white/5 shadow-3xl flex items-center justify-center overflow-hidden p-4 group">
+                <img src="logo.svg" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500">
             </div>
             
-            <h1 class="text-7xl md:text-8xl font-black text-white tracking-tighter mb-2 italic">
-                PolyEdge
-            </h1>
-            
-            <p class="text-[13px] md:text-[15px] font-black uppercase tracking-[0.4em] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-12">
-                Prediction Market Terminal
+            <h1 class="text-8xl md:text-9xl font-black text-white tracking-tighter mb-4 italic uppercase animate-fadeInUp">PolyEdge</h1>
+            <p class="text-[14px] md:text-[16px] font-black uppercase tracking-[0.5em] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600 mb-16 opacity-0 animate-fadeInUp" style="animation-delay: 0.2s">
+                Institutional Prediction Terminal
             </p>
             
-            <button id="launchAppBtn" class="group flex items-center gap-3 px-10 py-4 font-black text-white bg-[#2563EB] rounded-full hover:bg-blue-500 hover:scale-105 hover:shadow-[0_0_40px_rgba(37,99,235,0.4)] transition-all uppercase tracking-widest text-sm active:scale-95">
+            <button id="launchAppBtn" class="group flex items-center gap-4 px-14 py-6 font-black text-white bg-[#2563EB] rounded-full hover:bg-blue-500 hover:scale-105 hover:shadow-[0_0_60px_rgba(37,99,235,0.5)] transition-all uppercase tracking-[0.2em] text-sm active:scale-95">
                 Launch Terminal
-                <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                <svg class="w-6 h-6 transition-transform group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4">
                     <path d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                 </svg>
             </button>
         </div>
 
-        <div class="absolute bottom-10 flex gap-8 text-[10px] font-bold text-gray-700 uppercase tracking-[0.3em]">
-            <span>System Online</span>
+        <div class="absolute bottom-12 flex gap-12 text-[11px] font-black text-gray-700 uppercase tracking-[0.4em] opacity-50">
+            <span class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Node Online</span>
             <span>Latency: 42ms</span>
-            <span>v1.2.0</span>
+            <span>v1.5.0-PRO</span>
         </div>
     </div>
 
-    <div id="app-view" class="hidden h-screen flex-col bg-app-bg relative z-10">
-        <header class="h-[64px] border-b border-app-border bg-app-bg flex items-center justify-between px-6">
+    <!-- MAIN APP VIEW -->
+    <div id="app-view" class="hidden h-screen flex-col bg-app-bg relative z-10 transition-all duration-500">
+        <header class="h-[64px] border-b border-app-border bg-app-bg flex items-center justify-between px-6 z-50">
             <div class="flex items-center gap-10">
-                <div class="flex items-center gap-2 cursor-pointer group" onclick="window.location.hash='market'">
-                    <img src="logo.svg" class="w-8 h-8 rounded-lg group-hover:scale-105 transition-all">
-                    <span class="font-bold text-lg tracking-tight uppercase italic group-hover:text-blue-400 transition-colors">PolyEdge</span>
+                <div class="flex items-center gap-2 cursor-pointer group" id="logoBtn">
+                    <img src="logo.svg" class="w-8 h-8 rounded-lg group-hover:scale-110 transition-transform">
+                    <span class="font-black text-lg tracking-tight uppercase italic text-white group-hover:text-blue-400 transition-colors">PolyEdge</span>
                 </div>
-                <nav class="hidden md:flex gap-4 text-[11px] font-black uppercase tracking-widest text-app-text">
-                    <a href="#market" data-target="market" class="nav-link px-3 py-1.5 rounded-lg hover:text-white transition-all">Markets</a>
-                    <a href="#watchlist" data-target="watchlist" class="nav-link px-3 py-1.5 rounded-lg hover:text-white transition-all">Watchlist</a>
-                    <a href="#scanner" data-target="scanner" class="nav-link px-3 py-1.5 rounded-lg hover:text-white transition-all">Scanner</a>
-                    <a href="#arbitrage" data-target="arbitrage" class="nav-link px-3 py-1.5 rounded-lg hover:text-white transition-all">Arbitrage</a>
+                <nav class="hidden md:flex gap-2 text-[11px] font-black uppercase tracking-widest text-app-text" id="main-nav">
+                    <a href="#market" data-target="market" class="nav-link px-4 py-2 rounded-xl hover:text-white transition-all">Markets</a>
+                    <a href="#watchlist" data-target="watchlist" class="nav-link px-4 py-2 rounded-xl hover:text-white transition-all">Watchlist</a>
+                    <a href="#scanner" data-target="scanner" class="nav-link px-4 py-2 rounded-xl hover:text-white transition-all">Scanner</a>
+                    <a href="#arbitrage" data-target="arbitrage" class="nav-link px-4 py-2 rounded-xl hover:text-white transition-all">Arbitrage</a>
                 </nav>
             </div>
 
             <div class="flex items-center gap-6">
                 <div class="hidden xl:flex gap-4 text-[10px] font-mono text-gray-500 border-r border-app-border pr-6">
-                    <div>NYC <span class="text-white font-bold" id="nyc-time">00:00</span></div>
-                    <div>LDN <span class="text-white font-bold" id="ldn-time">00:00</span></div>
+                    <div class="text-right">NYC <span class="text-white font-bold" id="nyc-time">--:--</span></div>
+                    <div class="text-right">LDN <span class="text-white font-bold" id="ldn-time">--:--</span></div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="relative w-8 h-8 mr-2 hidden md:block">
-                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                            <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-border" stroke-width="2"></circle>
-                            <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-app-accent" stroke-width="2" stroke-dasharray="0 100" id="refresh-progress"></circle>
-                        </svg>
-                        <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-app-accent" id="refresh-timer">15s</span>
+                
+                <div class="relative" id="wallet-container">
+                    <button id="connectWalletBtn" class="bg-blue-600 text-white px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all active:scale-95 whitespace-nowrap italic">Connect Wallet</button>
+                    
+                    <!-- WALLET DROPDOWN MENU -->
+                    <div id="wallet-menu" class="hidden absolute right-0 top-[calc(100%+12px)] w-72 bg-[#11141D] border border-white/10 rounded-3xl p-5 shadow-3xl z-[100] dropdown-animate">
+                        <p class="text-[10px] text-gray-500 font-black uppercase mb-5 tracking-[0.2em]">Network: Polygon Mainnet</p>
+                        <div class="flex items-center gap-4 mb-5 pb-5 border-b border-white/5">
+                            <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center font-black text-white italic text-xl shadow-lg" id="wallet-avatar">P</div>
+                            <div class="min-w-0">
+                                <p id="wallet-addr-short" class="text-[11px] text-white font-mono font-bold truncate">0x0...000</p>
+                                <p class="text-lg font-black text-green-500 mt-1 italic" id="real-balance">0.00 USDC</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 mb-5">
+                            <div class="bg-white/5 rounded-xl p-3 text-center border border-white/5">
+                                <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Status</p>
+                                <p class="text-[10px] font-black text-blue-400">Verifying...</p>
+                            </div>
+                            <div class="bg-white/5 rounded-xl p-3 text-center border border-white/5">
+                                <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Gas</p>
+                                <p class="text-[10px] font-black text-white">42 Gwei</p>
+                            </div>
+                        </div>
+                        <button id="disconnectWalletBtn" class="w-full bg-red-500/10 text-red-500 border border-red-500/20 py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all active:scale-95 italic">Disconnect Node</button>
                     </div>
-                    <button id="connectWalletBtn" class="bg-blue-600 text-white px-6 py-2 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all active:scale-95 whitespace-nowrap">Connect Wallet</button>
                 </div>
+                
+                <button id="logoutBtn" class="p-2 text-gray-600 hover:text-white transition-colors" title="Logout session">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
             </div>
         </header>
 
         <main class="flex-grow overflow-y-auto px-6 lg:px-10 py-8">
             <div class="max-w-[1400px] mx-auto">
-                
+                <!-- Market Tab -->
                 <div id="content-market" class="tab-content hidden space-y-6">
-                    <h1 class="text-3xl font-black italic mb-6">Active Markets</h1>
+                    <div class="flex justify-between items-end mb-8">
+                        <div>
+                            <h1 class="text-4xl font-black italic uppercase tracking-tighter">Active Markets</h1>
+                            <p class="text-sm text-app-text mt-1">Direct Polymarket Gamma Protocol data-link established</p>
+                        </div>
+                        <div class="hidden md:flex items-center gap-3 text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-5 py-2.5 rounded-full border border-blue-500/20">
+                            <div class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+                            Syncing: L2 Node #402
+                        </div>
+                    </div>
                     <div id="market-list" class="grid gap-4">
-                        <div class="bg-app-panel border border-app-border rounded-3xl p-6 flex justify-between items-center transition-all animate-pulse">
-                            <div class="flex-1 space-y-4 py-1">
-                                <div class="h-4 bg-white/5 rounded w-3/4"></div>
-                                <div class="h-4 bg-white/5 rounded w-1/2"></div>
+                        <div class="animate-pulse bg-app-panel h-32 rounded-[32px] border border-app-border"></div>
+                        <div class="animate-pulse bg-app-panel h-32 rounded-[32px] border border-app-border"></div>
+                        <div class="animate-pulse bg-app-panel h-32 rounded-[32px] border border-app-border"></div>
+                    </div>
+                </div>
+
+                <!-- Watchlist / Whale Analyzer Tab -->
+                <div id="content-watchlist" class="tab-content hidden space-y-8 animate-fadeIn">
+                    <div class="mb-4">
+                        <h1 class="text-4xl font-black italic uppercase tracking-tighter">Whale Analyzer</h1>
+                        <p class="text-sm text-app-text mt-1">Cross-reference wallet forensics with institutional-grade indexing.</p>
+                    </div>
+                    
+                    <div class="bg-app-panel border border-app-border rounded-[32px] p-4 flex gap-4 shadow-3xl focus-within:border-blue-600/50 transition-all">
+                        <input id="whaleInput" type="text" placeholder="Wallet Address (0x...) or ENS Domain" class="flex-1 bg-black/40 border border-white/5 rounded-2xl px-6 py-4 text-white font-mono text-sm focus:border-blue-600/50 outline-none transition-all placeholder-gray-600">
+                        <button id="analyzeBtn" class="bg-blue-600 px-12 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-500 transition-all active:scale-95 shadow-lg italic">Run Forensics</button>
+                    </div>
+                    
+                    <div id="whaleStats" class="hidden transition-all duration-500 opacity-0 space-y-8">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div class="bg-app-panel border border-app-border p-8 rounded-[32px] relative overflow-hidden group">
+                                <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-green-500/5 rounded-full blur-2xl group-hover:bg-green-500/10 transition-all"></div>
+                                <p class="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Net Realized PnL</p>
+                                <h3 id="stat-pnl" class="text-4xl font-black italic text-green-500">--</h3>
+                            </div>
+                            <div class="bg-app-panel border border-app-border p-8 rounded-[32px]">
+                                <p class="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Alpha Win Rate</p>
+                                <h3 id="stat-win" class="text-4xl font-black italic text-white" id="stat-win">--</h3>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div id="content-watchlist" class="tab-content hidden space-y-6 animate-fadeIn">
-                    <h1 class="text-3xl font-black italic mb-6">Whale Analyzer</h1>
-                    <div class="bg-app-panel border border-app-border rounded-3xl p-6 flex gap-4 shadow-xl focus-within:border-blue-500/50 transition-all">
-                        <input id="whaleInput" type="text" placeholder="Enter Wallet Address (0x...)" class="flex-1 bg-black/40 border border-white/5 rounded-2xl px-6 py-4 text-white font-mono focus:border-blue-600/50 outline-none transition-all placeholder-gray-600">
-                        <button id="analyzeBtn" class="bg-blue-600 px-12 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-500 transition-all active:scale-95 shadow-lg">Analyze</button>
-                    </div>
                     
-                    <div id="whaleStats" class="hidden grid grid-cols-2 md:grid-cols-4 gap-6 mt-6 transition-all duration-500 opacity-0">
-                        <div class="bg-app-panel border border-app-border p-6 rounded-3xl group hover:border-green-500/30 transition-all">
-                            <p class="text-[10px] text-gray-500 font-bold uppercase mb-1">Total Net PnL</p>
-                            <h3 id="stat-pnl" class="text-3xl font-black text-green-500">--</h3>
-                        </div>
-                        <div class="bg-app-panel border border-app-border p-6 rounded-3xl group hover:border-white/20 transition-all">
-                            <p class="text-[10px] text-gray-500 font-bold uppercase mb-1">Alpha Win Rate</p>
-                            <h3 id="stat-win" class="text-3xl font-black text-white">--</h3>
-                        </div>
-                    </div>
-                    
-                    <div id="whaleEmptyState" class="p-20 border border-dashed border-app-border rounded-3xl text-center bg-app-panel/20">
-                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 italic text-2xl font-black">?</div>
-                        <p class="text-app-text font-bold">Awaiting node input for forensics...</p>
-                        <p class="text-xs text-gray-600 mt-2 uppercase tracking-widest">Connect your wallet or enter an address to start scanning.</p>
+                    <div id="whaleEmptyState" class="p-24 border border-dashed border-app-border rounded-[40px] text-center bg-app-panel/20">
+                        <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-600 italic text-3xl font-black">?</div>
+                        <p class="text-app-text font-black uppercase tracking-widest italic">Awaiting Forensic Input</p>
+                        <p class="text-[10px] text-gray-600 mt-2 uppercase tracking-[0.3em] font-bold">Querying the Polymarket profile shard...</p>
                     </div>
                 </div>
 
-                <div id="content-scanner" class="tab-content hidden py-20 text-center border border-dashed border-app-border rounded-3xl opacity-50">
-                    <h3 class="text-xl font-bold mb-2 uppercase italic tracking-tighter">Scanner Engine Offline</h3>
-                    <p class="text-xs font-bold text-gray-600 uppercase tracking-widest">Awaiting synchronization with orderbook shard.</p>
+                <div id="content-scanner" class="tab-content hidden py-32 text-center border border-dashed border-app-border rounded-[40px] opacity-40">
+                    <h3 class="text-2xl font-black mb-2 uppercase italic tracking-tighter">Scanner Engine Offline</h3>
+                    <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Initialization required via Auth Gateway.</p>
                 </div>
                 
-                <div id="content-arbitrage" class="tab-content hidden py-20 text-center border border-dashed border-app-border rounded-3xl opacity-50">
-                     <h3 class="text-xl font-bold mb-2 uppercase italic tracking-tighter">Scanning Orderbooks</h3>
-                    <p class="text-xs font-bold text-gray-600 uppercase tracking-widest">Detecting cross-platform spread opportunities...</p>
+                <div id="content-arbitrage" class="tab-content hidden py-32 text-center border border-dashed border-app-border rounded-[40px] opacity-40">
+                     <h3 class="text-2xl font-black mb-2 uppercase italic tracking-tighter">Orderbook Scanning</h3>
+                    <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Detecting inefficiencies in the CTF Liquidity Shards.</p>
                 </div>
-
             </div>
         </main>
     </div>
 
-    <!-- MODAL (from previous turns) -->
-    <div id="copyTradeModal" class="fixed inset-0 z-[400] hidden items-center justify-center">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" id="modalBackdrop"></div>
-        <div class="relative bg-app-panel border border-app-border w-full max-w-md rounded-[32px] p-10 shadow-3xl transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
-            <h3 class="text-2xl font-black mb-1 italic">Confirm Order</h3>
-            <p class="text-xs text-gray-400 mb-8 uppercase tracking-widest font-bold">Smart-Contract Direct Execution</p>
+    <!-- EXECUTION MODAL -->
+    <div id="copyTradeModal" class="fixed inset-0 z-[500] hidden items-center justify-center">
+        <div class="absolute inset-0 bg-black/95 backdrop-blur-xl transition-opacity" id="modalBackdrop"></div>
+        <div class="relative bg-[#11141D] border border-white/10 w-full max-w-[440px] rounded-[48px] p-10 shadow-3xl transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
+            <h3 class="text-3xl font-black mb-1 italic">Order Execution</h3>
+            <p class="text-[10px] text-gray-400 mb-8 uppercase tracking-[0.3em] font-black">Smart-Contract direct interface</p>
             
             <div class="space-y-6">
-                <div class="bg-black/40 border border-white/5 rounded-2xl p-4 flex justify-between items-center">
-                    <div class="flex items-center gap-3">
-                         <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-black italic">!</div>
-                        <div><p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">Target Whale</p><p class="text-sm font-black text-white italic" id="modalWhaleName">-</p></div>
+                <div>
+                    <div class="flex justify-between items-end mb-3">
+                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Order Size (USDC)</label>
+                        <span class="text-[10px] font-black text-gray-400">Available: <span id="modal-usdc-bal" class="text-white">0.00</span></span>
+                    </div>
+                    <div class="relative">
+                        <input id="tradeAmount" type="number" value="1000" class="w-full bg-black/60 border border-white/10 rounded-2xl p-6 text-4xl font-black italic outline-none focus:border-blue-600/50 transition-all shadow-inner">
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-app-text font-black text-xs uppercase tracking-widest pointer-events-none">USDC</div>
                     </div>
                 </div>
-                <div>
-                    <div class="flex justify-between items-end mb-2"><label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Amount (USDC)</label></div>
-                    <input type="number" id="tradeAmount" value="1000" class="w-full bg-black/60 border border-app-border rounded-xl py-4 px-4 text-white font-mono text-2xl font-black focus:outline-none focus:border-blue-500 transition-all">
+                
+                <div class="bg-blue-600/10 border border-blue-500/20 p-5 rounded-2xl text-[10px] text-blue-400 leading-relaxed italic font-bold">
+                    Signing this transaction executes a DIRECT CALL to the Polymarket Proxy.
                 </div>
-                <button id="confirmTxBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-xl shadow-lg active:scale-95 uppercase tracking-widest italic">Sign & Execute</button>
+
+                <button id="confirmTxBtn" class="w-full bg-blue-600 py-6 rounded-2xl font-black text-xl shadow-[0_20px_50px_rgba(59,130,246,0.3)] hover:bg-blue-500 transition-all uppercase tracking-widest italic active:scale-95">
+                    Sign & Execute
+                </button>
             </div>
-            <button id="closeModalBtn" class="absolute top-6 right-8 text-gray-500 hover:text-white transition-colors text-xl font-black">X</button>
+            <button id="closeModalBtn" class="absolute top-8 right-10 text-gray-600 hover:text-white transition-colors text-2xl font-black italic">X</button>
         </div>
     </div>
 
