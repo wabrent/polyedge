@@ -213,6 +213,37 @@ function updateStats() {
 
     const latency = document.getElementById('latency-val');
     if (latency) latency.textContent = `~${(120 + Math.random() * 40).toFixed(0)}ms`;
+
+    updateAlphaSnapshot();
+}
+
+// ========== HIGH-LEVEL SNAPSHOT ==========
+function updateAlphaSnapshot() {
+    const sectorEl = document.getElementById('alpha-dominant-sector');
+    const marketEl = document.getElementById('alpha-top-market');
+    if (!sectorEl || !marketEl || !allMarkets.length) return;
+
+    // Dominant sector by number of active markets
+    const sectorCounts = allMarkets.reduce((acc, m) => {
+        const key = (m.category || 'other').toLowerCase();
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+    }, {});
+
+    const sortedSectors = Object.entries(sectorCounts).sort((a, b) => b[1] - a[1]);
+    if (sortedSectors.length) {
+        const [name, count] = sortedSectors[0];
+        sectorEl.textContent = `${name} · ${count} active streams`;
+    } else {
+        sectorEl.textContent = 'No dominant sector';
+    }
+
+    // Top whale market by 24h volume, preferring whale-flagged streams
+    const topWhale = (allMarkets
+        .filter(m => m.isWhaleHot)
+        .sort((a, b) => b.volume24h - a.volume24h)[0]) || allMarkets[0];
+
+    marketEl.textContent = topWhale ? topWhale.question : 'No markets loaded';
 }
 
 // ========== RENDERER ==========

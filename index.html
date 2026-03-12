@@ -35,7 +35,7 @@
                     <div class="status-dot"></div>
                     REAL-TIME SYNC
                 </div>
-                <div class="world-clocks clickable">
+                <div class="world-clocks clickable" title="Global market session clocks">
                     <div class="clock-item">NYC <span id="clock-nyc">00:00</span></div>
                     <div class="clock-item">LDN <span id="clock-ldn">00:00</span></div>
                 </div>
@@ -47,6 +47,35 @@
             </div>
         </div>
     </header>
+
+    <!-- PRODUCT HERO / EXPLANATION -->
+    <section class="hero">
+        <div class="hero-main">
+            <h1 class="hero-title">Whale Intelligence for Polymarket</h1>
+            <p class="hero-subtitle">
+                PolyEdge собирает активные рынки Polymarket, подсвечивает крупные движения капитала и
+                превращает их в понятные сигналы. Терминал показывает, где концентрируются <span>«киты»</span>,
+                какие сектора доминируют и какие рынки могут дать асимметричный риск/профит.
+            </p>
+            <div class="hero-tags">
+                <span class="hero-tag">Whale tracking</span>
+                <span class="hero-tag">On-chain sentiment</span>
+                <span class="hero-tag">Sector heatmap</span>
+                <span class="hero-tag">Realtime terminal UI</span>
+            </div>
+        </div>
+        <div class="hero-side">
+            <div class="hero-card">
+                <div class="hero-card-label">How to use PolyEdge</div>
+                <ol class="hero-steps">
+                    <li>Выбери сектор или фильтр слева в панели статистики.</li>
+                    <li>Следи за блоком <strong>WHALE TRACKER</strong> — там появляются крупные сделки.</li>
+                    <li>В центре изучай карточки рынков и открывай интересующие через кнопку EXECUTE.</li>
+                    <li>Используй <strong>ALPHA SNAPSHOT</strong>, чтобы быстро понять, где сейчас основной поток.</li>
+                </ol>
+            </div>
+        </div>
+    </section>
 
     <main class="terminal-grid">
         <!-- SIDEBAR LEFT: WHALE FEED -->
@@ -67,7 +96,7 @@
                 <div class="stat-box clickable active" data-filter="all">
                     <div class="stat-inner">
                         <span class="stat-val" id="stat-total-markets">...</span>
-                        <span class="stat-lbl">ACTIVE MARKETS</span>
+                        <span class="stat-lbl">ACTIVE MARKETS TRACKED</span>
                     </div>
                 </div>
                 <div class="stat-box clickable" data-filter="high_vol">
@@ -93,7 +122,7 @@
             <div class="dashboard-controls">
                 <h2 class="title-main">GLOBAL INTELLIGENCE</h2>
                 <div class="filter-group">
-                    <select id="category-filter" class="terminal-select clickable">
+                    <select id="category-filter" class="terminal-select clickable" aria-label="Sector filter">
                         <option value="all">Sectors: All Items</option>
                         <option value="politics">Sectors: Politics</option>
                         <option value="crypto">Sectors: Crypto</option>
@@ -101,6 +130,24 @@
                     </select>
                 </div>
             </div>
+
+            <!-- NEW: HIGH-LEVEL SNAPSHOT OF WHERE ALPHA LIVES -->
+            <section class="alpha-snapshot" aria-label="High level alpha snapshot">
+                <div class="alpha-header">
+                    <h3 class="alpha-title">ALPHA SNAPSHOT</h3>
+                    <p class="alpha-caption">Краткий срез того, куда сейчас стекается ликвидность и внимание крупных игроков.</p>
+                </div>
+                <div class="alpha-metrics">
+                    <div class="alpha-item">
+                        <span class="alpha-label">Dominant sector right now</span>
+                        <span class="alpha-value" id="alpha-dominant-sector">Scanning live feeds…</span>
+                    </div>
+                    <div class="alpha-item">
+                        <span class="alpha-label">Top whale market</span>
+                        <span class="alpha-value" id="alpha-top-market">Waiting for first trace…</span>
+                    </div>
+                </div>
+            </section>
 
             <div class="markets-grid" id="markets-grid"></div>
 
