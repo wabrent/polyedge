@@ -1,213 +1,138 @@
 <!DOCTYPE html>
-<html lang="ru" class="dark">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge — Ультимативный Терминал Polymarket</title>
+    <title>PolyEdge | Pro Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        // Цветовая палитра: ультра-черный, неон-акценты, строгие серые
-                        brand: {
-                            bg: '#020202',
-                            'bg-card': '#080808',
-                            border: '#1A1A1A',
-                            accent: '#00F0FF', // Неоновый циан
-                            'accent-hover': '#80F8FF',
-                            text: '#E0E0E0',
-                            'text-muted': '#707070',
-                        }
-                    },
-                    keyframes: {
-                        // Анимация пульсации для статуса "LIVE"
-                        pulseData: {
-                            '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-                            '50%': { opacity: '0.5', transform: 'scale(0.98)' },
-                        },
-                        // Анимация линии сканера
-                        scanline: {
-                            '0%': { top: '-100%' },
-                            '100%': { top: '200%' },
-                        }
-                    },
-                    animation: {
-                        pulseData: 'pulseData 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        scanline: 'scanline 8s linear infinite',
-                    }
-                }
-            }
-        }
-    </script>
-    <style type="text/css">
-        /* Убираем стандартные скроллбары для чистоты терминала */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { bg: #080808; }
-        ::-webkit-scrollbar-thumb { bg: #1A1A1A; border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { bg: #00F0FF; }
-
-        body {
-            background-color: #020202;
-            color: #E0E0E0;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-
-        /* Применяем моноширинный шрифт к элементам с данными */
-        .data-value { font-family: 'JetBrains Mono', monospace; }
-
-        /* Эффект свечения для акцентных элементов */
-        .glow-accent {
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
-        }
-        .glow-border:hover {
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
-            border-color: rgba(0, 240, 255, 0.5);
-        }
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #000; color: #fff; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .active-tab { border-bottom: 2px solid #00F0FF; color: #00F0FF; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); }
+        .edge-button { clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: all 0.3s; }
+        .edge-button:hover { background: #00F0FF; color: #000; transform: skewX(-5deg); }
     </style>
 </head>
-<body class="antialiased">
+<body class="h-screen flex flex-col overflow-hidden">
 
-    <div class="fixed inset-0 z-0 opacity-[0.03] pointer-events-none">
-        <svg width="100%" height="100%"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)" /></svg>
-    </div>
-    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <div class="absolute h-[50vh] w-full bg-gradient-to-b from-transparent via-brand-accent/5 to-transparent animate-scanline"></div>
-    </div>
-
-    <div class="relative z-10 min-h-screen flex flex-col">
-
-        <header class="border-b border-brand-border bg-brand-bg/80 backdrop-blur-lg sticky top-0 z-50">
-            <nav class="container mx-auto px-4 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="h-9 w-9 bg-white flex items-center justify-center rounded-sm">
-                        <span class="text-black font-bold text-2xl font-sans" style="transform: scaleX(0.8);">P</span>
-                    </div>
-                    <span class="text-2xl font-bold tracking-tighter text-white uppercase glow-accent">PolyEdge</span>
-                    <div class="ml-3 px-2.5 py-1 bg-brand-accent/10 border border-brand-accent/30 rounded-sm text-[10px] data-value text-brand-accent animate-pulseData">
-                        STATUS: LIVE_SYNC
-                    </div>
-                </div>
-                
-                <div class="flex items-center gap-6 text-sm font-medium text-brand-text-muted">
-                    <a href="#" class="hover:text-white transition-colors">DASHBOARD</a>
-                    <a href="#" class="hover:text-white transition-colors text-brand-accent">WHALE SCANNER</a>
-                    <a href="#" class="hover:text-white transition-colors">ARBITRAGE</a>
-                    <a href="#" class="hover:text-white transition-colors">AI INSIGHTS</a>
-                    <button class="ml-4 border border-brand-accent/50 text-brand-accent px-5 py-2 text-xs font-bold hover:bg-brand-accent hover:text-black transition-all uppercase tracking-widest rounded-sm">
-                        Connect
-                    </button>
-                </div>
+    <header class="h-16 border-b border-white/10 flex items-center justify-between px-8 bg-black/50 z-50">
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-white text-black font-black flex items-center justify-center text-xl italic">P</div>
+                <span class="font-black tracking-tighter text-2xl">POLYEDGE</span>
+            </div>
+            <nav class="flex gap-6 text-sm font-bold text-gray-500 uppercase tracking-widest">
+                <a href="#" class="active-tab pb-5 mt-5">Scanner</a>
+                <a href="#" class="pb-5 mt-5 hover:text-white transition-colors">Arbitrage</a>
+                <a href="#" class="pb-5 mt-5 hover:text-white transition-colors">Whale Social</a>
             </nav>
-        </header>
+        </div>
+        <div class="flex gap-4 items-center">
+            <div class="text-right mr-4">
+                <p class="text-[10px] text-gray-500 uppercase">System Latency</p>
+                <p class="text-xs font-bold text-cyan-400 mono">42ms</p>
+            </div>
+            <button class="bg-white text-black px-6 py-2 font-black text-xs uppercase tracking-widest hover:bg-cyan-400 transition-colors">Connect</button>
+        </div>
+    </header>
 
-        <main class="container mx-auto px-4 py-6 flex-grow grid grid-cols-12 gap-5">
-            
-            <aside class="col-span-3 space-y-5">
-                <section class="border border-brand-border bg-brand-bg-card p-5 rounded-sm hover:border-brand-accent/30 transition-all">
-                    <h3 class="text-[10px] text-brand-text-muted uppercase tracking-widest mb-4 font-semibold">Global Sentiment</h3>
-                    <div class="text-4xl font-light text-white italic data-value glow-accent">Bullish <span class="text-brand-accent">64%</span></div>
-                    <div class="mt-4 h-1 bg-brand-border w-full rounded-full overflow-hidden">
-                        <div class="h-full bg-brand-accent w-[64%] shadow-[0_0_10px_#00F0FF]"></div>
+    <div class="flex-grow flex overflow-hidden">
+        
+        <aside class="w-80 border-r border-white/10 flex flex-col bg-black">
+            <div class="p-4 border-b border-white/5 bg-white/[0.02]">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Live Intelligence Feed</span>
+            </div>
+            <div class="flex-grow overflow-y-auto space-y-px">
+                <button class="w-full text-left p-4 hover:bg-white/[0.05] transition-all border-b border-white/5 group">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[9px] bg-cyan-500/20 text-cyan-400 px-1 font-bold">WHALE_IN</span>
+                        <span class="text-[9px] text-gray-600 mono">02:14</span>
                     </div>
-                    <p class="text-[11px] text-brand-text-muted mt-2">Based on top 100 whales and news flow.</p>
-                </section>
-
-                <section class="border border-brand-border bg-brand-bg-card p-5 rounded-sm h-[60vh] flex flex-col hover:border-brand-accent/30 transition-all">
-                    <div class="flex items-center justify-between mb-4 border-b border-brand-border pb-3">
-                        <h3 class="text-[10px] text-brand-text-muted uppercase tracking-widest font-semibold">Alerts & Anomalies</h3>
-                        <span class="text-[10px] data-value text-brand-text-muted">LATENCY: 142MS</span>
-                    </div>
-                    <div class="flex-grow overflow-y-auto space-y-3 pr-2 text-xs font-mono data-value">
-                        <div class="text-brand-accent border-l border-brand-accent/50 pl-2 py-1">>> [02:15:33] WHALE_ALERT: Wallet 0x1a...df added $50k to 'Trump Win'</div>
-                        <div class="text-yellow-400 border-l border-yellow-400/50 pl-2 py-1">>> [02:15:12] ARBITRAGE: +2.3% Edge (Polymarket vs. Azuro) on 'BTC > 70k'</div>
-                        <div class="text-brand-text-muted pl-2 py-1">>> [02:14:55] VOLATILITY: 'Fed Rate Cut' prob changed +5% in < 1m</div>
-                        <div class="text-brand-text-muted pl-2 py-1">>> [02:14:20] SYSTEM: New market indexed: 'Nobel Peace Prize 2024'</div>
-                        <div class="text-red-500 border-l border-red-500/50 pl-2 py-1">>> [02:13:01] LIQUIDITY: 'US Election' pool depth -15%</div>
-                    </div>
-                </section>
-            </aside>
-
-            <section class="col-span-9 space-y-5">
+                    <p class="text-xs font-bold group-hover:text-cyan-400 transition-colors">0x7a...bc bought $45k YES</p>
+                    <p class="text-[10px] text-gray-500 mt-1 italic">Trump win 2024</p>
+                </button>
                 
-                <div class="border border-brand-border bg-brand-bg-card p-4 rounded-sm flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-semibold text-white">WHALE_SCANNER_v1.2</span>
-                        <input type="text" placeholder="Search markets or wallets..." class="bg-brand-bg border border-brand-border px-3 py-1.5 text-xs rounded-sm w-72 focus:outline-none focus:border-brand-accent transition-colors data-value">
+                <button class="w-full text-left p-4 hover:bg-white/[0.05] transition-all border-b border-white/5 group">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[9px] bg-yellow-500/20 text-yellow-500 px-1 font-bold">ARB_DETECTED</span>
+                        <span class="text-[9px] text-gray-600 mono">02:10</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button class="bg-brand-bg border border-brand-border text-brand-text px-3 py-1.5 text-xs rounded-sm hover:border-brand-accent">Politics</button>
-                        <button class="bg-brand-accent/10 border border-brand-accent text-brand-accent px-3 py-1.5 text-xs rounded-sm">Crypto</button>
-                        <button class="bg-brand-bg border border-brand-border text-brand-text px-3 py-1.5 text-xs rounded-sm hover:border-brand-accent">Sports</button>
-                    </div>
-                </div>
+                    <p class="text-xs font-bold">+3.2% Edge on BTC > 70k</p>
+                    <p class="text-[10px] text-gray-500 mt-1 italic">Polymarket vs Azuro</p>
+                </button>
+            </div>
+        </aside>
 
-                <div class="space-y-4">
+        <main class="flex-grow bg-[#050505] overflow-y-auto p-6">
+            <div class="grid grid-cols-2 gap-6">
+                
+                <div class="glass border border-white/10 p-6 rounded-lg hover:border-cyan-500/50 transition-all flex flex-col gap-4 relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-white/[0.03] font-black text-9xl italic group-hover:text-cyan-500/5 transition-all">P</div>
                     
-                    <article class="group border border-brand-border bg-brand-bg-card p-6 rounded-sm glow-border transition-all cursor-pointer relative overflow-hidden">
-                        <div class="absolute -right-8 -bottom-10 h-32 w-32 bg-white/[0.02] flex items-center justify-center rounded-sm rotate-12 pointer-events-none">
-                            <span class="text-brand-bg font-bold text-9xl font-sans" style="transform: scaleX(0.85);">P</span>
+                    <div class="flex justify-between items-start z-10">
+                        <span class="bg-cyan-500/10 text-cyan-400 text-[10px] font-bold px-2 py-1 uppercase">US Politics</span>
+                        <div class="flex gap-2">
+                            <span class="text-[10px] text-gray-500">Vol: <b class="text-white">$14.2M</b></span>
                         </div>
-
-                        <div class="flex justify-between items-start gap-6 relative z-10">
-                            <div class="flex-grow">
-                                <p class="text-[10px] data-value text-brand-accent uppercase font-medium tracking-wider mb-1.5">Significant Money Flow / High Confidence</p>
-                                <h4 class="text-2xl font-bold text-white tracking-tight hover:text-brand-accent transition-colors">Donald Trump to win 2024 Presidential Election</h4>
-                                <div class="flex items-center gap-4 mt-3 text-sm text-brand-text-muted data-value">
-                                    <span>Volume: <b class="text-white">$120.5M</b></span>
-                                    <span>Smart Money Sentiment: <b class="text-brand-accent">90% Long</b></span>
-                                    <span>Our Edge: <b class="text-yellow-400">+1.8%</b></span>
-                                </div>
-                            </div>
-                            <div class="text-right flex flex-col items-end gap-2 h-full justify-between">
-                                <div class="px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-bold rounded-sm data-value animate-pulseData">
-                                    Whale Detected
-                                </div>
-                                <div class="text-4xl font-bold text-white data-value glow-accent">55<span class="text-lg text-brand-text-muted">%</span></div>
-                                <p class="text-[10px] text-brand-text-muted data-value uppercase">Last Tx: 5m ago</p>
-                            </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-extrabold tracking-tight z-10 leading-tight">Will Donald Trump win the 2024 Presidential Election?</h3>
+                    
+                    <div class="flex items-end justify-between z-10 mt-4">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-gray-500 uppercase font-bold">Current Odds</span>
+                            <span class="text-4xl font-black italic">54.0%</span>
                         </div>
-                    </article>
-
-                    <article class="group border border-brand-border bg-brand-bg-card p-6 rounded-sm glow-border transition-all cursor-pointer relative overflow-hidden">
-                        <div class="flex justify-between items-start gap-6 relative z-10">
-                            <div class="flex-grow">
-                                <p class="text-[10px] data-value text-yellow-400 uppercase font-medium tracking-wider mb-1.5">Arbitrage Opportunity Detected</p>
-                                <h4 class="text-2xl font-bold text-white tracking-tight hover:text-brand-accent transition-colors">Bitcoin to stay above $70,000 on Oct 25</h4>
-                                <div class="flex items-center gap-4 mt-3 text-sm text-brand-text-muted data-value">
-                                    <span>Volume: <b class="text-white">$12.1M</b></span>
-                                    <span>Smart Money Sentiment: <b class="text-brand-text-muted">Mixed</b></span>
-                                    <span>Arbitrage Edge: <b class="text-yellow-400 glow-accent">+4.1%</b></span>
-                                </div>
-                            </div>
-                            <div class="text-right flex flex-col items-end gap-2 h-full justify-between">
-                                <div class="px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-bold rounded-sm data-value">
-                                    Arb Signal
-                                </div>
-                                <div class="text-4xl font-bold text-white data-value">42<span class="text-lg text-brand-text-muted">%</span></div>
-                                <p class="text-[10px] text-brand-text-muted data-value uppercase">Last Tx: 12s ago</p>
-                            </div>
+                        <div class="flex gap-2">
+                            <button class="edge-button bg-white/10 px-6 py-2 text-[10px] font-black uppercase">Short</button>
+                            <button class="edge-button bg-cyan-500 px-6 py-2 text-[10px] text-black font-black uppercase">Trade Alpha</button>
                         </div>
-                    </article>
-
+                    </div>
                 </div>
-            </section>
+
+                <div class="glass border border-white/10 p-6 rounded-lg hover:border-yellow-500/50 transition-all flex flex-col gap-4 relative">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-yellow-500/10 text-yellow-500 text-[10px] font-bold px-2 py-1 uppercase italic">Arbitrage Opportunity</span>
+                    </div>
+                    <h3 class="text-xl font-extrabold tracking-tight">Bitcoin to hit $100k in 2026?</h3>
+                    <div class="flex items-center justify-between mt-auto">
+                        <p class="text-xs text-gray-400">Arb Edge: <b class="text-yellow-500">+4.12%</b></p>
+                        <button class="edge-button bg-yellow-500 px-6 py-2 text-[10px] text-black font-black uppercase">Claim Edge</button>
+                    </div>
+                </div>
+
+            </div>
         </main>
 
-        <footer class="border-t border-brand-border bg-brand-bg p-3 text-center text-[10px] text-brand-text-muted data-value uppercase tracking-widest mt-6 relative overflow-hidden">
-             <div class="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-brand-accent/50 to-transparent"></div>
-             >> PolyEdge Alpha Terminal | PolyNet node: active | Database status: nominal | User session: 0x... | All contracts verified <<
-        </footer>
-
+        <aside class="w-72 border-l border-white/10 bg-black p-4 space-y-6">
+            <div>
+                <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">AI Sentiment Radar</h4>
+                <div class="p-4 bg-cyan-500/5 border border-cyan-500/20 rounded-md">
+                    <p class="text-[11px] text-cyan-400 italic leading-relaxed">
+                        "Киты начали массово переливать ликвидность из Трампа в Харрис. Индекс страха на рынке вырос на 12%. Рекомендую хеджировать позиции."
+                    </p>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Top Traders (24h)</h4>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold">0xVitalik...</span>
+                    <span class="text-xs text-green-400 mono">+$12.4k</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold">PolyWhale_1</span>
+                    <span class="text-xs text-green-400 mono">+$8.1k</span>
+                </div>
+            </div>
+        </aside>
     </div>
+
+    <footer class="h-8 border-t border-white/10 flex items-center px-4 justify-between bg-black text-[9px] mono text-gray-600">
+        <div>>> DECRYPTING_MARKET_SIGNALS... OK</div>
+        <div>SESSION_TOKEN: 0x992...22 | ALPHA_VER: 2.0.0</div>
+    </footer>
 
 </body>
 </html>
