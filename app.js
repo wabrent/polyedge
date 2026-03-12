@@ -1,35 +1,75 @@
 /**
- * PolyEdge App (v3.9) - Precision UI Match
+ * PolyEdge — Precision Logic v4.0
+ * Fixes: Result mapping, JSON parsing, Proxy support
  */
 
 const API_BASE = 'https://gamma-api.polymarket.com';
+const PROXIES = [
+    u => u,
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`
+];
 
 let allMarkets = [];
-let currentTab = 'markets';
-let refreshTimer = 2; // Circular timer mock
+let refreshTimer = 15;
 
-// --- INIT ---
-window.addEventListener('DOMContentLoaded', () => {
+// --- INITIALIZATION ---
+window.addEventListener('load', () => {
+    console.log("System initializing...");
     initTheme();
-    initTabs();
     initClocks();
     initTimer();
-    loadData();
+    initTabs();
+    loadMarkets();
     
-    document.getElementById('market-search').addEventListener('input', renderMarkets);
+    // Search listener
+    const search = document.getElementById('market-search');
+    if (search) search.oninput = renderMarkets;
 });
 
 function initTheme() {
     const btn = document.getElementById('theme-toggle');
-    const saved = localStorage.getItem('pe-theme-v2') || 'light';
+    if (!btn) return;
+    const saved = localStorage.getItem('pe-theme') || 'light';
     document.documentElement.setAttribute('data-theme', saved);
     
     btn.onclick = () => {
         const now = document.documentElement.getAttribute('data-theme');
         const next = now === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('pe-theme-v2', next);
+        localStorage.setItem('pe-theme', next);
     };
+}
+
+function initClocks() {
+    const update = () => {
+        const now = new Date();
+        const fmt = (tz) => now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz });
+        const clocks = document.querySelectorAll('.clock b');
+        if (clocks.length >= 3) {
+            clocks[0].innerText = fmt('America/New_York');
+            clocks[1].innerText = fmt('Europe/London');
+            clocks[2].innerText = fmt('Asia/Tokyo');
+        }
+    };
+    update(); setInterval(update, 10000);
+}
+
+function initTimer() {
+    const circle = document.querySelector('.circle');
+    const text = document.querySelector('.timer-text');
+    if (!circle || !text) return;
+    
+    setInterval(() => {
+        refreshTimer--;
+        if (refreshTimer < 0) {
+            refreshTimer = 15;
+            loadMarkets();
+        }
+        const offset = (refreshTimer / 15) * 100;
+        circle.setAttribute('stroke-dasharray', `${offset}, 100`);
+        text.innerText = refreshTimer + 's';
+    }, 1000);
 }
 
 function initTabs() {
@@ -38,128 +78,128 @@ function initTabs() {
             e.preventDefault();
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             link.classList.add('active');
-            currentTab = link.dataset.tab;
             renderMarkets();
         };
     });
 }
 
-function initClocks() {
-    const update = () => {
-        const now = new Date();
-        const fmt = (tz) => now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz });
-        document.querySelectorAll('.world-clocks .clock b')[0].innerText = fmt('America/New_York');
-        document.querySelectorAll('.world-clocks .clock b')[1].innerText = fmt('Europe/London');
-        document.querySelectorAll('.world-clocks .clock b')[2].innerText = fmt('Asia/Tokyo');
-    };
-    update(); setInterval(update, 10000);
-}
+// --- DATA HANDLING ---
+async function loadMarkets() {
+    const url = `${API_BASE}/markets?closed=false&limit=40&active=true&order=volume24hr&ascending=false`;
+    console.log("Attempting data fetch...");
 
-function initTimer() {
-    const circle = document.querySelector('.circle');
-    setInterval(() => {
-        refreshTimer--;
-        if (refreshTimer < 0) refreshTimer = 15;
-        const offset = (refreshTimer / 15) * 100;
-        circle.setAttribute('stroke-dasharray', `${offset}, 100`);
-        document.querySelector('.timer-text').innerText = refreshTimer + 's';
-    }, 1000);
-}
+    let rawData = null;
+    for (const proxy of PROXIES) {
+        try {
+            const response = await fetch(proxy(url));
+            if (!response.ok) continue;
+            let data = await response.json();
+            if (data.contents) data = JSON.parse(data.contents);
+            if (data && (Array.isArray(data) || data.markets)) {
+                rawData = Array.isArray(data) ? data : data.markets;
+                break;
+            }
+        } catch (e) {
+            console.warn("Proxy failed, trying next...");
+        }
+    }
 
-// --- DATA ---
-async function loadData() {
-    try {
-        const res = await fetch(`${API_BASE}/markets?closed=false&limit=30&active=true&order=volume24hr&ascending=false`);
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        allMarkets = processMarkets(data);
-    } catch (e) {
+    if (rawData && rawData.length > 0) {
+        allMarkets = processMarkets(rawData);
+    } else {
+        console.warn("API failed. Using local fallback data.");
         useFallback();
     }
+    
     updateStats();
     renderMarkets();
 }
 
 function processMarkets(raw) {
-    return (Array.isArray(raw) ? raw : (raw.markets || [])).filter(m => m.question).map(m => {
-        const pStr = typeof m.outcomePrices === 'string' ? m.outcomePrices : JSON.stringify(m.outcomePrices);
-        const prices = JSON.parse(pStr || '[0.5, 0.5]').map(Number);
-        const yes = Math.max(0.001, prices[0] || 0.5);
-        
+    return raw.filter(m => m.question).map(m => {
+        let prices = [0.5, 0.5];
+        try {
+            const pData = m.outcomePrices;
+            const pArr = (typeof pData === 'string') ? JSON.parse(pData) : pData;
+            if (Array.isArray(pArr) && pArr.length >= 2) {
+                prices = pArr.map(p => parseFloat(p) || 0.5);
+            }
+        } catch (e) { }
+
+        const yes = Math.max(0.001, prices[0]);
         return {
             id: m.id || Math.random(),
             title: m.question,
-            img: m.image || 'https://via.placeholder.com/44/2563eb/ffffff?text=P',
-            volume: Number(m.volume24h) || 0,
-            liq: Number(m.liquidity) || 0,
+            img: m.image || 'https://via.placeholder.com/64/00F0FF/000000?text=PE',
+            volume: parseFloat(m.volume24h) || 0,
+            liq: parseFloat(m.liquidity) || 0,
             yes: yes,
             no: 1 - yes,
-            days: Math.floor(Math.random() * 20) + 1,
+            days: Math.floor(Math.random() * 15) + 1,
             roi: (1 / yes),
-            url: `https://polymarket.com/market/${m.slug || ''}`,
-            trend: Array.from({length: 10}, () => Math.random())
+            url: `https://polymarket.com/market/${m.slug || ''}`
         };
     });
 }
 
 function useFallback() {
     allMarkets = [
-        { id:1, title:'Will Iran strike Israel on March 6?', img:'https://via.placeholder.com/44', volume:11000000, liq:2500000, yes:0.001, no:0.999, days:0, roi:666.7, url:'#', trend:[0.1, 0.2, 0.15, 0.3, 0.2, 0.4, 0.5, 0.45, 0.6, 0.7] },
-        { id:2, title:'Will Iran close the Strait of Hormuz by March 31?', img:'https://via.placeholder.com/44', volume:7800000, liq:1700000, yes:0.998, no:0.002, days:295, roi:400, url:'#', trend:[0.9, 0.85, 0.88, 0.92, 0.95, 0.94, 0.96, 0.98, 0.99, 0.998] },
-        { id:3, title:'Will the Fed decrease interest rates by 50+ bps?', img:'https://via.placeholder.com/44', volume:5000000, liq:4100000, yes:0.003, no:0.997, days:7, roi:400, url:'#', trend:[0.1, 0.05, 0.08, 0.02, 0.04, 0.03, 0.01, 0.02, 0.04, 0.03] },
-        { id:4, title:'Will the Fed increase interest rates by 25+ bps?', img:'https://via.placeholder.com/44', volume:3700000, liq:4800000, yes:0.003, no:0.997, days:7, roi:400, url:'#', trend:[0.2, 0.15, 0.1, 0.05, 0.08, 0.04, 0.03, 0.02, 0.02, 0.03] },
-        { id:5, title:'Will Chelsea win the 2025-26 Premier League?', img:'https://via.placeholder.com/44', volume:3400000, liq:395000, yes:0.001, no:0.999, days:77, roi:1000, url:'#', trend:[0.1, 0.12, 0.11, 0.13, 0.1, 0.14, 0.12, 0.15, 0.13, 0.1] }
+        { id:1, title:'Will Iran strike Israel by March 31?', img:'', volume:12500000, liq:2800000, yes:0.001, no:0.999, days:14, roi:1000, url:'#' },
+        { id:2, title:'Will the Fed cut rates by 50bps in May?', img:'', volume:8400000, liq:4200000, yes:0.25, no:0.75, days:45, roi:4, url:'#' },
+        { id:3, title:'Will Donald Trump win the 2024 Election?', img:'', volume:950000000, liq:150000000, yes:0.54, no:0.46, days:240, roi:1.8, url:'#' },
+        { id:4, title:'Will BTC hit $100k this quarter?', img:'', volume:4500000, liq:900000, yes:0.15, no:0.85, days:20, roi:6.6, url:'#' }
     ];
 }
 
 function updateStats() {
-    document.getElementById('markets-count').innerText = allMarkets.length;
-    const vol = allMarkets.reduce((s, m) => s + m.volume, 0);
-    document.getElementById('total-vol').innerText = `$${(vol/1e6).toFixed(1)}M`;
-    document.getElementById('opps-count').innerText = allMarkets.filter(m=>m.roi > 50).length;
-    const maxRoi = Math.max(...allMarkets.map(m=>m.roi));
-    document.getElementById('best-roi').innerText = Math.round(maxRoi) + 'x';
+    const mCount = document.getElementById('markets-count');
+    const tVol = document.getElementById('total-vol');
+    const oCount = document.getElementById('opps-count');
+    const bRoi = document.getElementById('best-roi');
+
+    if (mCount) mCount.innerText = allMarkets.length;
+    if (tVol) {
+        const sum = allMarkets.reduce((s, m) => s + m.volume, 0);
+        tVol.innerText = '$' + (sum / 1e6).toFixed(1) + 'M';
+    }
+    if (oCount) oCount.innerText = allMarkets.filter(m => m.roi > 50).length;
+    if (bRoi) {
+        const max = Math.max(...allMarkets.map(m => m.roi));
+        bRoi.innerText = Math.round(max) + 'x';
+    }
 }
 
 function renderMarkets() {
     const grid = document.getElementById('markets-grid');
+    if (!grid) return;
     grid.innerHTML = '';
     
-    const search = document.getElementById('market-search').value.toLowerCase();
-    const filtered = allMarkets.filter(m => m.title.toLowerCase().includes(search));
+    const query = document.getElementById('market-search')?.value.toLowerCase() || '';
+    const filtered = allMarkets.filter(m => m.title.toLowerCase().includes(query));
 
     filtered.forEach(m => {
         const yesCents = (m.yes * 100).toFixed(1);
         const win = (10 / m.yes).toFixed(2);
-        const svgPath = generateSparkPath(m.trend);
-        const trendColor = m.trend[m.trend.length-1] > m.trend[0] ? '#16a34a' : '#dc2626';
-
+        
         grid.innerHTML += `
             <div class="m-card">
                 <div class="card-top">
                     <div class="tag-group">
-                        <span class="pill-tag blue"><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> HIGH VOL</span>
+                        <span class="pill-tag blue">HIGH VOL</span>
                         <span class="pill-tag orange">SOON</span>
                     </div>
-                    <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 </div>
                 <div class="card-mid">
                     <img src="${m.img}" class="m-icon" onerror="this.src='https://via.placeholder.com/44/2563eb/ffffff?text=P'">
                     <h3 class="m-title">${m.title}</h3>
                 </div>
                 <div class="m-data">
-                    ${m.days}d  Vol <b>$${(m.volume/1e6).toFixed(1)}M</b>  Liq <b>$${(m.liq/1e6).toFixed(1)}M</b>
+                    ${m.days}d  Vol <b>$${formatCompact(m.volume)}</b>  Liq <b>$${formatCompact(m.liq)}</b>
                 </div>
-                
-                <svg class="spark-line" viewBox="0 0 100 40">
-                    <path d="${svgPath}" fill="none" stroke="${trendColor}" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-
                 <div class="price-row">
                     <div class="btn-price yes">Yes ${yesCents}¢</div>
-                    <div class="btn-price no">No ${(100-yesCents).toFixed(1)}¢</div>
+                    <div class="btn-price no">No ${(100 - yesCents).toFixed(1)}¢</div>
                 </div>
-
                 <div class="bet-area">
                     <span>Bet $ </span>
                     <div class="bet-input-wrap">
@@ -167,23 +207,17 @@ function renderMarkets() {
                         <span>→ win <b class="win-amount">$${win}</b></span>
                     </div>
                 </div>
-
                 <div class="card-footer">
-                    <span class="roi-text">${m.roi.toFixed(1)}x</span>
-                    <span class="change-text">${(Math.random()*2 - 1).toFixed(1)}%</span>
+                    <span class="roi-text">${m.roi.toFixed(1)}x ROI</span>
                 </div>
-
                 <button class="trade-btn" onclick="window.open('${m.url}', '_blank')">Trade on Polymarket</button>
             </div>
         `;
     });
 }
 
-function generateSparkPath(trend) {
-    const step = 100 / (trend.length - 1);
-    return trend.map((val, i) => {
-        const x = i * step;
-        const y = 40 - (val * 30 + 5); // Range 5-35
-        return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
-    }).join(' ');
+function formatCompact(num) {
+    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+    return num.toFixed(0);
 }
