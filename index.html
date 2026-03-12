@@ -14,29 +14,31 @@
     
     <header>
         <div class="header-container">
-            <div class="logo">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                </svg>
-                <span>Poly<span>Edge</span></span>
+            <div class="logo-wrapper">
+                <div class="logo clickable" id="logo-refresh">
+                    <svg width="24" height="24" viewBox="0 0 100 100" fill="currentColor">
+                        <path d="M20 10 L80 10 Q100 10 100 35 Q100 60 80 60 L45 60 L45 90 L20 70 Z M45 35 L70 35 Q75 35 75 42 Q75 50 70 50 L45 50 Z" />
+                    </svg>
+                    <span>POLYEDGE</span>
+                </div>
             </div>
             
             <nav class="main-nav">
-                <button class="nav-item active" data-tab="dashboard">Intelligence</button>
-                <button class="nav-item" data-tab="watchlist">Watchlist</button>
-                <button class="nav-item" data-tab="scanner">Whale Scanner</button>
+                <button class="nav-item active" data-tab="dashboard">INTELLIGENCE</button>
+                <button class="nav-item" data-tab="watchlist">WATCHLIST</button>
+                <button class="nav-item" data-tab="scanner">WHALE SCANNER</button>
             </nav>
 
             <div class="header-right">
-                <div class="network-status">
+                <div class="network-status clickable" id="refresh-trigger">
                     <div class="status-dot"></div>
                     REAL-TIME SYNC
                 </div>
-                <div class="world-clocks">
+                <div class="world-clocks clickable">
                     <div class="clock-item">NYC <span id="clock-nyc">00:00</span></div>
                     <div class="clock-item">LDN <span id="clock-ldn">00:00</span></div>
                 </div>
-                <button class="theme-toggle" id="theme-toggle" style="background:transparent; border:none; color:var(--text-3); cursor:pointer;">
+                <button class="theme-toggle" id="theme-toggle">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
                 </button>
             </div>
@@ -47,43 +49,51 @@
         <!-- SIDEBAR LEFT: WHALE FEED -->
         <aside class="panel">
             <div class="panel-header">
-                <span class="panel-title">Whale Tracker</span>
-                <span style="font-size: 0.6rem; color: var(--green);">LIVE</span>
+                <span class="panel-title">WHALE TRACKER</span>
+                <span class="pulse-text" style="font-size: 0.6rem; color: var(--green);">LIVE_FEED</span>
             </div>
-            <div class="whale-feed" id="whale-feed">
+            <div class="whale-feed scroll-container" id="whale-feed">
                 <!-- Data streamed via JS -->
             </div>
-            <div style="padding: 12px; border-top: 1px solid var(--border); font-size: 0.6rem; color: var(--text-3); font-family:'JetBrains Mono';">
-                > SYNC_READY (DELAY < 180MS)
+            <div class="panel-footer">
+                <span id="system-latency">> SYNC_STABLE (DELAY: 142MS)</span>
             </div>
         </aside>
 
-        <!-- MAIN CENTER: TRENDING & INTELLIGENCE -->
+        <!-- MAIN CENTER -->
         <section class="main-content">
             <div class="stats-grid">
-                <div class="stat-box active">
-                    <span class="stat-val" id="stat-total-markets">...</span>
-                    <span class="stat-lbl">Active Markets</span>
+                <div class="stat-box clickable active" data-filter="all">
+                    <div class="stat-inner">
+                        <span class="stat-val" id="stat-total-markets">...</span>
+                        <span class="stat-lbl">ACTIVE MARKETS</span>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <span class="stat-val" id="stat-total-volume">$0</span>
-                    <span class="stat-lbl">24h Volume</span>
+                <div class="stat-box clickable" data-filter="high_vol">
+                    <div class="stat-inner">
+                        <span class="stat-val" id="stat-total-volume">$0</span>
+                        <span class="stat-lbl">24H VOLUME</span>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <span class="stat-val" id="stat-whales">...</span>
-                    <span class="stat-lbl">Whale Signals</span>
+                <div class="stat-box clickable" data-filter="whales">
+                    <div class="stat-inner">
+                        <span class="stat-val" id="stat-whales">...</span>
+                        <span class="stat-lbl">WHALE SIGNALS</span>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <span class="stat-val" id="stat-opportunities">...</span>
-                    <span class="stat-lbl">Target ROI</span>
+                <div class="stat-box clickable" data-filter="high_roi">
+                    <div class="stat-inner">
+                        <span class="stat-val" id="stat-opportunities">...</span>
+                        <span class="stat-lbl">TARGET ROI</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="dashboard-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
-                <h2 style="font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: -0.5px;">Global Intelligence</h2>
-                <div style="display:flex; gap: 8px;">
-                    <select id="category-filter" class="select-sm" style="background:#0a0e14; border:1px solid #1a222e; color:#94a3b8; padding:8px 16px; border-radius:10px; font-weight:700; cursor:pointer;">
-                        <option value="all">Sectors: All</option>
+            <div class="dashboard-controls">
+                <h2 class="title-main">GLOBAL INTELLIGENCE</h2>
+                <div class="filter-group">
+                    <select id="category-filter" class="terminal-select clickable">
+                        <option value="all">Sectors: All Items</option>
                         <option value="politics">Sectors: Politics</option>
                         <option value="crypto">Sectors: Crypto</option>
                         <option value="sports">Sectors: Sports</option>
@@ -95,35 +105,51 @@
                 <!-- Intelligence cards loaded via JS -->
             </div>
 
-            <div style="padding: 40px 0; display: flex; justify-content: center;">
-                <button id="load-more-btn" style="background:transparent; border:1px solid var(--border); color:var(--text-3); font-weight:800; padding:12px 32px; border-radius:12px; cursor:pointer;">LOAD MORE SIGNALS</button>
+            <!-- INTELLIGENCE LOG (FOOTER) -->
+            <div class="terminal-log-container panel">
+                <div class="panel-header" style="padding: 8px 16px; min-height: auto; border-bottom: 1px solid var(--border);">
+                    <span class="panel-title" style="font-size: 0.6rem;">SYSTEM_LOG.TXT</span>
+                </div>
+                <div class="terminal-log scroll-container" id="system-log">
+                    <div class="log-entry">> Initializing PolyEdge Intelligence Protocol...</div>
+                    <div class="log-entry">> Connecting to gamma-api.polymarket.com via cluster nodes...</div>
+                    <div class="log-entry">> Sub-second sync established.</div>
+                </div>
+            </div>
+
+            <div class="load-more-wrap">
+                <button id="load-more-btn" class="btn-more clickable">LOAD MORE DATA SIGNALS</button>
             </div>
         </section>
 
-        <!-- SIDEBAR RIGHT: ALPHA / INSIGHTS -->
+        <!-- SIDEBAR RIGHT: ALPHA -->
         <aside class="panel">
             <div class="panel-header">
-                <span class="panel-title">System Insights</span>
+                <span class="panel-title">SYSTEM INSIGHTS</span>
             </div>
-            <div style="padding: 20px; color: var(--text-3); font-size: 0.8rem; line-height: 1.6;">
-                <div style="margin-bottom: 24px;">
-                    <span style="color: var(--cyan); font-weight: 900; display: block; margin-bottom: 8px; font-size: 0.7rem; letter-spacing:1px;">SYNC METRICS</span>
-                    Network Delay: <span style="color: var(--green); font-family: 'JetBrains Mono';">~148ms</span><br>
-                    Data Freshness: <span style="color: var(--green); font-family: 'JetBrains Mono';">0.4s</span>
+            <div class="insights-content scroll-container">
+                <div class="insight-block clickable" id="sync-metrics-block">
+                    <span class="block-label cyan">SYNC METRICS</span>
+                    <div class="metrics-row">Network Latency: <span class="mono green" id="latency-val">~148ms</span></div>
+                    <div class="metrics-row">Node Drift: <span class="mono green"><0.02s</span></div>
                 </div>
-                <div style="margin-bottom: 24px; background: rgba(0, 243, 255, 0.05); border: 1px solid var(--border-glow); padding: 14px; border-radius: 10px;">
-                    <span style="color: var(--gold); font-weight: 900; display: block; margin-bottom: 10px; font-size: 0.7rem; letter-spacing:1px;">WHALE CLUSTER</span>
-                    Anomaly detected in <span style="color: var(--text);">Polymarket Crypto</span> bucket. 
-                    <span style="display:block; margin-top:8px; color:var(--text-2);">Cluster: 4 unique whales moving >$50k into "YES" outcomes.</span>
+                <div class="insight-block clickable alert-gold" id="whale-alert-block">
+                    <span class="block-label gold">WHALE CLUSTER DETECTED</span>
+                    <p id="whale-insight">Scanning for cluster anomalies in Crypto...</p>
                 </div>
-                <div>
-                    <span style="color: var(--cyan); font-weight: 900; display: block; margin-bottom: 8px; font-size: 0.7rem; letter-spacing:1px;">ALPHA ALERT</span>
-                    <span style="color: var(--text);">Election 2024</span> volatility reaching local high. 
-                    Liquidity +420% in last hour.
+                <div class="insight-block clickable">
+                    <span class="block-label cyan">VOLATILITY ALERT</span>
+                    <p>US Election liquidity +12% in last 10m. Whale activity scaling.</p>
                 </div>
             </div>
-            <div style="margin-top:auto; padding:20px; border-top:1px solid var(--border);">
-                 <button style="width:100%; padding:14px; background:var(--blue); border:none; border-radius:10px; color:#000; font-weight:900; font-size:0.75rem; letter-spacing:1px; cursor:pointer; box-shadow:0 10px 20px rgba(0,243,255,0.15);">EXECUTE API_SCAN</button>
+            <div class="panel-bottom-actions">
+                <button class="btn-action-panel clickable" id="execute-scan-btn">EXECUTE API_SCAN</button>
+                <div class="mini-graph-mock">
+                    <svg viewBox="0 0 100 30" class="sparkline-trend">
+                        <path d="M0,25 Q10,15 20,20 T40,10 T60,18 T80,5 T100,22" fill="none" stroke="var(--cyan)" stroke-width="2"/>
+                    </svg>
+                    <span style="font-size: 0.5rem; color: var(--text-3); display: block; text-align: center;">NETWORK LOAD</span>
+                </div>
             </div>
         </aside>
     </main>
