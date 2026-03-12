@@ -3,169 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge — Global Intelligence Terminal</title>
+    <title>PolyEdge — Modern Prediction Terminal</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <!-- HEADER -->
-        <header class="main-header">
-            <div class="header-left">
-                <div class="logo clickable" id="logo-home">
-                    <div class="logo-icon">P</div>
-                    <span class="logo-text">PolyEdge</span>
+    <div class="app-wrap">
+        <!-- TOP NAVIGATION -->
+        <header class="navbar">
+            <div class="nav-left">
+                <div class="brand clickable" id="home-link">
+                    <div class="brand-logo">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h11a6.5 6.5 0 0 1 0 13h-3v5L2 11h6V7z M12 7h3a2.5 2.5 0 0 1 0 5h-3z"/></svg>
+                    </div>
+                    <span class="brand-name">PolyEdge</span>
                 </div>
-                <nav class="nav-menu">
-                    <button class="nav-btn active" data-tab="dashboard">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                        Dashboard
-                    </button>
-                    <button class="nav-btn" data-tab="scanner">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        Opportunity Scanner
-                    </button>
-                    <button class="nav-btn" data-tab="calculator">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
-                        Kelly Calculator
-                    </button>
+                <nav class="nav-links">
+                    <a href="#" class="nav-link active" data-tab="markets">Markets</a>
+                    <a href="#" class="nav-link" data-tab="watchlist">Watchlist</a>
+                    <a href="#" class="nav-link" data-tab="scanner">Scanner</a>
+                    <a href="#" class="nav-link" data-tab="arbitrage">Arbitrage</a>
+                    <a href="#" class="nav-link" data-tab="simulator">Simulator</a>
                 </nav>
             </div>
-            <div class="header-right">
-                <div class="status-indicator">
-                    <span class="dot"></span>
-                    LIVE
+            <div class="nav-right">
+                <div class="nav-icon-btn">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </div>
-                <div class="budget-badge">
-                    <span class="label">BUDGET</span>
-                    <span class="value">$100</span>
+                <div class="circular-timer">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="circle" stroke-dasharray="75, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    </svg>
+                    <span class="timer-text">2s</span>
                 </div>
-                <button class="theme-switch" id="theme-toggle">
-                    <svg class="sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                    <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                <button class="theme-btn" id="theme-toggle">
+                    <svg class="sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
+                <div class="world-clocks">
+                    <div class="clock">NYC <b>08:36</b></div>
+                    <div class="clock">LDN <b>12:36</b></div>
+                    <div class="clock">TKO <b>21:36</b></div>
+                </div>
             </div>
         </header>
 
-        <!-- DASHBOARD VIEW -->
-        <main id="dashboard-view" class="view-content active">
-            <!-- TOP STATS -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon purple">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="count-markets">100</span>
-                        <span class="stat-label">Active Markets</span>
-                    </div>
+        <!-- MAIN DASHBOARD -->
+        <main class="dashboard-container">
+            <!-- SUMMARY STATS -->
+            <div class="stat-summary">
+                <div class="stat-item">
+                    <span class="stat-val" id="markets-count">60</span>
+                    <span class="stat-label">Markets</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon blue">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="count-volume">$77.5M</span>
-                        <span class="stat-label">24h Volume</span>
-                    </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-val" id="total-vol">$79.5M</span>
+                    <span class="stat-label">24h Volume</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon green">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="count-opps">77</span>
-                        <span class="stat-label">Hot Opportunities</span>
-                    </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-val" id="opps-count">52</span>
+                    <span class="stat-label">Opportunities</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon gold">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-4 4-4-4"/></svg>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="count-roi">2000x</span>
-                        <span class="stat-label">Max Potential ROI</span>
-                    </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-val" id="best-roi">2000x</span>
+                    <span class="stat-label">Best ROI</span>
                 </div>
             </div>
 
-            <!-- FILTERS & TITLE -->
-            <div class="content-header">
-                <div class="title-wrap">
-                    <h2 class="section-title">🔥 Trending Markets</h2>
-                    <span class="subtitle">Top by 24h Volume</span>
+            <!-- TRENDING MARKETS SECTION -->
+            <section class="markets-section">
+                <div class="section-header">
+                    <h2 class="section-title">Trending Markets</h2>
+                    <div class="search-wrap">
+                         <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                         <input type="text" placeholder="Search markets..." id="market-search">
+                    </div>
+                    <div class="header-filters">
+                        <select class="filter-dropdown"><option>All</option></select>
+                        <select class="filter-dropdown"><option>Any Volume</option></select>
+                        <select class="filter-dropdown"><option>Volume 24h</option></select>
+                    </div>
                 </div>
-                <div class="filter-actions">
-                    <select id="cat-filter" class="styled-select">
-                        <option value="all">All Categories</option>
-                        <option value="politics">Politics</option>
-                        <option value="crypto">Crypto</option>
-                    </select>
-                    <select id="sort-filter" class="styled-select">
-                        <option value="volume">Volume 24h</option>
-                        <option value="roi">Potential ROI</option>
-                    </select>
-                </div>
-            </div>
 
-            <!-- MARKETS GRID -->
-            <div class="markets-grid" id="markets-container">
-                <!-- Cards will be injected here -->
-            </div>
-            
-            <div class="load-more-container">
-                <button id="load-more" class="load-more-btn">Load More Markets</button>
-            </div>
+                <!-- GRID OF CARDS -->
+                <div class="card-grid" id="markets-grid">
+                    <!-- Cards will be rendered by JS -->
+                </div>
+                
+                <div class="load-more-wrap">
+                    <button class="btn-primary-outline" id="load-more">Load more markets</button>
+                </div>
+            </section>
         </main>
-
-        <!-- SCANNER VIEW -->
-        <main id="scanner-view" class="view-content">
-            <div class="scanner-header">
-                <h2 class="section-title">Opportunity Scanner</h2>
-                <p class="subtitle">Find high-potential markets based on ROI, liquidity, and time horizon.</p>
-            </div>
-            
-            <div class="scanner-controls card">
-                <div class="control-row">
-                    <div class="control-group">
-                        <label>Min ROI</label>
-                        <input type="range" min="1" max="10" value="3" id="roi-range">
-                        <span class="range-val">3x</span>
-                    </div>
-                    <div class="control-group">
-                        <label>Min Liquidity</label>
-                        <input type="range" min="0" max="100" value="10" id="liq-range">
-                        <span class="range-val">$10K</span>
-                    </div>
-                    <div class="control-group">
-                        <label>Max Days</label>
-                        <input type="range" min="1" max="365" value="30" id="days-range">
-                        <span class="range-val">30d</span>
-                    </div>
-                    <button class="scan-btn">Scan</button>
-                </div>
-            </div>
-
-            <div class="scan-results card">
-                <div class="results-header">
-                    <span>Found <b id="found-count">18</b> targets</span>
-                    <span>Sorted by Opportunity Score</span>
-                </div>
-                <div class="results-list" id="scan-list">
-                    <!-- Results injected here -->
-                </div>
-            </div>
-        </main>
-
-        <!-- FOOTER LOG (Optional, added subtly) -->
-        <footer class="mini-footer">
-            <span class="mono">> DECRYPTING_MARKET_SIGNALS... OK</span>
-            <span class="mono">ALPHA_VER: 3.8.0</span>
-        </footer>
     </div>
 
+    <!-- SCRIPTS -->
     <script src="app.js"></script>
 </body>
 </html>
