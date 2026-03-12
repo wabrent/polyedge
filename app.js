@@ -1,178 +1,240 @@
 /**
- * POLYBUILDER ALPHA CORE v5.4
- * Real-time Engineering Terminal for Polymarket Developers
+ * PolyEdge Opportunity Engine v6.2
+ * High-performance market scanner and data aggregator
  */
 
-const API_ENDPOINT = 'https://gamma-api.polymarket.com/markets?closed=false&limit=60&active=true&order=volume24hr&ascending=false';
-const PROXY = 'https://api.allorigins.win/get?url=';
-
-let appState = {
-    markets: [],
-    latencyHistory: Array(26).fill(1.4),
-    currentRelayRedeem: 412.00,
-    theme: 'dark',
-    tier: 'TIER_2_UNLOCKED',
-    attributionID: '0x8f276...04fa'
+const CONFIG = {
+    API_URL: 'https://gamma-api.polymarket.com/markets?closed=false&limit=100&active=true&order=volume24hr&ascending=false',
+    PROXY: 'https://api.allorigins.win/get?url=',
+    REFRESH_INTERVAL: 15
 };
 
-// --- INITIALIZE ---
-window.addEventListener('load', () => {
-    initCore();
-    startLatencySimulation();
-    syncData();
-    startInsiderFeed();
+let state = {
+    markets: [],
+    filtered: [],
+    timer: CONFIG.REFRESH_INTERVAL,
+    activeTab: 'scanner',
+    filters: {
+        roi: 3,
+        liq: 10000,
+        days: 30
+    }
+};
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    initUI();
+    fetchData();
+    startClocks();
+    startRefreshTimer();
 });
 
-function initCore() {
-    // Theme toggle
-    const swap = document.getElementById('theme-swap');
-    if(swap) swap.onclick = () => {
-        appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', appState.theme);
+function initUI() {
+    // Sliders
+    const roiInput = document.getElementById('input-roi');
+    const liqInput = document.getElementById('input-liq');
+    const daysInput = document.getElementById('input-days');
+
+    roiInput.oninput = (e) => {
+        state.filters.roi = parseInt(e.target.value);
+        document.getElementById('val-roi').innerText = state.filters.roi + 'x';
+        applyFilters();
     };
 
-    // Tab Logic
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+    liqInput.oninput = (e) => {
+        state.filters.liq = parseInt(e.target.value) * 1000;
+        document.getElementById('val-liq').innerText = '$' + (state.filters.liq / 1000) + 'K';
+        applyFilters();
+    };
+
+    daysInput.oninput = (e) => {
+        state.filters.days = parseInt(e.target.value);
+        document.getElementById('val-days').innerText = state.filters.days + 'd';
+        applyFilters();
+    };
+
+    // Scan Button
+    document.getElementById('btn-scan').onclick = fetchData;
+
+    // Tabs
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.onclick = (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active', 'bg-[#23283B]', 'text-white'));
+            item.classList.add('active', 'bg-[#23283B]', 'text-white');
+            state.activeTab = item.dataset.tab;
+            updateViewHeader();
+            applyFilters();
         };
     });
-
-    // Action button
-    const action = document.getElementById('action-batch');
-    if(action) action.onclick = () => {
-        action.innerText = "EXECUTING_RELAY_BOND...";
-        setTimeout(() => {
-            alert(`SUCCESS: Batch redeemed via Builder Relay V2. Gas: 0.14 USD`);
-            appState.currentRelayRedeem = 0;
-            document.getElementById('redeem-amount').innerText = "$0.00";
-            action.innerText = "EXECUTE_MERGE_POSITIONS";
-        }, 1500);
-    };
 }
 
-// --- DATA SYNC ---
-async function syncData() {
+// --- DATA FETCHING ---
+async function fetchData() {
+    log("SYSTEM_NODE: Syncing with Gamma Protocol...");
     try {
-        const response = await fetch(PROXY + encodeURIComponent(API_ENDPOINT));
+        const response = await fetch(CONFIG.PROXY + encodeURIComponent(CONFIG.API_URL));
+        if (!response.ok) throw new Error("GATEWAY_OFFLINE");
+        
         const json = await response.json();
-        const data = JSON.parse(json.contents);
-        appState.markets = (Array.isArray(data) ? data : data.markets || []).filter(m => m.question);
-        renderMarkets();
-    } catch (e) {
-        console.warn("Signal Lost. Falling back to Cache.");
-        renderSimulatedMarkets();
+        const raw = JSON.parse(json.contents);
+        
+        state.markets = processMarkets(Array.isArray(raw) ? raw : (raw.markets || []));
+        log(`SUCCESS: Detected ${state.markets.length} active nodes.`);
+        applyFilters();
+    } catch (err) {
+        log(`CRITICAL: ${err.message}. Deploying recovery cache.`, "error");
+        deployFallback();
     }
 }
 
-// --- SIMULATIONS ---
-function startLatencySimulation() {
-    const el = document.getElementById('clob-stat');
-    const p99 = document.getElementById('p99-val');
-    const graph = document.getElementById('latency-graph');
+function processMarkets(data) {
+    return data.filter(m => m.question).map(m => {
+        let prices = [0.5, 0.5];
+        try {
+            const parsed = typeof m.outcomePrices === 'string' ? JSON.parse(m.outcomePrices) : m.outcomePrices;
+            if (Array.isArray(parsed)) prices = parsed.map(Number);
+        } catch(e) {}
 
-    setInterval(() => {
-        // Median 1.4s, with 5% chance of spike to 10-20s (as per SoLucky's report)
-        const chance = Math.random();
-        let newLat;
-        if (chance > 0.96) newLat = (Math.random() * 15 + 8).toFixed(1);
-        else newLat = (Math.random() * 0.8 + 1.2).toFixed(1);
-
-        appState.latencyHistory.push(newLat);
-        if(appState.latencyHistory.length > 24) appState.latencyHistory.shift();
-
-        // Update UI
-        if(el) {
-            el.innerText = newLat + 's';
-            el.className = parseFloat(newLat) > 5 ? 'u-val text-neg' : 'u-val';
-        }
-        if(p99) p99.innerText = Math.max(...appState.latencyHistory) + 's';
-
-        // Update Graph
-        if(graph) {
-            graph.innerHTML = '';
-            appState.latencyHistory.forEach(val => {
-                const bar = document.createElement('div');
-                bar.className = 'lat-bar' + (parseFloat(val) > 5 ? ' spike' : '');
-                bar.style.height = (Math.min(val, 20) * 3) + 'px';
-                graph.appendChild(bar);
-            });
-        }
-    }, 2500);
+        const yesPrice = Math.max(0.001, prices[0]);
+        const roi = 1 / yesPrice;
+        
+        return {
+            title: m.question,
+            liq: parseFloat(m.liquidity) || 0,
+            vol24h: parseFloat(m.volume24h) || 0,
+            roi: roi,
+            price: yesPrice * 100,
+            days: Math.floor((new Date(m.endDate) - new Date()) / (1000 * 60 * 60 * 24)),
+            url: `https://polymarket.com/market/${m.slug}`
+        };
+    });
 }
 
-function startInsiderFeed() {
-    const list = document.getElementById('insider-feed');
-    const whales = [
-        {name: '0xVitalik_MM', grade: 'S', act: 'Bought 50k NO', col: 'gold'},
-        {name: 'PolyWhale_Alpha', grade: 'S', act: 'Staked 120k YES', col: 'gold'},
-        {name: 'BuilderRelay_Node', grade: 'A', act: 'Redeemed positions', col: ''},
-        {name: 'Gamma_Insider', grade: 'A', act: 'Aggregated 10k YES', col: ''},
-        {name: 'Bot_V2_FOK', grade: 'B', act: 'Liquidity injection', col: ''}
-    ];
-
-    if(!list) return;
-    whales.forEach(w => {
-        list.innerHTML += `
-            <div class="trader-item glass">
-                <div class="t-info">
-                    <span class="t-name">${w.name}</span>
-                    <span class="t-last">${w.act}</span>
-                </div>
-                <span class="t-grade ${w.grade === 'S' ? 's' : ''}">${w.grade}</span>
-            </div>
-        `;
+function applyFilters() {
+    state.filtered = state.markets.filter(m => {
+        if (state.activeTab === 'scanner') {
+            return m.roi >= state.filters.roi && 
+                   m.liq >= state.filters.liq && 
+                   (m.days <= state.filters.days || m.days < 0);
+        }
+        return true;
     });
+
+    // Sort by Opportunity Score (Volume * ROI / DaysRemaining)
+    state.filtered.sort((a, b) => {
+        const scoreA = (a.vol24h * a.roi) / (Math.max(1, a.days));
+        const scoreB = (b.vol24h * b.roi) / (Math.max(1, b.days));
+        return scoreB - scoreA;
+    });
+
+    render();
 }
 
 // --- RENDERING ---
-function renderMarkets() {
-    const target = document.getElementById('main-viewport');
-    if(!target) return;
-    target.innerHTML = '';
+function render() {
+    const list = document.getElementById('market-list');
+    const count = document.getElementById('target-count');
+    if (!list) return;
 
-    appState.markets.forEach(m => {
-        let prices = [0.5, 0.5];
-        try { prices = (typeof m.outcomePrices === 'string' ? JSON.parse(m.outcomePrices) : m.outcomePrices).map(Number); } catch(e){}
-        const yes = (prices[0] * 100).toFixed(1);
-        const roi = (1 / prices[0]).toFixed(1);
+    count.innerText = `Found ${state.filtered.length} targets`;
+    list.innerHTML = '';
 
-        target.innerHTML += `
-            <div class="m-box">
-                <div class="m-box-header">
-                    <img src="${m.image}" class="m-box-icon" onerror="this.src='https://via.placeholder.com/32/1e293b/ffffff?text=P'">
-                    <h3 class="m-box-title">${m.title}</h3>
+    state.filtered.slice(0, 40).forEach((m, i) => {
+        const dayText = m.days < 0 ? 'Ended' : `${m.days}d`;
+        list.innerHTML += `
+            <div class="flex items-center bg-app-panel border border-transparent hover:border-app-border rounded-xl p-4 transition-all group cursor-pointer" onclick="window.open('${m.url}', '_blank')">
+                <div class="w-10 text-app-textDark font-bold text-sm">#${i + 1}</div>
+                <div class="flex-1 px-4">
+                    <h3 class="text-[15px] font-bold text-white mb-1 group-hover:text-app-blue transition-colors truncate max-w-[600px]">${m.title}</h3>
+                    <div class="flex gap-4 text-[11px] text-app-text font-medium">
+                        <span>Liq: $${formatCompact(m.liq)}</span>
+                        <span>Vol 24h: $${formatCompact(m.vol24h)}</span>
+                        <span>Ends: ${dayText}</span>
+                    </div>
                 </div>
-                <div class="m-box-meta">
-                    <span>Alpha: <b style="color:var(--pos)">${roi}x</b></span>
-                    <span>Vol: <b style="color:var(--accent)">$${formatCompact(m.volume24h)}</b></span>
+                <div class="w-28 text-right pr-6 border-r border-app-border">
+                    <div class="text-[15px] font-bold text-app-green">${m.roi.toFixed(1)}x</div>
+                    <div class="text-[10px] text-app-text font-semibold uppercase mt-0.5">ROI</div>
                 </div>
-                <div class="clob-input-row">
-                    <div class="clob-btn y">YES_ENTRY: ${yes}¢</div>
-                    <div class="clob-btn n">NO_ENTRY: ${(100-yes).toFixed(1)}¢</div>
+                <div class="w-24 text-right pr-6">
+                    <div class="text-[15px] font-bold text-white">${m.price.toFixed(1)}¢</div>
+                    <div class="text-[10px] text-app-text font-semibold uppercase mt-0.5">Entry</div>
                 </div>
-                <div style="font-size: 0.55rem; color: var(--text-dim); margin-bottom: 8px; font-family: var(--font-mono);">
-                    ATTR_ID: ${appState.attributionID} | ORDER_TYPE: GTC
-                </div>
-                <button class="buy-btn" style="background:var(--accent); color:#000; border:none; padding:10px; border-radius:6px; font-weight:900; font-size:0.75rem; cursor:pointer;" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')">EXECUTE_SIGNAL_ORDER</button>
+                <button class="bg-app-blue hover:bg-app-blueHover text-white text-[13px] font-semibold py-2 px-5 rounded-lg transition-colors">
+                    Trade
+                </button>
             </div>
         `;
     });
 }
 
-function renderSimulatedMarkets() {
-    appState.markets = [
-        {title: "Will Iran strike Israel by March 31?", outcomePrices: "[0.001, 0.999]", volume24h: "12000000", slug: "#"},
-        {title: "Trump win 2024 Presidential Election?", outcomePrices: "[0.54, 0.46]", volume24h: "850000000", slug: "#"},
-        {title: "Will the Fed decrease rates by 50+ bps?", outcomePrices: "[0.003, 0.997]", volume24h: "8200000", slug: "#"}
-    ];
-    renderMarkets();
+// --- UTILS ---
+function updateViewHeader() {
+    const title = document.getElementById('view-title');
+    const desc = document.getElementById('view-desc');
+    const controls = document.getElementById('scanner-controls');
+    
+    if (state.activeTab === 'scanner') {
+        title.innerText = "Opportunity Scanner";
+        desc.innerText = "Find high-potential markets based on ROI, liquidity, and time horizon.";
+        controls.style.display = 'flex';
+    } else {
+        title.innerText = state.activeTab.charAt(0).toUpperCase() + state.activeTab.slice(1);
+        desc.innerText = `Active filtering for ${state.activeTab} nodes...`;
+        controls.style.display = 'none';
+    }
+}
+
+function startClocks() {
+    const update = () => {
+        const now = new Date();
+        const opt = (tz) => now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz });
+        document.getElementById('clock-nyc').innerText = opt('America/New_York');
+        document.getElementById('clock-ldn').innerText = opt('Europe/London');
+        document.getElementById('clock-tko').innerText = opt('Asia/Tokyo');
+    };
+    update();
+    setInterval(update, 10000);
+}
+
+function startRefreshTimer() {
+    const bar = document.getElementById('refresh-progress');
+    const label = document.getElementById('refresh-timer');
+    
+    setInterval(() => {
+        state.timer--;
+        if (state.timer < 0) {
+            state.timer = CONFIG.REFRESH_INTERVAL;
+            fetchData();
+        }
+        label.innerText = state.timer + 's';
+        const offset = (state.timer / CONFIG.REFRESH_INTERVAL) * 100;
+        bar.style.strokeDasharray = `${offset}, 100`;
+    }, 1000);
 }
 
 function formatCompact(n) {
-    n = parseFloat(n);
     if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
     if (n >= 1e3) return (n/1e3).toFixed(1) + 'k';
     return n.toFixed(0);
+}
+
+function log(msg, type = "info") {
+    const content = document.getElementById('log-content');
+    if (!content) return;
+    const entry = document.createElement('div');
+    entry.className = "mb-1";
+    const timestamp = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    entry.innerHTML = `<span class="opacity-50">[${timestamp}]</span> <span class="${type === 'error' ? 'text-app-red' : 'text-app-blue'}">${msg}</span>`;
+    content.prepend(entry);
+}
+
+function deployFallback() {
+    state.markets = [
+        { title: 'Will the Fed decrease rates by 50+ bps?', liq: 6100000, vol24h: 5500000, roi: 666.7, price: 0.1, days: 7, url: '#' },
+        { title: 'Will Trump say "Jesus" this week?', liq: 2100000, vol24h: 3500000, roi: 1000, price: 0.1, days: 0, url: '#' },
+        { title: 'Will Bitcoin hit $84,000 on March 11?', liq: 344000, vol24h: 555000, roi: 2000, price: 0.1, days: 1, url: '#' }
+    ];
+    applyFilters();
 }
