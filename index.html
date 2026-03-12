@@ -106,12 +106,108 @@
                 </div>
             </div>
 
-            <div id="content-watchlist" class="tab-content hidden">
-                <div class="p-20 border border-dashed border-app-border rounded-3xl text-center bg-app-panel/30">
-                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="text-app-text"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+            <div id="content-watchlist" class="tab-content hidden max-w-[1200px] animate-fadeInUp">
+                
+                <!-- Whale Search Bar -->
+                <div class="flex items-center gap-4 bg-app-panel border border-app-border p-4 rounded-2xl mb-6 shadow-lg shadow-black/20">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <p class="text-app-text font-medium">Your watchlist is currently empty. Star a market node to monitor.</p>
+                    <input type="text" placeholder="Enter Polymarket Wallet Address (0x...) or ENS to analyze..." class="flex-1 bg-transparent text-white font-mono focus:outline-none text-sm placeholder-gray-600" value="0xMacroGenius...a9F" id="whale-input">
+                    <button class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)]" onclick="fetchWhaleData()">Analyze</button>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+                    
+                    <!-- Total Net Profit Card -->
+                    <div class="relative overflow-hidden bg-white/[0.02] border border-white/5 backdrop-blur-xl p-6 rounded-3xl hover:bg-white/[0.04] hover:border-white/10 transition-all duration-500 group cursor-pointer shadow-2xl shadow-black/50">
+                        <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all duration-700 pointer-events-none"></div>
+                        <div class="relative z-10">
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-2">Total Net Profit</p>
+                            <h3 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">+$142,500</h3>
+                            <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                                <span class="text-xs text-gray-500">Win Rate: <b class="text-green-400">68%</b></span>
+                                <svg width="60" height="20" viewBox="0 0 60 20" fill="none" class="opacity-70">
+                                    <path d="M0 15C5 15 10 5 15 5C20 5 25 10 30 10C35 10 40 2 45 2C50 2 55 8 60 8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M0 15C5 15 10 5 15 5C20 5 25 10 30 10C35 10 40 2 45 2C50 2 55 8 60 8V20H0V15Z" fill="url(#paint0_linear_stat)" opacity="0.2"/>
+                                    <defs><linearGradient id="paint0_linear_stat" x1="30" y1="2" x2="30" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#10B981"/><stop offset="1" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-app-panel border border-app-border p-5 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-colors">
+                        <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all"></div>
+                        <p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1 relative z-10">Global Win Rate</p>
+                        <h3 class="text-3xl font-bold text-white relative z-10">68.4%</h3>
+                    </div>
+                    
+                    <div class="bg-app-panel border border-app-border p-5 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-colors">
+                        <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all"></div>
+                        <p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1 relative z-10">Volume Traded</p>
+                        <h3 class="text-3xl font-bold text-white relative z-10">$1.24M</h3>
+                    </div>
+                    
+                    <div class="bg-app-panel border border-app-border p-5 rounded-2xl relative overflow-hidden group hover:border-blue-500/30 transition-colors">
+                        <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-all"></div>
+                        <p class="text-[10px] text-app-text font-bold uppercase tracking-widest mb-1 relative z-10">Top Category Edge</p>
+                        <h3 class="text-xl font-bold text-blue-400 mt-2 relative z-10">US Politics</h3>
+                    </div>
+                </div>
+
+                <div class="text-xs text-app-text mb-4 uppercase tracking-widest font-bold">Active Positions (3)</div>
+
+                <div class="space-y-3" id="whale-positions">
+                    
+                    <div class="flex items-center bg-app-panel border border-transparent hover:border-[#3B82F6]/30 rounded-xl p-4 transition-all group">
+                        <div class="w-14 text-center">
+                            <span class="text-[10px] font-bold text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded">YES</span>
+                        </div>
+                        <div class="flex-1 ml-4">
+                            <h3 class="text-[15px] font-bold text-white mb-1 group-hover:text-blue-400 transition-colors truncate max-w-[500px]">Will the Fed decrease interest rates by 50+ bps?</h3>
+                            <div class="flex gap-4 text-[11px] text-app-text font-medium font-mono">
+                                <span>Avg Entry: <b class="text-white">0.24¢</b></span>
+                                <span>Current: <b class="text-green-500">0.30¢</b></span>
+                            </div>
+                        </div>
+                        <div class="w-32 text-right pr-6 border-r border-app-border">
+                            <div class="text-[16px] font-mono font-bold text-white">$45,000</div>
+                            <div class="text-[9px] text-app-text font-bold uppercase mt-1 tracking-wider">Position Size</div>
+                        </div>
+                        <div class="w-32 text-right pr-6 ml-6">
+                            <div class="text-[16px] font-mono font-bold text-green-500">+$11,250</div>
+                            <div class="text-[9px] text-app-text font-bold uppercase mt-1 tracking-wider">Unrealized PnL</div>
+                        </div>
+                        <button class="ml-6 bg-blue-600/10 text-blue-500 border border-blue-600/30 hover:bg-blue-600 hover:text-white text-[12px] uppercase tracking-widest font-bold py-2.5 px-6 rounded-lg transition-all" onclick="openAlphaModal('0xMacroGenius', 'https://ui-avatars.com/api/?name=M&background=3B82F6&color=fff', 4.1)">
+                            Copy Trade
+                        </button>
+                    </div>
+
+                    <div class="flex items-center bg-app-panel border border-transparent hover:border-[#3B82F6]/30 rounded-xl p-4 transition-all group">
+                        <div class="w-14 text-center">
+                            <span class="text-[10px] font-bold text-red-500 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded">NO</span>
+                        </div>
+                        <div class="flex-1 ml-4">
+                            <h3 class="text-[15px] font-bold text-white mb-1 group-hover:text-blue-400 transition-colors truncate max-w-[500px]">Will Iran close the Strait of Hormuz by March 31?</h3>
+                            <div class="flex gap-4 text-[11px] text-app-text font-medium font-mono">
+                                <span>Avg Entry: <b class="text-white">99.0¢</b></span>
+                                <span>Current: <b class="text-red-500">97.5¢</b></span>
+                            </div>
+                        </div>
+                        <div class="w-32 text-right pr-6 border-r border-app-border">
+                            <div class="text-[16px] font-mono font-bold text-white">$12,000</div>
+                            <div class="text-[9px] text-app-text font-bold uppercase mt-1 tracking-wider">Position Size</div>
+                        </div>
+                        <div class="w-32 text-right pr-6 ml-6">
+                            <div class="text-[16px] font-mono font-bold text-red-500">-$180</div>
+                            <div class="text-[9px] text-app-text font-bold uppercase mt-1 tracking-wider">Unrealized PnL</div>
+                        </div>
+                        <button class="ml-6 bg-blue-600/10 text-blue-500 border border-blue-600/30 hover:bg-blue-600 hover:text-white text-[12px] uppercase tracking-widest font-bold py-2.5 px-6 rounded-lg transition-all" onclick="openAlphaModal('0xMacroGenius', 'https://ui-avatars.com/api/?name=M&background=3B82F6&color=fff', 1.01)">
+                            Copy Trade
+                        </button>
+                    </div>
+
                 </div>
             </div>
 
