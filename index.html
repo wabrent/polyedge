@@ -36,9 +36,11 @@
 
     <header class="h-[60px] flex-shrink-0 border-b border-app-border bg-app-bg flex items-center justify-between px-6 z-50">
         <div class="flex items-center gap-8">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.hash = '#market'">
-                <img src="/logo.jpg" alt="PolyEdge" onerror="this.src='logo.svg'" class="w-8 h-8 rounded-md object-cover bg-white">
-                <span class="font-bold text-lg tracking-tight">PolyEdge</span>
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="window.location.hash = '#market'">
+                <div class="w-8 h-8 flex items-center justify-center bg-transparent group-hover:scale-105 transition-transform">
+                    <img src="logo.svg" alt="PolyEdge" class="w-full h-full object-contain">
+                </div>
+                <span class="font-extrabold text-xl tracking-tight text-white group-hover:text-blue-400 transition-colors">PolyEdge</span>
             </div>
             
             <nav class="hidden md:flex items-center gap-2 text-[14px] font-medium text-app-text" id="main-nav">
