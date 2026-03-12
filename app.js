@@ -8,9 +8,11 @@ const PROXY = 'https://api.allorigins.win/get?url=';
 
 let appState = {
     markets: [],
-    latencyHistory: Array(20).fill(1.4),
+    latencyHistory: Array(26).fill(1.4),
     currentRelayRedeem: 412.00,
-    theme: 'dark'
+    theme: 'dark',
+    tier: 'TIER_2_UNLOCKED',
+    attributionID: '0x8f276...04fa'
 };
 
 // --- INITIALIZE ---
@@ -149,6 +151,9 @@ function renderMarkets() {
                 <div class="clob-input-row">
                     <div class="clob-btn y">YES_ENTRY: ${yes}¢</div>
                     <div class="clob-btn n">NO_ENTRY: ${(100-yes).toFixed(1)}¢</div>
+                </div>
+                <div style="font-size: 0.55rem; color: var(--text-dim); margin-bottom: 8px; font-family: var(--font-mono);">
+                    ATTR_ID: ${appState.attributionID} | ORDER_TYPE: GTC
                 </div>
                 <button class="buy-btn" style="background:var(--accent); color:#000; border:none; padding:10px; border-radius:6px; font-weight:900; font-size:0.75rem; cursor:pointer;" onclick="window.open('https://polymarket.com/market/${m.slug}', '_blank')">EXECUTE_SIGNAL_ORDER</button>
             </div>

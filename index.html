@@ -16,21 +16,22 @@
         <div class="nav-brand">
             <div class="cube-logo">P</div>
             <span class="brand-title">POLY<span class="accent">BUILDER</span></span>
-            <div class="version-badge">v5.4_ALPHA</div>
+            <div class="version-badge">BETA_V1.1</div>
+            <div class="tier-badge glass">TIER_2_UNLOCKED</div>
         </div>
         
         <div class="nav-stats">
             <div class="stat-unit">
-                <span class="u-label">CLOB_LATENCY</span>
+                <span class="u-label">CLOB_CLIENT</span>
+                <span class="u-val text-pos">CONNECTED</span>
+            </div>
+            <div class="stat-unit">
+                <span class="u-label">LATENCY_P99</span>
                 <span class="u-val" id="clob-stat">1.4s</span>
             </div>
             <div class="stat-unit">
-                <span class="u-label">GAS_POLYGON</span>
-                <span class="u-val text-pos">28 GWEI</span>
-            </div>
-            <div class="stat-unit">
-                <span class="u-label">CONNECTED_NODES</span>
-                <span class="u-val">4</span>
+                <span class="u-label">GAS_RELAYER</span>
+                <span class="u-val text-pos">READY</span>
             </div>
         </div>
 
@@ -55,14 +56,32 @@
             <div class="trader-list" id="insider-feed">
                 <!-- Traders will be injected here -->
             </div>
+
+            <div class="panel-section" style="padding: 16px; border-top: 1px solid var(--border-dark);">
+                <span class="nav-group-title" style="font-size: 0.6rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 12px;">BUILDER_ATTRIBUTION</span>
+                <div class="glass" style="padding: 12px; border-radius: 8px; font-size: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span>Affiliate_ID</span>
+                        <span class="mono" style="color: var(--accent);">0x8f2...04f</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section" style="padding: 16px; border-top: 1px solid var(--border-dark);">
+                <span class="nav-group-title" style="font-size: 0.6rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 12px;">OFFICIAL_SDKS</span>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <a href="https://github.com/Polymarket/clob-client" target="_blank" style="font-size: 0.7rem; color: var(--text-dim); text-decoration: none;">- clob-client-ts</a>
+                    <a href="https://github.com/Polymarket/builder-relayer-client" target="_blank" style="font-size: 0.7rem; color: var(--text-dim); text-decoration: none;">- relayer-node-ts</a>
+                </div>
+            </div>
         </aside>
 
-        <!-- CENTER PANEL: MAIN ACTIVITY STREAM -->
+        <!-- CENTER PANEL: CLOB ACTIVITY STREAM -->
         <main class="panel center-panel">
             <div class="panel-header tab-row">
                 <button class="tab-btn active">Markets_Explorer</button>
-                <button class="tab-btn">Large_Orders_Feed</button>
-                <button class="tab-btn">Yield_Scanner</button>
+                <button class="tab-btn">CLOB_Trade_Stream</button>
+                <button class="tab-btn">Order_Manager</button>
             </div>
             
             <div class="view-viewport" id="main-viewport">

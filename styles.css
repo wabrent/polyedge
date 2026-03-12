@@ -49,7 +49,8 @@ body {
 }
 .brand-title { font-weight: 800; font-size: 1.1rem; letter-spacing: -1px; }
 .brand-title .accent { color: var(--accent); }
-.version-badge { font-size: 0.6rem; background: var(--border-dark); padding: 2px 6px; border-radius: 4px; color: var(--text-dim); font-weight: 800; }
+.version-badge { font-size: 0.6rem; background: var(--border-dark); padding: 2px 6px; border-radius: 4px; color: var(--text-dim); font-weight: 800; margin-left: 8px; }
+.tier-badge { font-size: 0.6rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; color: var(--pos); border: 1px solid rgba(57, 211, 83, 0.2); margin-left: 8px; }
 
 .nav-stats { display: flex; gap: 32px; flex: 1; justify-content: center; }
 .stat-unit { display: flex; flex-direction: column; align-items: center; }
@@ -130,8 +131,8 @@ body {
 .mono-hint { font-size: 0.6rem; font-family: var(--font-mono); color: var(--text-dim); text-align: center; }
 
 .latency-chart { display: flex; gap: 4px; height: 60px; align-items: flex-end; }
-.lat-bar { width: 10px; background: var(--accent); border-radius: 2px 2px 0 0; }
-.lat-bar.spike { background: var(--warn); }
+.lat-bar { width: 10px; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.7; }
+.lat-bar.spike { background: var(--neg); opacity: 1; box-shadow: 0 0 10px var(--neg); }
 .latency-meta { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); }
 
 .builder-cta { 
