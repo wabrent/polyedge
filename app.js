@@ -1,201 +1,146 @@
 /**
- * PolyEdge - Risk Navigator Engine v1.0
- * Logic based on Python package provided by USER.
+ * PolyEdge - Polymarket Intelligence Engine
+ * Integrates with Polymarket Gamma Protocol
  */
 
 const CONFIG = {
-    // Using Gamma API as it's the current standard for Polymarket
-    API_URL: 'https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=40&order=volume&dir=desc',
-    REFRESH_RATE: 30000 // 30s
+    GAMMA_API: "https://gamma-api.polymarket.com",
+    REFRESH_INTERVAL: 60000 // 1 minute
 };
 
 let state = {
     markets: [],
-    signals: [],
-    isAppLaunched: false
+    currentFilter: 'all'
 };
 
-// --- CORE BOOTSTRAP ---
+// --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    initLaunch();
-    initSimulations();
+    fetchMarkets();
+    initSearch();
     
-    // Check if hash exists to skip landing
-    if (window.location.hash === '#active') {
-        launchApp();
-    }
+    // Auto refresh
+    setInterval(fetchMarkets, CONFIG.REFRESH_INTERVAL);
 });
 
-// --- 1. USER AUTH & LAUNCH FLOW ---
-function initLaunch() {
-    const launchBtn = document.getElementById('launchBtn');
-    if (launchBtn) {
-        launchBtn.onclick = () => {
-            launchApp();
-        }
-    }
-}
-
-function launchApp() {
-    const landing = document.getElementById('landing-view');
-    const app = document.getElementById('app-view');
+// --- API ACTIONS ---
+async function fetchMarkets(category = '') {
+    const grid = document.getElementById('marketGrid');
     
-    landing.classList.add('fade-out');
-    window.location.hash = '#active';
-    
-    setTimeout(() => {
-        landing.style.display = 'none';
-        app.classList.remove('hidden');
-        app.classList.add('fade-in');
-        state.isAppLaunched = true;
-        fetchData();
-    }, 500);
-}
-
-// --- 2. ANALYTICS ENGINE (Translating User's Python Logic) ---
-function analyzeMarket(market) {
-    // Extract probability from prices (outcomePrices[0] is typically YES)
-    let prices = [0.5, 0.5];
-    if (market.outcomePrices) {
-        prices = (typeof market.outcomePrices === 'string' ? JSON.parse(market.outcomePrices) : market.outcomePrices).map(Number);
-    }
-    
-    const probability = prices[0] || 0.5;
-    
-    // USER'S LOGIC: probability - 0.1
-    const hiddenTrend = probability - 0.1;
-    
-    // USER'S LOGIC: HIGH RISK if < 0.5 else OPPORTUNITY
-    const signal = hiddenTrend < 0.5 ? "HIGH RISK" : "OPPORTUNITY";
-    
-    return {
-        id: market.id,
-        name: market.question || market.name || "Unknown Event",
-        signal: signal,
-        prob: (probability * 100).toFixed(1),
-        trend: hiddenTrend,
-        vol: market.volume || 0,
-        slug: market.slug
-    };
-}
-
-// --- 3. DATA ACQUISITION ---
-async function fetchData() {
     try {
-        const response = await fetch(CONFIG.API_URL);
-        const data = await response.json();
+        let url = `${CONFIG.GAMMA_API}/markets?active=true&closed=false&order=volume&dir=desc&limit=24`;
+        if (category) url += `&tag=${category}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
         
         state.markets = data;
-        state.signals = data.map(m => analyzeMarket(m));
-        
-        renderOverview();
-        generateAlerts();
-    } catch (e) {
-        console.warn("API Node Shard Offline. Using fallback forensics.");
-        deployFallback();
+        renderMarkets(data);
+    } catch (error) {
+        console.error("API Failure:", error);
+        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--pm-red); font-weight: 600;">Node Synchronization Failed. Retrying...</div>`;
     }
 }
 
-// --- 4. UI RENDERING ---
-function renderOverview() {
-    const list = document.getElementById('market-list');
-    const count = document.getElementById('target-count');
-    if (!list) return;
+// --- RENDERING ---
+function renderMarkets(markets) {
+    const grid = document.getElementById('marketGrid');
+    if (!markets.length) {
+        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--pm-text-secondary);">No markets found matching criteria.</p>`;
+        return;
+    }
 
-    count.innerText = `Targets: ${state.signals.length}`;
-    list.innerHTML = '';
+    grid.innerHTML = markets.map((m, i) => {
+        // Parse prices (Gamma API returns outcomePrices as a string representation of array)
+        let prices = [0, 0];
+        try {
+            prices = JSON.parse(m.outcomePrices);
+        } catch (e) {
+            prices = [0, 0];
+        }
 
-    state.signals.forEach((s, i) => {
-        const item = document.createElement('div');
-        item.className = 'market-item animate-fadeInUp';
-        item.style.animationDelay = `${i * 0.05}s`;
-        
-        const signalStyle = s.signal === 'OPPORTUNITY' ? 'pill-signal-opp' : 'pill-signal-high';
-        
-        item.innerHTML = `
-            <div class="market-info">
-                <h3 class="truncate" title="${s.name}">${s.name}</h3>
-                <div class="market-pills">
-                    <span class="pill pill-prob">${s.prob}% Prob</span>
-                    <span class="pill ${signalStyle}">${s.signal}</span>
-                </div>
-            </div>
-            <div class="text-right">
-                <div class="text-[10px] text-dim uppercase">Trend</div>
-                <div class="text-xs font-bold ${s.signal === 'OPPORTUNITY' ? 'text-green-400' : 'text-accent'}">
-                    ${s.trend.toFixed(2)}
+        const yesPrice = (parseFloat(prices[0] || 0) * 100).toFixed(1);
+        const noPrice = (parseFloat(prices[1] || 0) * 100).toFixed(1);
+        const volume = formatCurrency(m.volume || 0);
+
+        return `
+            <div class="market-card animate-in" style="animation-delay: ${i * 0.03}s" onclick="openMarketDetails('${m.id}')">
+                <p class="volume-tag">Vol: ${volume}</p>
+                <h3 class="title">${m.question}</h3>
+                <div class="market-footer">
+                    <div class="price-pills">
+                        <div class="price-pill pill-yes">Yes ${yesPrice}¢</div>
+                        <div class="price-pill pill-no">No ${noPrice}¢</div>
+                    </div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--pm-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
             </div>
         `;
-        
-        item.onclick = () => {
-            if (s.slug && s.slug !== '#') {
-                window.open(`https://polymarket.com/market/${s.slug}`, '_blank');
-            }
-        };
-        
-        list.appendChild(item);
-    });
+    }).join('');
 }
 
-function generateAlerts() {
-    const container = document.getElementById('alerts-container');
-    if (!container) return;
-
-    // Filter opportunities
-    const opps = state.signals.filter(s => s.signal === 'OPPORTUNITY').slice(0, 5);
-    
-    if (opps.length > 0) {
-        container.innerHTML = '';
-        opps.forEach(o => {
-            const alert = document.createElement('div');
-            alert.className = 'alert-item';
-            alert.innerHTML = `
-                <span class="alert-time">${new Date().toLocaleTimeString()}</span>
-                <div class="alert-content">Insight: <b>${o.name}</b> detected as a high-value signal.</div>
-            `;
-            container.appendChild(alert);
+// --- INTERACTION ---
+function initSearch() {
+    const searchInput = document.getElementById('marketSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = state.markets.filter(m => 
+                m.question.toLowerCase().includes(term) || 
+                (m.description && m.description.toLowerCase().includes(term))
+            );
+            renderMarkets(filtered);
         });
     }
 }
 
-// --- 5. VISUAL SIMULATIONS (Heatmap & Charts) ---
-function initSimulations() {
-    // Heatmap
-    const heatmap = document.getElementById('heatmap');
-    if (heatmap) {
-        for (let i = 0; i < 49; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'heatmap-cell';
-            const intensity = Math.random();
-            cell.style.backgroundColor = `rgba(255, 61, 0, ${intensity * 0.5})`;
-            if (intensity > 0.8) cell.style.border = '1px solid rgba(255, 61, 0, 0.5)';
-            heatmap.appendChild(cell);
-        }
-    }
-
-    // Charts
-    const charts = document.getElementById('charts-bars');
-    if (charts) {
-        for (let i = 0; i < 12; i++) {
-            const bar = document.createElement('div');
-            bar.className = 'bar';
-            const height = 20 + Math.random() * 80;
-            bar.style.height = `${height}%`;
-            bar.style.opacity = 0.3 + Math.random() * 0.7;
-            charts.appendChild(bar);
-        }
-    }
+function loadMarkets(category) {
+    // UI Feedback
+    const grid = document.getElementById('marketGrid');
+    grid.innerHTML = `
+        <div class="market-card"><div class="skeleton" style="height: 24px; width: 80%; margin-bottom: 16px;"></div><div class="skeleton" style="height: 16px; width: 40%;"></div></div>
+        <div class="market-card"><div class="skeleton" style="height: 24px; width: 70%; margin-bottom: 16px;"></div><div class="skeleton" style="height: 16px; width: 30%;"></div></div>
+    `;
+    fetchMarkets(category);
 }
 
-function deployFallback() {
-    const dummy = [
-        { question: "Fed Rate Cut in March?", volume: 1000000, outcomePrices: [0.65, 0.35] },
-        { question: "BTC Above $100k?", volume: 5000000, outcomePrices: [0.85, 0.15] },
-        { question: "US GDP Growth Exceeds 3%?", volume: 200000, outcomePrices: [0.3, 0.7] }
-    ];
-    state.markets = dummy;
-    state.signals = dummy.map(m => analyzeMarket(m));
-    renderOverview();
-    generateAlerts();
+function openMarketDetails(id) {
+    const market = state.markets.find(m => m.id === id);
+    if (!market) return;
+
+    const overlay = document.getElementById('modalOverlay');
+    const content = document.getElementById('modalContent');
+    
+    content.innerHTML = `
+        <h2 style="font-size: 24px; margin-bottom: 16px; font-weight: 800;">${market.question}</h2>
+        <div style="background: var(--pm-panel); padding: 20px; border-radius: 12px; margin-bottom: 24px;">
+            <p style="color: var(--pm-text-secondary); font-size: 14px; margin-bottom: 12px;">Market Liquidity & Volume</p>
+            <div style="display: flex; gap: 40px;">
+                <div>
+                    <p style="font-size: 11px; text-transform: uppercase; color: var(--pm-text-secondary);">Total Volume</p>
+                    <p style="font-size: 20px; font-weight: 700;">${formatCurrency(market.volume)}</p>
+                </div>
+                <div>
+                    <p style="font-size: 11px; text-transform: uppercase; color: var(--pm-text-secondary);">Liquidity</p>
+                    <p style="font-size: 20px; font-weight: 700;">${formatCurrency(market.liquidity)}</p>
+                </div>
+            </div>
+        </div>
+        <p style="color: var(--pm-text-main); font-size: 15px; margin-bottom: 32px;">${market.description || 'No additional details available for this event.'}</p>
+        <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 16px;" onclick="window.open('https://polymarket.com/market/${market.slug}', '_blank')">Trade on Polymarket</button>
+    `;
+    
+    overlay.style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('modalOverlay').style.display = 'none';
+}
+
+// --- UTILS ---
+function formatCurrency(val) {
+    if (!val) return "$0";
+    const num = parseFloat(val);
+    if (num >= 1000000) return "$" + (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return "$" + (num / 1000).toFixed(1) + "k";
+    return "$" + num.toFixed(0);
 }
