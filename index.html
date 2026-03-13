@@ -1,91 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge | Polymarket Analytics Tool</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>PolyEdge Pro Hub • Polymarket Intelligence</title>
+    
+    <!-- Scripts & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="styles.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { 
+                extend: { 
+                    colors: { 
+                        polymarket: '#8b5cf6', 
+                        yes: '#22c55e', 
+                        no: '#ef4444' 
+                    } 
+                } 
+            }
+        }
+    </script>
 </head>
-<body>
+<body class="min-h-screen p-6 md:p-10">
 
-    <div class="app-container">
-        <!-- HEADER -->
-        <header class="header">
-            <a href="#" class="logo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L1 12l11 10 11-10L12 2zm0 18.5L3.5 12 12 5.5 20.5 12 12 20.5z"/>
-                </svg>
-                PolyEdge
-            </a>
-            <nav class="nav">
-                <a href="#markets" class="nav-link active">Markets</a>
-                <a href="#whale" class="nav-link">Whale Analyzer</a>
-                <a href="#tracker" class="nav-link">Portfolio</a>
-            </nav>
-            <div class="header-actions">
-                <button class="btn btn-primary">Connect Wallet</button>
+    <!-- HEADER SECTION -->
+    <header class="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="animate-fade-in">
+            <h1 class="text-5xl font-black text-polymarket mb-3 tracking-tighter italic uppercase">PolyEdge Pro</h1>
+            <p class="text-gray-400 font-medium max-w-2xl">
+                Real-time market synchronization, CLOB pricing, and whale tracking forensics. 
+                <span class="text-polymarket/80">• Gamma + CLOB + Data API</span>
+            </p>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="theme-toggle" class="w-12 h-12 rounded-2xl bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-all hover:scale-110 active:scale-90 border border-white/5">
+                <i class="fas fa-moon text-polymarket text-xl" id="theme-icon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTROL PANEL -->
+    <div class="max-w-7xl mx-auto mb-10 flex flex-col xl:flex-row gap-5 animate-fade-in" style="animation-delay: 0.1s">
+        <div class="relative flex-1">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+            <input id="search-input" type="text" placeholder="Search markets (e.g. Trump, Crypto, Fed)..." 
+                class="w-full bg-gray-800/50 border border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-gray-500 focus:bg-gray-800 transition-all shadow-inner"/>
+        </div>
+        <div class="flex flex-wrap md:flex-nowrap gap-4">
+            <select id="category-filter" class="bg-gray-800/50 border border-gray-700 rounded-2xl px-6 py-4 font-bold text-sm min-w-[200px] cursor-pointer hover:bg-gray-800">
+                <option value="">All Categories</option>
+            </select>
+            <select id="sort-by" class="bg-gray-800/50 border border-gray-700 rounded-2xl px-6 py-4 font-bold text-sm cursor-pointer hover:bg-gray-800">
+                <option value="volume">Sort by: Volume (desc)</option>
+                <option value="liquidity">Sort by: Liquidity (desc)</option>
+            </select>
+            <div class="flex items-center gap-3 bg-gray-800/50 border border-gray-700 rounded-2xl px-4 py-4">
+                <span class="text-[10px] font-black uppercase tracking-widest text-gray-500">Limit:</span>
+                <input id="limit" type="number" value="15" class="bg-transparent w-12 font-bold text-center outline-none"/>
             </div>
-        </header>
-
-        <!-- MAIN LAYOUT -->
-        <div class="main-layout">
-            <!-- SIDEBAR -->
-            <aside class="sidebar">
-                <div style="margin-bottom: 32px;">
-                    <h3 style="font-size: 12px; color: var(--pm-text-secondary); text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.05em;">Categories</h3>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <button class="btn btn-outline" style="justify-content: flex-start; width: 100%;" onclick="loadMarkets('politics')">🇺🇸 Politics</button>
-                        <button class="btn btn-outline" style="justify-content: flex-grow; justify-content: flex-start; width: 100%;" onclick="loadMarkets('crypto')">₿ Crypto</button>
-                        <button class="btn btn-outline" style="justify-content: flex-start; width: 100%;" onclick="loadMarkets('sports')">🏀 Sports</button>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 style="font-size: 12px; color: var(--pm-text-secondary); text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.05em;">Live Stats</h3>
-                    <div class="panel" style="background: var(--pm-panel); padding: 16px; border-radius: 8px; border: 1px solid var(--pm-border);">
-                        <div style="margin-bottom: 12px;">
-                            <p style="font-size: 11px; color: var(--pm-text-secondary);">24h Volume</p>
-                            <p style="font-size: 18px; font-weight: 800;">$142.5M</p>
-                        </div>
-                        <div>
-                            <p style="font-size: 11px; color: var(--pm-text-secondary);">Active Markets</p>
-                            <p style="font-size: 18px; font-weight: 800;">2,410</p>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- CONTENT -->
-            <main class="main-content">
-                <!-- TOP BAR -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-                    <div>
-                        <h1 style="font-size: 28px; font-weight: 800;">Real-time Markets</h1>
-                        <p style="color: var(--pm-text-secondary); font-size: 14px;">Live data stream from Polymarket Gamma Protocol</p>
-                    </div>
-                    <div style="display: flex; gap: 12px;">
-                        <input type="text" id="marketSearch" placeholder="Search markets..." style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--pm-border); outline: none; width: 300px;">
-                    </div>
-                </div>
-
-                <!-- MARKET LIST -->
-                <div class="market-grid" id="marketGrid">
-                    <!-- SKELETONS -->
-                    <div class="market-card"><div class="skeleton" style="height: 24px; width: 80%; margin-bottom: 16px;"></div><div class="skeleton" style="height: 16px; width: 40%;"></div></div>
-                    <div class="market-card"><div class="skeleton" style="height: 24px; width: 70%; margin-bottom: 16px;"></div><div class="skeleton" style="height: 16px; width: 30%;"></div></div>
-                    <div class="market-card"><div class="skeleton" style="height: 24px; width: 90%; margin-bottom: 16px;"></div><div class="skeleton" style="height: 16px; width: 50%;"></div></div>
-                </div>
-            </main>
         </div>
     </div>
 
-    <!-- MODAL (FOR WHALE ANALYZER OR MARKET DETAILS) -->
-    <div id="modalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; padding: 32px; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
-            <button onclick="closeModal()" style="position: absolute; top: 20px; right: 20px; border: none; background: none; font-size: 20px; cursor: pointer;">&times;</button>
-            <div id="modalContent"></div>
+    <!-- MARKETS GRID -->
+    <div class="max-w-7xl mx-auto mb-20">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <h2 class="text-2xl font-black uppercase tracking-tighter italic">Live Intelligence</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="markets-container">
+            <!-- Market Cards Loaded Dynamically -->
         </div>
     </div>
+
+    <!-- WHALES SECTION -->
+    <div id="whales-section" class="max-w-7xl mx-auto border-t border-gray-800 pt-20 pb-20">
+        <div class="flex items-center gap-3 mb-10">
+            <i class="fas fa-whale text-3xl text-polymarket animate-bounce"></i>
+            <h2 class="text-3xl font-black uppercase tracking-tighter italic">Whale Leaderboard</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="whales-container">
+            <!-- Whales Loaded Dynamically -->
+        </div>
+    </div>
+
+    <footer class="max-w-7xl mx-auto pb-10 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.3em]">
+        PolyEdge v2.0 • Institutional Data Stream • graanit.eth integration
+    </footer>
 
     <script src="app.js"></script>
 </body>

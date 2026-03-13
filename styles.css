@@ -1,213 +1,97 @@
-/* PolyEdge - Polymarket Native Design System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Polymarket Pro Dashboard • Design System v2.0 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-    --pm-blue: #0047FF;
-    --pm-blue-hover: #0036C2;
-    --pm-bg: #FFFFFF;
-    --pm-panel: #F8F9FB;
-    --pm-border: #E5E7EB;
-    --pm-text-main: #111827;
-    --pm-text-secondary: #6B7280;
-    --pm-green: #10B981;
-    --pm-red: #EF4444;
-    --pm-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
+    --polymarket: #8b5cf6;
+    --yes: #22c55e;
+    --no: #ef4444;
+    --bg-dark: #0f0f17;
+    --text-dark: #e2e8f0;
+    --bg-light: #f9fafb;
+    --text-light: #1f2937;
+    --card-dark: rgba(17, 20, 29, 0.7);
+    --card-light: rgba(255, 255, 255, 0.9);
 }
 
 body {
-    background-color: var(--pm-bg);
-    color: var(--pm-text-main);
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.4s ease, color 0.4s ease;
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
 }
 
-/* Layout */
-.app-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+[data-theme="light"] body {
+    background-color: var(--bg-light);
+    color: var(--text-light);
 }
 
-.header {
-    height: 64px;
-    border-bottom: 1px solid var(--pm-border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    background: #fff;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+/* Glassmorphism Cards */
+.card {
+    background: var(--card-dark);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 800;
-    font-size: 20px;
-    color: var(--pm-blue);
-    text-decoration: none;
-}
-
-.nav {
-    display: flex;
-    gap: 24px;
-}
-
-.nav-link {
-    text-decoration: none;
-    color: var(--pm-text-secondary);
-    font-size: 14px;
-    font-weight: 600;
-    transition: color 0.2s;
-}
-
-.nav-link:hover, .nav-link.active {
-    color: var(--pm-blue);
-}
-
-/* Buttons */
-.btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.btn-primary {
-    background: var(--pm-blue);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--pm-blue-hover);
-}
-
-.btn-outline {
-    background: white;
-    border: 1px solid var(--pm-border);
-    color: var(--pm-text-main);
-}
-
-.btn-outline:hover {
-    background: var(--pm-panel);
-}
-
-/* Sidebar & Main */
-.main-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    flex-grow: 1;
-}
-
-.sidebar {
-    border-right: 1px solid var(--pm-border);
-    padding: 24px;
-    background: #fff;
-}
-
-.main-content {
-    background: var(--pm-panel);
-    padding: 32px;
-}
-
-/* Market Cards */
-.market-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
-}
-
-.market-card {
-    background: white;
-    border: 1px solid var(--pm-border);
-    border-radius: 12px;
-    padding: 20px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-}
-
-.market-card:hover {
-    transform: translateY(-2px);
+[data-theme="light"] .card {
+    background: var(--card-light);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-.market-card .title {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+.card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 35px 60px -15px rgba(139, 92, 246, 0.2);
+    border-color: var(--polymarket);
+}
+
+/* Outcome Bars */
+.outcome-bar-container {
+    height: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 999px;
     overflow: hidden;
+    margin-top: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.02);
 }
 
-.market-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--pm-panel);
+[data-theme="light"] .outcome-bar-container {
+    background: rgba(0, 0, 0, 0.05);
 }
 
-.volume-tag {
-    font-size: 12px;
-    color: var(--pm-text-secondary);
-    font-weight: 500;
+.outcome-bar {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.price-pills {
-    display: flex;
-    gap: 8px;
-}
-
-.price-pill {
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 13px;
-}
-
-.pill-yes { background: rgba(16, 185, 129, 0.1); color: var(--pm-green); }
-.pill-no { background: rgba(239, 68, 68, 0.1); color: var(--pm-red); }
-
-/* Skeleton */
-.skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-    border-radius: 4px;
-}
-
-@keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--polymarket); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #a78bfa; }
 
 /* Animations */
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-in {
-    animation: fadeInUp 0.4s ease-out forwards;
+.animate-fade-in {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Input Styles */
+input, select {
+    outline: none !important;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+    border-color: var(--polymarket) !important;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1) !important;
 }
