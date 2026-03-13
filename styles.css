@@ -30,16 +30,18 @@ html, body {
 
 /* HEADER PRO */
 .header-node {
-    height: 64px;
+    min-height: 64px;
     background: #fff;
     border-bottom: 1px solid var(--border-line);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 40px;
+    padding: 10px 20px;
     position: sticky;
     top: 0;
     z-index: 1000;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .brand-sector { display: flex; align-items: center; gap: 8px; }

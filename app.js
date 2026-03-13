@@ -34,12 +34,17 @@ function setupUI() {
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
+            const target = item.getAttribute('data-tab').toUpperCase();
+            if (!target) return;
+
             navItems.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
-            appState.activeTab = item.innerText.trim().toUpperCase(); 
+            
+            appState.activeTab = target; 
+            
             const title = document.getElementById('view-title');
-            if (title) title.innerText = appState.activeTab === 'MARKETS' ? 'Trending Markets' : 
-                                       appState.activeTab === 'SCANNER' ? 'Opportunity Scanner' : item.innerText.trim();
+            if (title) title.innerText = target === 'MARKETS' ? 'Trending Markets' : 
+                                       target === 'SCANNER' ? 'Opportunity Scanner' : item.innerText.trim();
             renderMain();
         });
     });
