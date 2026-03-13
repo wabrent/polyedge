@@ -90,10 +90,12 @@ async function syncProtocol(proxyIndex = 0) {
 
 function deployEmergency() {
     appState.markets = [
-        { question: "Will Israel launch offensive in Iran before March 31?", volume: 11200000, liquidity: 2100000, outcomePrices: "[0.12, 0.88]", slug: "will-israel-iran" },
-        { question: "Will Fed cut rates by 25bps in April?", volume: 8500000, liquidity: 5600000, outcomePrices: "[0.65, 0.35]", slug: "fed-rates-april" },
-        { question: "Will Bitcoin hit $100k in March 2026?", volume: 45000000, liquidity: 12000000, outcomePrices: "[0.72, 0.28]", slug: "btc-100k-mar-26" },
-        { question: "Will OpenAI release Sora to public this week?", volume: 1200000, liquidity: 450000, outcomePrices: "[0.15, 0.85]", slug: "openai-sora-public" }
+        { question: "Will the Fed cut interest rates after the March meeting?", volume: 364000000, liquidity: 21000000, outcomePrices: "[0.12, 0.88]", slug: "fed-decision-in-march-885" },
+        { question: "Who will be the Democratic nominee for President in 2028?", volume: 813000000, liquidity: 43000000, outcomePrices: "[0.45, 0.55]", slug: "democratic-presidential-nominee-2028" },
+        { question: "Will Iran close the Strait of Hormuz by 2027?", volume: 65000000, liquidity: 19000000, outcomePrices: "[0.08, 0.92]", slug: "will-iran-close-the-strait-of-hormuz-by-2027" },
+        { question: "Who will win the 2026 FIFA World Cup?", volume: 294000000, liquidity: 45000000, outcomePrices: "[0.15, 0.85]", slug: "2026-fifa-world-cup-winner-595" },
+        { question: "Who will be the Republican nominee for President in 2028?", volume: 403000000, liquidity: 22000000, outcomePrices: "[0.72, 0.28]", slug: "republican-presidential-nominee-2028" },
+        { question: "Will Crude Oil (CL) hit a specific price target by end of March?", volume: 31000000, liquidity: 2000000, outcomePrices: "[0.50, 0.50]", slug: "will-crude-oil-cl-hit-by-end-of-march" }
     ];
     updateGlobalStats();
     renderMain();
