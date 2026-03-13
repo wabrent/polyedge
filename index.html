@@ -12,9 +12,9 @@
 
     <header class="header-node">
         <div class="brand-sector">
-            <!-- SHARP P LOGO (BLUE FOR LIGHT THEME) -->
+            <!-- BLACK SHARP P LOGO -->
             <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
-                <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="#2563eb"/>
+                <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="black"/>
             </svg>
             <span class="brand-name">PolyEdge</span>
         </div>
@@ -27,18 +27,26 @@
             <div class="nav-item">Simulator</div>
         </nav>
 
-        <div class="time-zone-group">
-            <div class="tz-box">
-                <div class="tz-label">NYC</div>
-                <div class="tz-val" id="time-nyc">08:31</div>
+        <div class="header-actions">
+            <div class="icon-btn">𝕏</div>
+            <div class="update-timer">
+                <div class="timer-dot"></div> 2s
             </div>
-            <div class="tz-box">
-                <div class="tz-label">LDN</div>
-                <div class="tz-val" id="time-ldn">13:31</div>
-            </div>
-            <div class="tz-box">
-                <div class="tz-label">TKO</div>
-                <div class="tz-val" id="time-tko">22:31</div>
+            <div class="icon-btn">☀️</div>
+            
+            <div class="time-zone-group">
+                <div class="tz-box">
+                    <div class="tz-label">NYC</div>
+                    <div class="tz-val" id="time-nyc">08:31</div>
+                </div>
+                <div class="tz-box">
+                    <div class="tz-label">LDN</div>
+                    <div class="tz-val" id="time-ldn">13:31</div>
+                </div>
+                <div class="tz-box">
+                    <div class="tz-label">TKO</div>
+                    <div class="tz-val" id="time-tko">22:31</div>
+                </div>
             </div>
         </div>
     </header>
@@ -64,13 +72,20 @@
 
     <div class="search-sector">
         <h2 class="section-title" id="view-title">Trending Markets</h2>
-        <input type="text" class="search-input" id="shardSearch" placeholder="Search markets...">
+        <div class="search-wrap">
+            <input type="text" class="search-input" id="shardSearch" placeholder="Search markets...">
+            <div class="filter-group">
+                <select class="filter-select"><option>All</option></select>
+                <select class="filter-select"><option>Any Volume</option></select>
+                <select class="filter-select"><option>Volume 24h</option></select>
+            </div>
+        </div>
     </div>
 
     <main id="shard-grid">
-        <!-- APP DATA -->
+        <!-- DATA -->
     </main>
 
-    <script src="app.js?v=7.0"></script>
+    <script src="app.js?v=7.1"></script>
 </body>
 </html>

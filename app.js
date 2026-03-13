@@ -152,6 +152,7 @@ function renderMarketsView(container) {
         const card = document.createElement('div');
         card.className = 'market-card';
         card.innerHTML = `
+            <div class="alert-icon">🔔</div>
             <div class="badge-row">
                 <span class="badge ${m.badge ? m.badge.toLowerCase().replace(' ', '-') : 'high-vol'}">${m.badge || 'HIGH VOL'}</span>
                 <span class="badge">PRO</span>
