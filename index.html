@@ -3,80 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge Pro | Advanced Trading Terminal</title>
+    <title>PolyEdge | Advanced Prediction Terminal</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+    <!-- CACHE BUSTING SCRIPT BLOCK -->
+    <div id="top-loader"><div id="loader-fill"></div></div>
+
     <!-- NAVBAR -->
     <header class="navbar">
-        <div class="logo">
-            <!-- USER LOGO (P with lighting) -->
-            <svg width="28" height="28" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="logo-container">
+            <!-- USER EMBEDDED LOGO (P with lighting) -->
+            <svg class="logo-p" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="400" height="400" fill="white"/>
                 <path d="M135.5 123.5H231.5C251.5 123.5 281.5 131.5 281.5 188.5C281.5 245.5 251.5 253.5 231.5 253.5H180.5L135.5 311.5L185.5 253.5H135.5L185.5 195.5H180.5C198.5 195.5 231.5 195.5 231.5 188.5C231.5 181.5 198.5 181.5 180.5 181.5H185.5L135.5 123.5Z" fill="black"/>
             </svg>
-            <span style="font-size: 16px; font-weight: 800; letter-spacing: -0.5px; margin-left: 8px;">POLYEDGE</span>
+            <span style="font-weight: 800; font-size: 15px; letter-spacing: -0.5px;">POLYEDGE</span>
         </div>
         <nav class="nav-links">
-            <a href="#" class="nav-link active">TERMINAL</a>
-            <a href="#" class="nav-link">TRADE</a>
-            <a href="#" class="nav-link">STATS</a>
-            <a href="#" class="nav-link">COPY</a>
-            <a href="#" class="nav-link">LIGHTNING</a>
+            <div class="nav-link active" onclick="switchTab(this)">TERMINAL</div>
+            <div class="nav-link" onclick="switchTab(this)">TRADE</div>
+            <div class="nav-link" onclick="switchTab(this)">STATS</div>
+            <div class="nav-link" onclick="switchTab(this)">COPY</div>
+            <div class="nav-link" onclick="switchTab(this)">LIGHTNING</div>
         </nav>
-        <div class="user-actions">
-            <button class="filter-chip active" style="padding: 6px 14px; background: transparent; border-color: var(--teal-glow); color: var(--teal-glow);">CONNECT</button>
+        <div class="connect-btn">
+            <button style="background: transparent; border: 1px solid var(--teal-glow); color: var(--teal-glow); padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">CONNECT</button>
         </div>
     </header>
 
-    <!-- LOADING BAR -->
-    <div id="loader"><div id="loader-bar"></div></div>
-
     <main class="container">
-        <!-- GLOBAL STATS TICKER -->
+        <!-- HEADER ANALYTICS -->
         <section class="stats-ticker">
             <div class="stat-item">
-                <span class="stat-label">Markets Active</span>
-                <span class="stat-value" id="total-markets">--</span>
+                <span class="stat-label">Markets Tracked</span>
+                <span class="stat-value" id="count-markets">--</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">24h Alpha Volume</span>
-                <span class="stat-value" id="24h-volume">--</span>
+                <span class="stat-label">24h Alpha Flow</span>
+                <span class="stat-value" id="total-vol">--</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Network Node</span>
-                <span class="stat-value" style="font-size: 14px;">polyedgeapp.xyz</span>
+                <span class="stat-value" style="font-size: 13px;">polyedgeapp.xyz</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Latency</span>
-                <span class="stat-value">1ms</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Status</span>
-                <span class="stat-value" id="protocol-status" style="font-size: 14px; text-transform: uppercase;">SYNCING</span>
+                <span class="stat-value">2ms</span>
             </div>
         </section>
 
-        <!-- SEARCH BAR -->
-        <div style="border-bottom: 1px solid var(--border-dim); padding-bottom: 12px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="searchInput" placeholder="Search markets by name or shard ID..." 
-                   style="background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 14px; font-weight: 500;">
+        <!-- SEARCH -->
+        <div style="margin-bottom: 32px;">
+            <input type="text" id="searchInput" placeholder="Search Markets / Shards / Events..." 
+                   style="background: #111b1d; border: 1px solid var(--border-dim); color: white; width: 100%; border-radius: 4px; padding: 14px 20px; outline: none; font-size: 14px;">
         </div>
 
-        <!-- FILTER CHIPS -->
-        <section class="filter-bar" id="category-filters">
-            <div class="filter-chip active" data-category="">ALL FLOWS</div>
-            <!-- Dynamic categories -->
-        </section>
-
-        <!-- MARKET GRID -->
-        <section class="market-grid" id="market-grid">
-            <!-- Data cards will be injected here -->
+        <!-- DASHBOARD ROOT -->
+        <section id="market-grid" class="market-grid">
+            <!-- JavaScript will inject cards here -->
         </section>
     </main>
 
     <script src="app.js"></script>
+    <script>
+        // Tab switching logic for interactive navigation
+        function switchTab(el) {
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            el.classList.add('active');
+        }
+    </script>
 </body>
 </html>
