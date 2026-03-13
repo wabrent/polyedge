@@ -1,96 +1,101 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="ru" class="dark">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>PolyEdge Pro Hub • Polymarket Intelligence</title>
+    <title>POLYEDGE PRO • Real-time Polymarket Edge</title>
     
-    <!-- Scripts & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="styles.css">
     
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { 
-                extend: { 
-                    colors: { 
-                        polymarket: '#8b5cf6', 
-                        yes: '#22c55e', 
-                        no: '#ef4444' 
-                    } 
-                } 
+            theme: {
+                extend: {
+                    colors: {
+                        polymarket: { DEFAULT: '#8b5cf6', light: '#a78bfa', dark: '#6d28d9' },
+                        bgdark: '#0a0a0f',
+                        card: '#111827',
+                    }
+                }
             }
         }
     </script>
 </head>
-<body class="min-h-screen p-6 md:p-10">
-
-    <!-- HEADER SECTION -->
-    <header class="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div class="animate-fade-in">
-            <h1 class="text-5xl font-black text-polymarket mb-3 tracking-tighter italic uppercase">PolyEdge Pro</h1>
-            <p class="text-gray-400 font-medium max-w-2xl">
-                Real-time market synchronization, CLOB pricing, and whale tracking forensics. 
-                <span class="text-polymarket/80">• Gamma + CLOB + Data API</span>
-            </p>
-        </div>
-        <div class="flex items-center gap-4">
-            <button id="theme-toggle" class="w-12 h-12 rounded-2xl bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-all hover:scale-110 active:scale-90 border border-white/5">
+<body class="min-h-screen p-6 md:p-8 font-sans antialiased">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+            <div>
+                <h1 class="text-5xl font-extrabold text-polymarket tracking-tight italic uppercase">POLYEDGE PRO</h1>
+                <p class="text-lg text-gray-400 mt-1">Real-time sync • CLOB pricing • Whale forensics • Gamma + CLOB + Data</p>
+            </div>
+            <button id="theme-toggle" class="p-3 rounded-full bg-gray-800 hover:bg-gray-700 transition active:scale-95 shadow-lg border border-white/5">
                 <i class="fas fa-moon text-polymarket text-xl" id="theme-icon"></i>
             </button>
-        </div>
-    </header>
+        </header>
 
-    <!-- CONTROL PANEL -->
-    <div class="max-w-7xl mx-auto mb-10 flex flex-col xl:flex-row gap-5 animate-fade-in" style="animation-delay: 0.1s">
-        <div class="relative flex-1">
-            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-            <input id="search-input" type="text" placeholder="Search markets (e.g. Trump, Crypto, Fed)..." 
-                class="w-full bg-gray-800/50 border border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-gray-500 focus:bg-gray-800 transition-all shadow-inner"/>
-        </div>
-        <div class="flex flex-wrap md:flex-nowrap gap-4">
-            <select id="category-filter" class="bg-gray-800/50 border border-gray-700 rounded-2xl px-6 py-4 font-bold text-sm min-w-[200px] cursor-pointer hover:bg-gray-800">
+        <!-- Filters -->
+        <div class="bg-gray-900/50 backdrop-blur-md p-4 rounded-2xl border border-gray-800 mb-8 flex flex-col md:flex-row gap-4 items-center">
+            <div class="relative flex-1 group">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-polymarket transition-colors"></i>
+                <input id="search" placeholder="Search markets (e.g. Trump, BTC, Oscars...)" class="w-full bg-transparent border-none focus:outline-none text-lg placeholder-gray-500 pl-12" />
+            </div>
+            <select id="category" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm min-w-[180px] cursor-pointer hover:bg-gray-700 transition">
                 <option value="">All Categories</option>
             </select>
-            <select id="sort-by" class="bg-gray-800/50 border border-gray-700 rounded-2xl px-6 py-4 font-bold text-sm cursor-pointer hover:bg-gray-800">
+            <select id="sort" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm min-w-[180px] cursor-pointer hover:bg-gray-700 transition">
                 <option value="volume">Sort by: Volume (desc)</option>
                 <option value="liquidity">Sort by: Liquidity (desc)</option>
+                <option value="newest">Sort by: Newest</option>
             </select>
-            <div class="flex items-center gap-3 bg-gray-800/50 border border-gray-700 rounded-2xl px-4 py-4">
-                <span class="text-[10px] font-black uppercase tracking-widest text-gray-500">Limit:</span>
-                <input id="limit" type="number" value="15" class="bg-transparent w-12 font-bold text-center outline-none"/>
+            <div class="flex items-center gap-3 bg-gray-800 border border-gray-700 rounded-lg px-4 py-1.5">
+                <label class="text-[10px] font-black uppercase text-gray-500 tracking-widest">Limit:</label>
+                <input id="limit" type="number" value="20" class="w-12 bg-transparent text-center font-bold outline-none" />
             </div>
         </div>
+
+        <!-- Markets Section -->
+        <section>
+            <h2 class="text-2xl font-black text-polymarket mb-6 flex items-center gap-3 italic">
+                <i class="fas fa-bolt animate-pulse"></i> LIVE MARKETS
+            </h2>
+            <div id="markets" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Skeleton cards -->
+                <div class="card skeleton h-64"></div>
+                <div class="card skeleton h-64"></div>
+                <div class="card skeleton h-64"></div>
+            </div>
+            <div id="error-msg" class="hidden mt-6 p-8 bg-red-900/20 border border-red-800/50 rounded-2xl text-center text-red-300">
+                <i class="fas fa-exclamation-triangle text-4xl mb-4 block"></i>
+                <p class="text-lg font-bold">Sync error — Connection Shard Restricted</p>
+                <p class="text-sm opacity-60 mt-1">API may be rate-limited or geo-blocked. Proxies or VPN suggested.</p>
+            </div>
+        </section>
+
+        <!-- Whales -->
+        <section class="mt-20">
+            <div class="flex items-center gap-4 mb-8">
+                <h2 class="text-2xl font-black text-polymarket italic uppercase tracking-tight">
+                    <i class="fas fa-whale mr-2"></i> Whale Leaderboard
+                </h2>
+                <div class="h-px bg-gray-800 flex-1"></div>
+            </div>
+            <div id="whales" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card skeleton h-48"></div>
+                <div class="card skeleton h-48"></div>
+                <div class="card skeleton h-48"></div>
+            </div>
+        </section>
+
+        <footer class="mt-32 pb-10 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.4em]">
+            POLYEDGE PRO • v2.1 • Institutional Data Stream • graanit.eth
+        </footer>
     </div>
 
-    <!-- MARKETS GRID -->
-    <div class="max-w-7xl mx-auto mb-20">
-        <div class="flex items-center gap-3 mb-8">
-            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <h2 class="text-2xl font-black uppercase tracking-tighter italic">Live Intelligence</h2>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="markets-container">
-            <!-- Market Cards Loaded Dynamically -->
-        </div>
-    </div>
-
-    <!-- WHALES SECTION -->
-    <div id="whales-section" class="max-w-7xl mx-auto border-t border-gray-800 pt-20 pb-20">
-        <div class="flex items-center gap-3 mb-10">
-            <i class="fas fa-whale text-3xl text-polymarket animate-bounce"></i>
-            <h2 class="text-3xl font-black uppercase tracking-tighter italic">Whale Leaderboard</h2>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="whales-container">
-            <!-- Whales Loaded Dynamically -->
-        </div>
-    </div>
-
-    <footer class="max-w-7xl mx-auto pb-10 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.3em]">
-        PolyEdge v2.0 • Institutional Data Stream • graanit.eth integration
-    </footer>
-
+    <!-- Scripts -->
     <script src="app.js"></script>
 </body>
 </html>
