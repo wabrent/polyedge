@@ -2,22 +2,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --bg-main: #0a1214;
-    --bg-card: #111b1d;
-    --bg-hover: #182025;
-    --acc-cyan: #85e0dc;
+    --bg-main: #060c0d;
+    --bg-card: #0c1517;
+    --bg-hover: #141d1f;
+    --acc-cyan: #64ffda;
+    --text-primary: #ffffff;
     --text-dim: rgba(255, 255, 255, 0.45);
-    --border-line: rgba(255, 255, 255, 0.08);
+    --border-line: rgba(255, 255, 255, 0.06);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-body {
+html, body {
     background-color: var(--bg-main);
-    color: #ffffff;
+    color: var(--text-primary);
     font-family: 'Instrument Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    height: 100%;
 }
 
 /* HEADER */
@@ -201,6 +203,63 @@ body {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* SPLASH GREETING */
+.splash-screen {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.splash-logo {
+    width: 80px;
+    height: 80px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 0 30px rgba(100, 255, 218, 0.2);
+    animation: splashPulse 2s infinite alternate;
+}
+
+.splash-name {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 8px;
+    color: #fff;
+    text-transform: uppercase;
+    animation: textSpacing 1.5s ease-out forwards;
+}
+
+.splash-status {
+    margin-top: 15px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--acc-cyan);
+    letter-spacing: 2px;
+    font-family: monospace;
+}
+
+@keyframes splashPulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 5px var(--acc-cyan)); }
+    100% { transform: scale(1.05); filter: drop-shadow(0 0 20px var(--acc-cyan)); }
+}
+
+@keyframes textSpacing {
+    from { letter-spacing: 20px; opacity: 0; filter: blur(5px); }
+    to { letter-spacing: 6px; opacity: 1; filter: blur(0); }
+}
+
+.hide-splash {
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* SCROLLBAR */

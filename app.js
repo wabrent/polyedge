@@ -21,6 +21,12 @@ let appState = {
 // --- BOOTSTRAP ---
 window.addEventListener('DOMContentLoaded', () => {
     initEngine();
+    
+    // PREMIUM SPLASH TIMEOUT
+    setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if (splash) splash.classList.add('hide-splash');
+    }, 2800);
 });
 
 function initEngine() {
@@ -34,17 +40,38 @@ function setupUI() {
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
-            // UI Update
             navItems.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
-            
-            // STATE FIX: Ensure activeTab matches the switch logic
             appState.activeTab = item.innerText.trim().toUpperCase(); 
-            console.log("Navigating to:", appState.activeTab);
-            
             renderMain();
         });
     });
+
+    // NETWORK NODE INTERACTIVITY (RE-SYNC)
+    const nodeStat = document.querySelector('.stat-box:nth-child(3)');
+    if (nodeStat) {
+        nodeStat.style.cursor = 'pointer';
+        nodeStat.title = 'Click to Re-sync Node';
+        nodeStat.addEventListener('click', () => {
+            syncProtocol(0);
+            const val = nodeStat.querySelector('.stat-val');
+            val.innerText = 'RE-SYNCING...';
+            setTimeout(() => val.innerText = 'polyedgeapp.xyz', 1000);
+        });
+    }
+
+    // CONNECT BUTTON ACTION
+    const connectBtn = document.querySelector('.connect-btn');
+    if (connectBtn) {
+        connectBtn.addEventListener('click', () => {
+            connectBtn.innerText = 'WAITING...';
+            setTimeout(() => {
+                connectBtn.innerText = 'CONNECTED';
+                connectBtn.style.color = '#00ff88';
+                connectBtn.style.borderColor = '#00ff88';
+            }, 1200);
+        });
+    }
 
     // SEARCH FIX
     const search = document.getElementById('shardSearch');
