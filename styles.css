@@ -49,8 +49,11 @@ header {
     font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer;
     padding: 8px 16px; border-radius: 8px; transition: all 0.2s;
 }
-.nav-link:hover { color: #000; background: #f1f5f9; }
-.nav-link.active { background: #f1f5f9; color: #000; }
+.nav-link:hover { color: #000; background: #f1f5f9; transition: background 0.1s; }
+.nav-link.active { background: #f1f5f9; color: #000; pointer-events: none; }
+
+.view { display: flex; flex-direction: column; gap: 30px; width: 100%; }
+.hidden { display: none !important; }
 
 .header-util { display: flex; align-items: center; gap: 15px; }
 .status-timer { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--text-muted); }

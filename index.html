@@ -47,48 +47,84 @@
             </div>
         </aside>
 
-        <!-- CENTER: ANALYTICS -->
-        <main>
-            <!-- MACRO METRICS -->
-            <div class="quant-block stat-grid">
-                <div class="stat-box">
-                    <span class="s-label">Analyzed Trades</span>
-                    <span class="s-val" id="total-trades">100k+</span>
-                </div>
-                <div class="stat-box">
-                    <span class="s-label">Avg Imbalance</span>
-                    <span class="s-val" id="avg-imb" style="color:var(--accent-green)">+0.42</span>
-                </div>
-                <div class="stat-box">
-                    <span class="s-label">Alpha Detected</span>
-                    <span class="s-val" id="alpha-rate" style="color:var(--accent-red)">12.4%</span>
-                </div>
-                <div class="stat-box">
-                    <span class="s-label">Spread Regime</span>
-                    <span class="s-val" id="current-spread">0.02¢</span>
-                </div>
-            </div>
-
-            <!-- MAIN CHART: PROBABILITY DRIFT -->
-            <div class="quant-block">
-                <h3 class="sidebar-title">Post-Trade Probability Response (Event Study)</h3>
-                <div class="chart-container">
-                    <canvas id="driftChart"></canvas>
-                </div>
-            </div>
-
-            <!-- SECONDARY ANALYTICS -->
-            <div class="split-grid">
-                <div class="quant-block">
-                    <h3 class="sidebar-title">Signal Strength Z-Scores</h3>
-                    <div id="zscore-bars" style="margin-top:20px;">
-                        <!-- Dynamic bars -->
+        <!-- CENTER: ANALYTICS / VIEWS -->
+        <main id="main-view">
+            <!-- VIEW: SURVEILLANCE -->
+            <div id="view-surveillance" class="view">
+                <!-- MACRO METRICS -->
+                <div class="quant-block stat-grid">
+                    <div class="stat-box">
+                        <span class="s-label">Analyzed Trades</span>
+                        <span class="s-val" id="total-trades">100k+</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="s-label">Avg Imbalance</span>
+                        <span class="s-val" id="avg-imb" style="color:var(--accent-green)">+0.42</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="s-label">Alpha Detected</span>
+                        <span class="s-val" id="alpha-rate" style="color:var(--accent-red)">12.4%</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="s-label">Spread Regime</span>
+                        <span class="s-val" id="current-spread">0.02¢</span>
                     </div>
                 </div>
+
+                <!-- MAIN CHART: PROBABILITY DRIFT -->
                 <div class="quant-block">
-                    <h3 class="sidebar-title">Market Calibration (Gap Analysis)</h3>
-                    <div class="chart-container" style="height:220px;">
-                        <canvas id="calibrationChart"></canvas>
+                    <h3 class="sidebar-title">Post-Trade Probability Response (Event Study)</h3>
+                    <div class="chart-container">
+                        <canvas id="driftChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- SECONDARY ANALYTICS -->
+                <div class="split-grid">
+                    <div class="quant-block">
+                        <h3 class="sidebar-title">Signal Strength Z-Scores</h3>
+                        <div id="zscore-bars" style="margin-top:20px;">
+                            <!-- Dynamic bars -->
+                        </div>
+                    </div>
+                    <div class="quant-block">
+                        <h3 class="sidebar-title">Market Calibration (Gap Analysis)</h3>
+                        <div class="chart-container" style="height:220px;">
+                            <canvas id="calibrationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: MARKET LIST -->
+            <div id="view-market-list" class="view hidden">
+                <div class="quant-block">
+                    <h3 class="sidebar-title">Active Quant Markets</h3>
+                    <div id="market-table-container" style="margin-top: 20px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                            <thead>
+                                <tr style="text-align: left; border-bottom: 2px solid var(--border-light); color: var(--text-dim);">
+                                    <th style="padding: 10px;">MARKET</th>
+                                    <th style="padding: 10px;">ALPHA</th>
+                                    <th style="padding: 10px;">VOLUME</th>
+                                    <th style="padding: 10px;">SPREAD</th>
+                                </tr>
+                            </thead>
+                            <tbody id="market-list-rows">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: AUDIT -->
+            <div id="view-audit" class="view hidden">
+                <div class="quant-block">
+                    <h3 class="sidebar-title">Quant Performance Audit</h3>
+                    <div style="padding: 40px; text-align: center; color: var(--text-muted);">
+                        <p>Historical audit logging is active. All signals and trades are being archived for calibration analysis.</p>
+                        <div style="margin-top: 20px; font-weight: 700; color: var(--accent-blue);">NODE STATUS: ARCHIVING</div>
                     </div>
                 </div>
             </div>

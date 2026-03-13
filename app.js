@@ -26,22 +26,38 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
+    const views = document.querySelectorAll('.view');
+    
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
+            const tabName = link.innerText.toLowerCase();
+            
+            // Update active link
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
             
-            // Logic to switch view or focus
-            const tabName = link.innerText.toLowerCase();
-            if (tabName === 'market list') {
-                document.querySelector('aside').scrollIntoView({ behavior: 'smooth' });
-            } else if (tabName === 'scanner') {
-                document.getElementById('scanner-list').scrollIntoView({ behavior: 'smooth' });
-            } else if (tabName === 'surveillance') {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            // Switch views
+            views.forEach(v => v.classList.add('hidden'));
+            const targetViewId = 'view-' + tabName.replace(/\s+/g, '-');
+            const targetView = document.getElementById(targetViewId);
+            if (targetView) targetView.classList.remove('hidden');
+
+            if (tabName === 'market list') renderMarketListTable();
         });
     });
+}
+
+function renderMarketListTable() {
+    const container = document.getElementById('market-list-rows');
+    if (!container) return;
+    container.innerHTML = appState.markets.map(m => `
+        <tr style="border-bottom: 1px solid var(--border-light);">
+            <td style="padding: 12px; font-weight: 700;">${m.question}</td>
+            <td style="padding: 12px; color: ${m.alphaScore > 10 ? 'var(--accent-red)' : 'var(--text-main)'}">${m.alphaScore}</td>
+            <td style="padding: 12px;">$${(m.volume / 1000000).toFixed(1)}M</td>
+            <td style="padding: 12px;">${(m.spread * 100).toFixed(2)}¢</td>
+        </tr>
+    `).join('');
 }
 
 async function syncQuantNodes(proxyIndex = 0) {
