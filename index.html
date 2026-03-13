@@ -3,99 +3,99 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>POLYEDGE PRO • Real-time Polymarket Edge</title>
+    <title>POLYEDGE PRO • Edge on Polymarket</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
     <link rel="stylesheet" href="styles.css">
     
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        polymarket: { DEFAULT: '#8b5cf6', light: '#a78bfa', dark: '#6d28d9' },
-                        bgdark: '#0a0a0f',
-                        card: '#111827',
-                    }
-                }
+            theme: { 
+                extend: { 
+                    colors: { 
+                        polymarket: '#8b5cf6' 
+                    } 
+                } 
             }
         }
     </script>
 </head>
-<body class="min-h-screen p-6 md:p-8 font-sans antialiased">
+<body class="min-h-screen p-6 md:p-10 text-gray-100 font-sans">
     <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-            <div>
-                <h1 class="text-5xl font-extrabold text-polymarket tracking-tight italic uppercase">POLYEDGE PRO</h1>
-                <p class="text-lg text-gray-400 mt-1">Real-time sync • CLOB pricing • Whale forensics • Gamma + CLOB + Data</p>
+        
+        <!-- HEADER -->
+        <header class="flex justify-between items-center mb-10">
+            <div class="animate-fade-in">
+                <h1 class="text-5xl font-black text-polymarket tracking-tight italic uppercase">POLYEDGE PRO</h1>
+                <p class="text-lg text-gray-400 mt-2 font-medium">Real-time • Gamma sync • Whale forensics • 2026 edge</p>
             </div>
-            <button id="theme-toggle" class="p-3 rounded-full bg-gray-800 hover:bg-gray-700 transition active:scale-95 shadow-lg border border-white/5">
-                <i class="fas fa-moon text-polymarket text-xl" id="theme-icon"></i>
-            </button>
+            <div class="text-3xl text-polymarket animate-pulse">
+                <i class="fas fa-bolt"></i>
+            </div>
         </header>
 
-        <!-- Filters -->
-        <div class="bg-gray-900/50 backdrop-blur-md p-4 rounded-2xl border border-gray-800 mb-8 flex flex-col md:flex-row gap-4 items-center">
-            <div class="relative flex-1 group">
+        <!-- GEO-BLOCK NOTIFICATION -->
+        <div id="geo-block" class="geo-warning hidden">
+            <i class="fas fa-exclamation-triangle text-4xl mb-4 block"></i>
+            <p class="text-xl font-bold">Geo-block / Shard restricted (Restriction Detected)</p>
+            <p class="mt-2 opacity-90">Polymarket APIs are restricted in certain regions (e.g., UA/US/UK). 
+               Connect via <span class="font-bold border-b border-red-400">Secure VPN</span> (US/EU node) and refresh to establish a connection.</p>
+            <p class="mt-4 text-[10px] font-black uppercase tracking-widest text-red-300">Signal lost in current location shard.</p>
+        </div>
+
+        <!-- CONTROL PANEL -->
+        <div class="bg-gray-900/70 backdrop-blur-xl p-5 rounded-3xl border border-gray-800 mb-10 flex flex-wrap gap-4 items-center shadow-2xl">
+            <div class="relative flex-1 group min-w-[300px]">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-polymarket transition-colors"></i>
-                <input id="search" placeholder="Search markets (e.g. Trump, BTC, Oscars...)" class="w-full bg-transparent border-none focus:outline-none text-lg placeholder-gray-500 pl-12" />
+                <input id="search" class="w-full bg-transparent outline-none text-lg placeholder-gray-500 pl-12 font-medium" placeholder="Search markets: Trump • BTC • Fed..."/>
             </div>
-            <select id="category" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm min-w-[180px] cursor-pointer hover:bg-gray-700 transition">
-                <option value="">All Categories</option>
-            </select>
-            <select id="sort" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm min-w-[180px] cursor-pointer hover:bg-gray-700 transition">
-                <option value="volume">Sort by: Volume (desc)</option>
-                <option value="liquidity">Sort by: Liquidity (desc)</option>
-                <option value="newest">Sort by: Newest</option>
-            </select>
-            <div class="flex items-center gap-3 bg-gray-800 border border-gray-700 rounded-lg px-4 py-1.5">
-                <label class="text-[10px] font-black uppercase text-gray-500 tracking-widest">Limit:</label>
-                <input id="limit" type="number" value="20" class="w-12 bg-transparent text-center font-bold outline-none" />
+            <div class="flex flex-wrap gap-4 w-full md:w-auto">
+                <select id="category" class="bg-gray-800 border border-gray-700 rounded-xl px-5 py-3 min-w-[160px] cursor-pointer hover:bg-gray-700 transition">
+                    <option value="">All Categories</option>
+                </select>
+                <select id="sort" class="bg-gray-800 border border-gray-700 rounded-xl px-5 py-3 min-w-[180px] cursor-pointer hover:bg-gray-700 transition">
+                    <option value="volume">Volume ↓</option>
+                    <option value="liquidity">Liquidity ↓</option>
+                </select>
+                <div class="flex items-center gap-3 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+                    <span class="text-[10px] font-black uppercase text-gray-500 tracking-widest">Limit:</span>
+                    <input id="limit" type="number" value="15" class="w-12 bg-transparent text-center font-bold outline-none"/>
+                </div>
             </div>
         </div>
 
-        <!-- Markets Section -->
+        <!-- MARKETS SECTION -->
         <section>
-            <h2 class="text-2xl font-black text-polymarket mb-6 flex items-center gap-3 italic">
-                <i class="fas fa-bolt animate-pulse"></i> LIVE MARKETS
+            <h2 class="text-3xl font-black text-polymarket mb-8 flex items-center gap-4 italic uppercase">
+                <i class="fas fa-bolt text-2xl"></i> Live Intelligence Shard
             </h2>
-            <div id="markets" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Skeleton cards -->
-                <div class="card skeleton h-64"></div>
-                <div class="card skeleton h-64"></div>
-                <div class="card skeleton h-64"></div>
-            </div>
-            <div id="error-msg" class="hidden mt-6 p-8 bg-red-900/20 border border-red-800/50 rounded-2xl text-center text-red-300">
-                <i class="fas fa-exclamation-triangle text-4xl mb-4 block"></i>
-                <p class="text-lg font-bold">Sync error — Connection Shard Restricted</p>
-                <p class="text-sm opacity-60 mt-1">API may be rate-limited or geo-blocked. Proxies or VPN suggested.</p>
+            <div id="markets" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Data populated by app.js -->
             </div>
         </section>
 
-        <!-- Whales -->
-        <section class="mt-20">
-            <div class="flex items-center gap-4 mb-8">
-                <h2 class="text-2xl font-black text-polymarket italic uppercase tracking-tight">
-                    <i class="fas fa-whale mr-2"></i> Whale Leaderboard
-                </h2>
-                <div class="h-px bg-gray-800 flex-1"></div>
-            </div>
-            <div id="whales" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="card skeleton h-48"></div>
-                <div class="card skeleton h-48"></div>
-                <div class="card skeleton h-48"></div>
+        <!-- WHALE FORENSICS SECTION -->
+        <section class="mt-20 border-t border-gray-800 pt-16">
+            <h2 class="text-3xl font-black text-polymarket mb-8 flex items-center gap-4 italic uppercase">
+                <i class="fas fa-whale text-2xl"></i> Whale Forensics
+                <span class="text-[10px] font-black text-gray-600 ml-auto uppercase tracking-widest hidden md:block">Top Holders Shard</span>
+            </h2>
+            <div id="whales" class="text-gray-500 text-center py-20 bg-gray-900/20 rounded-[40px] border border-dashed border-gray-800/50">
+                <i class="fas fa-lock text-3xl mb-4 block"></i>
+                <p class="font-black uppercase tracking-widest text-xs">Forensic data restricted</p>
+                <p class="text-[10px] mt-2 text-gray-650">Establish a secure node (VPN) for full leaderboard access</p>
             </div>
         </section>
 
+        <!-- FOOTER -->
         <footer class="mt-32 pb-10 text-center text-gray-600 text-[10px] font-black uppercase tracking-[0.4em]">
-            POLYEDGE PRO • v2.1 • Institutional Data Stream • graanit.eth
+            POLYEDGE PRO • v2.2 • Gamma Intelligence Sync • graanit.eth
         </footer>
     </div>
 
-    <!-- Scripts -->
+    <!-- MAIN ENGINE -->
     <script src="app.js"></script>
 </body>
 </html>

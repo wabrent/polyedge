@@ -1,92 +1,77 @@
-/* POLYEDGE PRO • institutional Design System v2.1 */
+/* POLYEDGE PRO • institutional Design System v2.2 */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
     --polymarket: #8b5cf6;
-    --polymarket-light: #a78bfa;
-    --polymarket-dark: #6d28d9;
-    --bg-dark: #0a0a0f;
+    --bg-start: #000000;
+    --bg-end: #0a0a0f;
     --card-bg: #111827;
-    --text-slate: #e2e8f0;
 }
 
 body {
-    background: linear-gradient(to bottom, var(--bg-dark), #000);
-    color: var(--text-slate);
+    background: linear-gradient(to bottom, var(--bg-start), var(--bg-end));
+    color: #f3f4f6;
     font-family: 'Inter', sans-serif;
-    transition: background 0.3s ease;
+    min-height: 100vh;
 }
 
-/* Light Mode Overrides */
-.light body {
-    background: #f9f9fb;
-    color: #1a1a1a;
-}
-
-/* Glassmorphism Cards */
+/* Glassmorphic Cards */
 .card {
-    background: var(--card-bg);
+    background-color: var(--card-bg);
     border: 1px solid #1f2937;
-    border-radius: 1rem;
-    overflow: hidden;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.light .card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.15);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.3);
 }
 
 /* Progress Metallurgy */
-.progress-container {
-    height: 8px;
-    background: #1f2937;
+.progress {
+    height: 0.5rem;
+    background-color: #374151;
     border-radius: 9999px;
     overflow: hidden;
 }
 
-.light .progress-container {
-    background: #f1f5f9;
-}
-
-.progress-bar {
+.bar {
     height: 100%;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Skeletons */
-.skeleton {
-    background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
+/* Geo-Warning Styling */
+.geo-warning {
+    background-color: rgba(69, 10, 10, 0.5);
+    border: 1px solid #991b1b;
+    color: #fca5a5;
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    text-align: center;
+    margin: 2rem 0;
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.5s ease-out;
 }
 
-.light .skeleton {
-    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-}
-
-@keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* Navigation & Controls */
-select, input {
-    transition: all 0.2s ease;
-}
-
-select:focus, input:focus {
-    box-shadow: 0 0 0 2px var(--polymarket);
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--polymarket); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--polymarket-light); }
+::-webkit-scrollbar-thumb:hover { background: #a78bfa; }
+
+/* Line Clamp Utility */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
