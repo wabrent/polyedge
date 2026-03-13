@@ -3,74 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POLYEDGE PRO</title>
-    <!-- FAVICON DATA URI -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230a1214%22/><text y=%22.9em%22 font-size=%2290%22 fill=%22white%22>P</text></svg>">
+    <title>PolyEdge PRO</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%232563eb%22/><text y=%22.9em%22 font-size=%2280%22 fill=%22white%22>P</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- PREMIUM SPLASH GREETING -->
-    <div class="splash-screen" id="splash">
-        <div class="splash-logo">
-            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
-                <!-- ULTIMATE BRAND LOGO: SHARP P-LIGHTNING -->
-                <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="black"/>
-            </svg>
-        </div>
-        <div class="splash-name">POLYEDGE</div>
-        <div class="splash-status">SYNCHRONIZING SECURE NODE...</div>
-    </div>
 
     <header class="header-node">
         <div class="brand-sector">
-            <!-- ABSOLUTE LOGO FIX -->
-            <div class="brand-icon-wrapper">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px;">
-                    <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="black"/>
-                </svg>
-            </div>
-            <span class="brand-name">POLYEDGE</span>
+            <!-- SHARP P LOGO (BLUE FOR LIGHT THEME) -->
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
+                <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="#2563eb"/>
+            </svg>
+            <span class="brand-name">PolyEdge</span>
         </div>
+        
         <nav class="nav-sector">
-            <!-- NAV ITEMS -->
-            <div class="nav-item active">TERMINAL</div>
-            <div class="nav-item">TRADE</div>
-            <div class="nav-item">STATS</div>
-            <div class="nav-item">COPY</div>
-            <div class="nav-item">LIGHTNING</div>
+            <div class="nav-item active">Markets</div>
+            <div class="nav-item">Watchlist</div>
+            <div class="nav-item">Scanner</div>
+            <div class="nav-item">Arbitrage</div>
+            <div class="nav-item">Simulator</div>
         </nav>
-        <div class="action-sector">
-            <button class="connect-btn">CONNECT</button>
+
+        <div class="time-zone-group">
+            <div class="tz-box">
+                <div class="tz-label">NYC</div>
+                <div class="tz-val" id="time-nyc">08:31</div>
+            </div>
+            <div class="tz-box">
+                <div class="tz-label">LDN</div>
+                <div class="tz-val" id="time-ldn">13:31</div>
+            </div>
+            <div class="tz-box">
+                <div class="tz-label">TKO</div>
+                <div class="tz-val" id="time-tko">22:31</div>
+            </div>
         </div>
     </header>
 
     <section class="stats-bar">
         <div class="stat-box">
-            <span class="stat-label">MARKETS TRACKED</span>
-            <span class="stat-val" id="market-count">--</span>
+            <span class="stat-label">Markets</span>
+            <span class="stat-val" id="market-count">60</span>
         </div>
         <div class="stat-box">
-            <span class="stat-label">24h ALPHA FLOW</span>
-            <span class="stat-val" id="flow-val">--</span>
+            <span class="stat-label">24h Volume</span>
+            <span class="stat-val" id="flow-val">$79.5M</span>
         </div>
         <div class="stat-box">
-            <span class="stat-label">NETWORK NODE</span>
-            <span class="stat-val active-val">polyedgeapp.xyz</span>
+            <span class="stat-label">Opportunities</span>
+            <span class="stat-val">52</span>
         </div>
         <div class="stat-box">
-            <span class="stat-label">LATENCY</span>
-            <span class="stat-val active-val">1ms</span>
+            <span class="stat-label">Best ROI</span>
+            <span class="stat-val">2000x</span>
         </div>
     </section>
 
     <div class="search-sector">
-        <input type="text" class="search-input" id="shardSearch" placeholder="Search Markets / Shards / Events...">
+        <h2 class="section-title" id="view-title">Trending Markets</h2>
+        <input type="text" class="search-input" id="shardSearch" placeholder="Search markets...">
     </div>
 
-    <main class="market-list" id="shard-grid">
-        <div class="empty-state" id="boot-loader">ESTABLISHING SECURE PROTOCOL LINK...</div>
+    <main id="shard-grid">
+        <!-- APP DATA -->
     </main>
 
-    <script src="app.js?v=6.7"></script>
+    <script src="app.js?v=7.0"></script>
 </body>
 </html>

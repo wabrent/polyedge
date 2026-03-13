@@ -2,13 +2,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --bg-main: #060c0d;
-    --bg-card: #0c1517;
-    --bg-hover: #141d1f;
-    --acc-cyan: #64ffda;
-    --text-primary: #ffffff;
-    --text-dim: rgba(255, 255, 255, 0.45);
-    --border-line: rgba(255, 255, 255, 0.06);
+    --bg-main: #f4f7f9;
+    --bg-card: #ffffff;
+    --bg-hover: #f1f5f9;
+    --acc-blue: #2563eb;
+    --acc-green: #eefdf5;
+    --acc-green-text: #10b981;
+    --acc-red: #fef2f2;
+    --acc-red-text: #ef4444;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-dim: #94a3b8;
+    --border-line: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,104 +23,133 @@
 html, body {
     background-color: var(--bg-main);
     color: var(--text-primary);
-    font-family: 'Instrument Sans', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
     height: 100%;
 }
 
-/* HEADER */
+/* HEADER PRO */
 .header-node {
-    height: 54px;
-    border-bottom: 0.5px solid var(--border-line);
+    height: 64px;
+    background: #fff;
+    border-bottom: 1px solid var(--border-line);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
+    padding: 0 40px;
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: var(--bg-main);
 }
 
-.brand-sector {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+.brand-sector { display: flex; align-items: center; gap: 8px; }
+.brand-name { font-weight: 700; font-size: 20px; color: #000; }
 
-.brand-icon-wrapper {
-    width: 24px;
-    height: 24px;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.brand-icon-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.brand-name {
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 0.2px;
-}
-
-.nav-sector {
-    display: flex;
-    gap: 22px;
-    height: 100%;
-}
-
+.nav-sector { display: flex; gap: 24px; }
 .nav-item {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-dim);
-    display: flex;
-    align-items: center;
-    height: 100%;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
     cursor: pointer;
-    transition: color 0.1s;
-    position: relative;
-    text-transform: uppercase;
-}
-
-.nav-item.active {
-    color: var(--acc-cyan);
-}
-
-.nav-item.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--acc-cyan);
-    box-shadow: 0 0 10px var(--acc-cyan);
-}
-
-.nav-item:hover:not(.active) { color: #fff; }
-
-.connect-btn {
-    border: 1px solid var(--border-line);
-    background: transparent;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 4px;
-    cursor: pointer;
+    padding: 6px 16px;
+    border-radius: 6px;
     transition: all 0.2s;
 }
+.nav-item:hover { color: var(--text-primary); background: var(--bg-hover); }
+.nav-item.active { 
+    color: var(--text-primary); 
+    background: #fff;
+    border: 1px solid var(--border-line);
+    box-shadow: var(--shadow-sm);
+}
 
-.connect-btn:hover { border-color: var(--acc-cyan); color: var(--acc-cyan); }
+.time-zone-group { display: flex; gap: 16px; align-items: center; }
+.tz-box { text-align: center; }
+.tz-label { font-size: 8px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
+.tz-val { font-size: 13px; font-weight: 600; font-family: monospace; }
+
+/* STATS GRID PRO */
+.stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 30px 40px;
+}
+
+.stat-box {
+    background: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid var(--border-line);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block; }
+.stat-val { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+
+/* MARKET CARDS PRO */
+.market-list { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
+    gap: 24px; 
+    padding: 0 40px 60px 40px; 
+}
+
+.market-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--border-line);
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+}
+
+.market-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.badge-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
+.badge { 
+    font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; 
+    text-transform: uppercase; border: 1px solid #e2e8f0; 
+}
+.badge.high-vol { color: #2563eb; background: #eff6ff; }
+.badge.soon { color: #f59e0b; background: #fffbeb; }
+
+.card-main { display: flex; gap: 16px; margin-bottom: 20px; }
+.card-img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
+.card-q { font-size: 16px; font-weight: 700; line-height: 1.4; color: #1e293b; }
+
+.price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.p-btn { border: none; border-radius: 6px; padding: 12px; font-weight: 700; font-size: 14px; cursor: pointer; }
+.p-btn.yes { background: var(--acc-green); color: var(--acc-green-text); }
+.p-btn.no { background: var(--acc-red); color: var(--acc-red-text); }
+
+.bet-input-row { display: flex; align-items: center; border: 1px solid var(--border-line); border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; justify-content: space-between; }
+.bet-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+.bet-field { border: none; width: 60px; text-align: right; font-weight: 700; outline: none; }
+.win-label { font-size: 12px; color: var(--acc-green-text); font-weight: 700; }
+
+.trade-btn { 
+    width: 100%; border: none; background: var(--acc-blue); color: #fff; 
+    padding: 14px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s; 
+}
+.trade-btn:hover { opacity: 0.9; }
+
+/* SCANNER TABLE */
+.scanner-table { background: #fff; border-radius: 12px; border: 1px solid var(--border-line); margin: 0 40px; overflow: hidden; }
+.scanner-row { display: grid; grid-template-columns: 40px 2fr 1fr 1fr 80px; padding: 16px 24px; border-bottom: 1px solid var(--border-line); align-items: center; }
+.scanner-row:last-child { border-bottom: none; }
+.scanner-row.header { background: #f8fafc; font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
+
+/* SEARCH PRO */
+.search-sector { padding: 40px 40px 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+.section-title { font-size: 24px; font-weight: 800; color: #1e293b; }
+.search-input { 
+    width: 300px; background: #fff; border: 1px solid var(--border-line); 
+    padding: 10px 16px 10px 40px; border-radius: 8px; font-size: 14px; 
+    box-shadow: var(--shadow-sm); outline: none;
+}
 
 /* STATS BAR */
 .stats-bar {
