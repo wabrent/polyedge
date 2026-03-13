@@ -20,8 +20,29 @@ window.addEventListener('DOMContentLoaded', () => {
     initCharts();
     syncQuantNodes();
     initClocks();
+    setupNavigation();
     setInterval(initClocks, 60000);
 });
+
+function setupNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            
+            // Logic to switch view or focus
+            const tabName = link.innerText.toLowerCase();
+            if (tabName === 'market list') {
+                document.querySelector('aside').scrollIntoView({ behavior: 'smooth' });
+            } else if (tabName === 'scanner') {
+                document.getElementById('scanner-list').scrollIntoView({ behavior: 'smooth' });
+            } else if (tabName === 'surveillance') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    });
+}
 
 async function syncQuantNodes(proxyIndex = 0) {
     if (proxyIndex >= CONFIG.PROXIES.length) {
