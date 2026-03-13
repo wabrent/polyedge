@@ -1,403 +1,216 @@
-/* PolyEdge Logic & Interaction Engine v7.2 - PRO LIGHT THEME */
+/**
+ * PolyAlpha Quant Terminal Engine
+ * Based on "100,000 Trades Analysis" Research
+ */
+
 const CONFIG = {
-    PROXIES: [
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?',
-        'https://api.codetabs.com/v1/proxy?quest=',
-        'https://thingproxy.freeboard.io/fetch/'
-    ],
-    API_URL: 'https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=25&order=volume&dir=desc',
-    REFRESH: 45000
+    API_BASE: 'https://gamma-api.polymarket.com',
+    PROXY: 'https://api.allorigins.win/raw?url=',
+    REFRESH_RATE: 30000
 };
 
-let appState = {
+let state = {
     markets: [],
-    activeTab: 'MARKETS',
-    search: '',
-    syncStatus: 'OFFLINE',
     selectedMarket: null,
-    charts: {}
+    searchQuery: '',
+    charts: {},
+    signals: {
+        flow: 0,
+        imbalance: 0,
+        gap: 0
+    }
 };
 
-// --- BOOTSTRAP ---
-window.addEventListener('DOMContentLoaded', () => {
-    initEngine();
-    updateClocks();
-    setInterval(updateClocks, 60000);
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    setupEvents();
 });
 
-function initEngine() {
-    setupUI();
-    syncProtocol();
-    setInterval(syncProtocol, CONFIG.REFRESH);
+async function init() {
+    await fetchMarkets();
+    if (state.markets.length > 0) {
+        selectMarket(state.markets[0].slug);
+    }
 }
 
-function setupUI() {
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const target = item.getAttribute('data-tab').toUpperCase();
-            if (!target) return;
-
-            navItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            
-            appState.activeTab = target; 
-            
-            const title = document.getElementById('view-title');
-            if (title) title.innerText = target === 'MARKETS' ? 'Trending Markets' : 
-                                       target === 'SCANNER' ? 'Opportunity Scanner' : 
-                                       target === 'TERMINAL' ? 'Quant Signal Terminal' : item.innerText.trim();
-            renderMain();
-        });
+function setupEvents() {
+    document.getElementById('refreshBtn').addEventListener('click', () => init());
+    document.getElementById('marketSearch').addEventListener('input', (e) => {
+        state.searchQuery = e.target.value.toLowerCase();
+        renderMarketList();
     });
-
-    const search = document.getElementById('shardSearch');
-    if (search) {
-        search.addEventListener('input', (e) => {
-            appState.search = e.target.value.toLowerCase();
-            renderMain();
-        });
-    }
 }
 
-// --- NETWORK CORE ---
-async function syncProtocol(proxyIndex = 0) {
-    if (proxyIndex >= CONFIG.PROXIES.length) {
-        deployEmergency();
-        return;
-    }
-
+async function fetchMarkets() {
     try {
-        const proxy = CONFIG.PROXIES[proxyIndex];
-        const res = await fetch(`${proxy}${encodeURIComponent(CONFIG.API_URL)}`);
-        if (!res.ok) throw new Error("Node timeout");
+        const url = `${CONFIG.PROXY}${encodeURIComponent(`${CONFIG.API_BASE}/markets?active=true&closed=false&limit=30&order=volume&dir=desc`)}`;
+        const response = await fetch(url);
+        const data = await response.json();
         
-        const data = await res.json();
-        if (data && data.length > 0) {
-            appState.markets = data;
-            appState.syncStatus = 'ONLINE';
-            if (!appState.selectedMarket && data.length > 0) appState.selectedMarket = data[0];
-            updateGlobalStats();
-            renderMain();
-        } else {
-            throw new Error("Data corruption");
-        }
-    } catch (e) {
-        syncProtocol(proxyIndex + 1);
+        state.markets = data.map(m => ({
+            id: m.id,
+            question: m.question,
+            slug: m.slug,
+            volume: parseFloat(m.volume) || 0,
+            liquidity: parseFloat(m.liquidity) || 0,
+            price: m.outcomePrices ? JSON.parse(m.outcomePrices)[0] : (m.prices ? m.prices[0] : 0.5),
+            raw: m
+        }));
+
+        updateGlobalMetrics();
+        renderMarketList();
+    } catch (error) {
+        console.error("Failed to fetch markets:", error);
     }
 }
 
-function deployEmergency() {
-    appState.markets = [
-        { id: "1", question: "Will Iran strike Israel on March 15?", volume: 11000000, liquidity: 2500000, prices: [0.10, 0.99], slug: "iran-strike-israel-march-15", badge: "HIGH VOL" },
-        { id: "2", question: "Will the Fed decrease interest rates by 50+ bps?", volume: 5000000, liquidity: 4100000, prices: [0.03, 0.99], slug: "fed-rates-decrease-50", badge: "SOON" },
-        { id: "3", question: "Will Chelsea win the 2025-26 English Premier League?", volume: 3400000, liquidity: 395000, prices: [0.10, 0.99], slug: "chelsea-win-epl-2026", badge: "HIGH VOL" },
-        { id: "4", question: "Will Trump say 'Jesus' this week?", volume: 3300000, liquidity: 2100000, prices: [0.99, 0.01], slug: "trump-jesus", badge: "ENDING" }
-    ];
-    if (!appState.selectedMarket) appState.selectedMarket = appState.markets[0];
-    updateGlobalStats();
-    renderMain();
+function updateGlobalMetrics() {
+    const totalVol = state.markets.reduce((acc, m) => acc + m.volume, 0);
+    document.getElementById('totalVol').innerText = `$${(totalVol / 1000000).toFixed(2)}M`;
+    document.getElementById('marketCount').innerText = state.markets.length;
 }
 
-function updateGlobalStats() {
-    const mCount = document.getElementById('market-count');
-    const fVal = document.getElementById('flow-val');
-    if (mCount) mCount.innerText = appState.markets.length;
-    if (fVal) {
-        const total = appState.markets.reduce((acc, m) => acc + (parseFloat(m.volume) || 0), 0);
-        fVal.innerText = `$${(total/1000000).toFixed(1)}M`;
-    }
-}
+function renderMarketList() {
+    const container = document.getElementById('marketList');
+    container.innerHTML = '';
 
-function updateClocks() {
-    const now = new Date();
-    const format = (offset) => {
-        const d = new Date(now.getTime() + (offset * 3600000));
-        return `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
-    };
-    if (document.getElementById('time-nyc')) document.getElementById('time-nyc').innerText = format(-5);
-    if (document.getElementById('time-ldn')) document.getElementById('time-ldn').innerText = format(0);
-    if (document.getElementById('time-tko')) document.getElementById('time-tko').innerText = format(9);
-}
+    const filtered = state.markets.filter(m => m.question.toLowerCase().includes(state.searchQuery));
 
-// --- RENDER ENGINE ---
-function renderMain() {
-    const grid = document.getElementById('shard-grid');
-    if (!grid) return;
-    grid.className = '';
-    grid.innerHTML = '';
-
-    switch(appState.activeTab) {
-        case 'TERMINAL':
-            renderTerminalView(grid);
-            break;
-        case 'SCANNER':
-            renderScannerView(grid);
-            break;
-        case 'WATCHLIST':
-            renderStatusMessage(grid, 'Watchlist', 'Your saved markets will appear here.');
-            break;
-        case 'ARBITRAGE':
-            renderStatusMessage(grid, 'Arbitrage', 'Cross-exchange opportunities sync in progress.');
-            break;
-        default:
-            grid.classList.add('market-list');
-            renderMarketsView(grid);
-    }
-}
-
-function renderMarketsView(container) {
-    const filtered = appState.markets.filter(m => m.question.toLowerCase().includes(appState.search));
-
-    filtered.forEach((m, idx) => {
-        let p = [0.5, 0.5];
-        try { p = typeof m.outcomePrices === 'string' ? JSON.parse(m.outcomePrices) : m.prices || [0.5, 0.5]; } catch(e) {}
-        
-        const y = (parseFloat(p[0] || 0.5) * 100).toFixed(1);
-        const n = (parseFloat(p[1] || 0.5) * 100).toFixed(1);
-
-        const card = document.createElement('div');
-        card.className = 'market-card';
-        card.innerHTML = `
-            <div class="alert-icon">🔔</div>
-            <div class="badge-row">
-                <span class="badge ${m.badge ? m.badge.toLowerCase().replace(' ', '-') : 'high-vol'}">${m.badge || 'HIGH VOL'}</span>
-                <span class="badge">PRO</span>
-            </div>
-            <div class="card-main">
-                <img src="https://api.dicebear.com/7.x/initials/svg?seed=${m.slug}&backgroundColor=f1f5f9" class="card-img" alt="topic">
-                <div class="card-q">${m.question}</div>
-            </div>
-            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 15px;">
-                7d Vol: $${((m.volume || 1000000)/1000000).toFixed(1)}M | Liq: $${((m.liquidity || 500000)/1000000).toFixed(1)}M
-            </div>
-            <div class="price-grid">
-                <div class="p-btn yes" style="text-align:center">Yes ${y}¢</div>
-                <div class="p-btn no" style="text-align:center">No ${n}¢</div>
-            </div>
-            <div class="bet-input-row">
-                <span class="bet-label">Bet $</span>
-                <input type="number" class="bet-field" value="10" oninput="updateWin(this, ${y})">
-                <span class="win-label">→ win $${(10 / (parseFloat(y)/100 || 0.1)).toFixed(2)}</span>
-            </div>
-            <div style="display:flex; gap: 8px;">
-                <button class="trade-btn" style="background: #f1f5f9; color: #000; font-size: 12px; border: 1px solid #e2e8f0; flex: 1;" onclick="goToTerminal('${m.slug}')">Analyze</button>
-                <a href="https://polymarket.com/event/${m.slug}" target="_blank" style="text-decoration:none; flex: 2;">
-                    <button class="trade-btn">Trade</button>
-                </a>
+    filtered.forEach(m => {
+        const div = document.createElement('div');
+        div.className = `market-item ${state.selectedMarket?.slug === m.slug ? 'active' : ''}`;
+        div.onclick = () => selectMarket(m.slug);
+        div.innerHTML = `
+            <div class="m-question">${m.question}</div>
+            <div class="m-meta">
+                <span>VOL: $${(m.volume / 1000).toFixed(0)}K</span>
+                <span class="price">${(m.price * 100).toFixed(1)}¢</span>
             </div>
         `;
-        container.appendChild(card);
+        container.appendChild(div);
     });
 }
 
-function goToTerminal(slug) {
-    const market = appState.markets.find(m => m.slug === slug);
-    if (market) {
-        appState.selectedMarket = market;
-        document.querySelector('[data-tab="terminal"]').click();
-    }
+function selectMarket(slug) {
+    state.selectedMarket = state.markets.find(m => m.slug === slug);
+    renderMarketList();
+    runQuantAnalysis();
 }
 
-window.updateWin = (el, price) => {
-    const val = parseFloat(el.value) || 0;
-    const win = val / (parseFloat(price)/100);
-    el.nextElementSibling.innerText = `→ win $${win.toFixed(2)}`;
-};
+/**
+ * QUANT ENGINE - Article Logic Implemetation
+ */
+function runQuantAnalysis() {
+    if (!state.selectedMarket) return;
 
-function renderScannerView(container) {
-    const wrap = document.createElement('div');
-    wrap.className = 'scanner-table';
-    wrap.innerHTML = `
-        <div class="scanner-row header">
-            <div>#</div>
-            <div>Market Name</div>
-            <div>Liquidity</div>
-            <div>24h Vol</div>
-            <div>Action</div>
-        </div>
-        ${appState.markets.slice(0, 10).map((m, i) => `
-            <div class="scanner-row">
-                <div style="color: var(--text-dim); font-weight: 700;">#${i+1}</div>
-                <div style="font-weight: 600; font-size: 14px;">${m.question}</div>
-                <div style="font-family: monospace;">$${((m.liquidity || 500000)/1000).toFixed(0)}K</div>
-                <div style="font-family: monospace;">$${((m.volume || 1000000)/1000000).toFixed(1)}M</div>
-                <div><button class="trade-btn" style="padding: 6px 12px; font-size: 11px;" onclick="goToTerminal('${m.slug}')">Analyze</button></div>
-            </div>
-        `).join('')}
-    `;
-    container.appendChild(wrap);
-}
-
-function renderTerminalView(container) {
-    const layout = document.createElement('div');
-    layout.className = 'terminal-layout';
+    const m = state.selectedMarket;
+    const signals = generateSignals(m);
     
-    const sidebar = document.createElement('div');
-    sidebar.className = 'terminal-sidebar';
-    sidebar.innerHTML = `
-        <h3 style="font-size: 12px; color: var(--text-dim); margin-bottom: 15px; text-transform: uppercase;">Active Markets</h3>
-        ${appState.markets.slice(0, 15).map(m => `
-            <div class="market-mini-card ${appState.selectedMarket && appState.selectedMarket.slug === m.slug ? 'active' : ''}" onclick="selectTerminalMarket('${m.slug}')">
-                <div class="mini-q">${m.question.substring(0, 50)}...</div>
-                <div class="mini-stats">Vol: $${((m.volume || 0)/1000000).toFixed(1)}M | Liq: $${((m.liquidity || 0)/1000000).toFixed(1)}M</div>
-            </div>
-        `).join('')}
-    `;
+    // Update Stats
+    document.getElementById('signal-flow').innerText = signals.flow.toFixed(2);
+    document.getElementById('signal-imbalance').innerText = `${(signals.imbalance * 100).toFixed(1)}%`;
+    document.getElementById('signal-gap').innerText = `${(signals.gap * 100).toFixed(1)}%`;
 
-    const content = document.createElement('div');
-    content.className = 'terminal-content';
-    content.innerHTML = `
-        <div class="chart-card">
-            <div class="chart-title">Estimated Mispricing <span>α</span></div>
-            <div class="chart-container"><canvas id="mispricingChart"></canvas></div>
-        </div>
-        <div class="chart-card">
-            <div class="chart-title">Post-Trade Probability Drift <span>Δp</span></div>
-            <div class="chart-container"><canvas id="driftChart"></canvas></div>
-        </div>
-        <div class="chart-card">
-            <div class="chart-title">Liquidity Friction & Order Imbalance <span>Ω</span></div>
-            <div class="chart-container"><canvas id="liquidityChart"></canvas></div>
-        </div>
-        <div class="chart-card">
-            <div class="chart-title">Signal Strength Z-Scores <span>σ</span></div>
-            <div class="chart-container"><canvas id="zscoreChart"></canvas></div>
-        </div>
-        <div class="chart-card" style="grid-column: span 2; min-height: 100px;">
-            <div class="chart-title">Model Insights & Signals <span>🤖 AI</span></div>
-            <div id="modelInsights" style="font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
-                <!-- Dynamic text -->
-            </div>
-        </div>
-    `;
-
-    layout.appendChild(sidebar);
-    layout.appendChild(content);
-    container.appendChild(layout);
-
-    setTimeout(() => initTerminalCharts(), 100);
+    renderCharts(signals);
 }
 
-window.selectTerminalMarket = (slug) => {
-    appState.selectedMarket = appState.markets.find(m => m.slug === slug);
-    renderMain();
-};
+function generateSignals(m) {
+    // Seeded random for demo purposes based on market data to simulate real-time signals
+    const seed = m.volume + m.liquidity;
+    const seededRandom = (s) => (Math.sin(seed + s) * 0.5 + 0.5);
 
-function initTerminalCharts() {
-    if (!appState.selectedMarket) return;
+    // 1. Signed Trade Flow (Accumulated net flow)
+    const flow = (seededRandom(1) - 0.45) * 5000;
 
-    // Destroy existing charts if any
-    Object.values(appState.charts).forEach(c => c.destroy());
+    // 2. Order Book Imbalance (Qbid - Qask) / (Qbid + Qask)
+    const imbalance = seededRandom(2) - 0.5;
 
-    const m = appState.selectedMarket;
-    const signals = calculateSignals(m);
+    // 3. Calibration Gap (α)
+    const gap = (seededRandom(3) - 0.5) * 0.15;
 
-    // 1. Mispricing Chart
-    appState.charts.mispricing = new Chart(document.getElementById('mispricingChart'), {
-        type: 'bar',
-        data: {
-            labels: ['ETH-ST', 'BTC-OPT', 'FED-50', 'US-ELEC', 'C-WIN'],
-            datasets: [{
-                label: 'Mispricing (%)',
-                data: signals.mispricing,
-                backgroundColor: signals.mispricing.map(v => v > 0 ? '#10b981' : '#ef4444'),
-                borderRadius: 4
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    });
+    // 4. Drift Data (Δp)
+    const driftMarket = [m.price * 100, (m.price + 0.02) * 100, (m.price + 0.05) * 100, (m.price + 0.08) * 100];
+    const driftModel = driftMarket.map(p => p + (seededRandom(4) * 5));
 
-    // 2. Drift Chart
-    appState.charts.drift = new Chart(document.getElementById('driftChart'), {
-        type: 'bar',
-        data: {
-            labels: ['5m', '15m', '30m', '60m'],
-            datasets: [
-                { label: 'Market Prob', data: signals.drift.market, backgroundColor: '#cbd5e1' },
-                { label: 'Model Prob', data: signals.drift.model, backgroundColor: '#2563eb' }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
-    });
+    // 5. Liquidity Data
+    const spread = [0.01, 0.015, 0.02, 0.012, 0.01, 0.03, 0.02];
+    const vol = spread.map(s => s * (1 + seededRandom(5)));
 
-    // 3. Liquidity Friction
-    appState.charts.liquidity = new Chart(document.getElementById('liquidityChart'), {
-        type: 'line',
-        data: {
-            labels: ['10h', '11h', '12h', '13h', '14h', '15h', '16h'],
-            datasets: [
-                { label: 'Spread', data: signals.liquidity.spread, borderColor: '#10b981', fill: false, tension: 0.4 },
-                { label: 'Imbalance', data: signals.liquidity.imbalance, borderColor: '#2563eb', fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)', tension: 0.4 }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
-
-    // 4. Z-Scores
-    appState.charts.zscore = new Chart(document.getElementById('zscoreChart'), {
-        type: 'bar',
-        data: {
-            labels: ['Flow', 'Size', 'Imbalance', 'Drift', 'Gap'],
-            datasets: [{
-                label: 'Z-Score',
-                data: signals.zscores,
-                backgroundColor: signals.zscores.map(v => Math.abs(v) > 2 ? '#f59e0b' : '#2563eb'),
-                borderRadius: 4
-            }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false,
-            plugins: { annotation: { annotations: { line1: { type: 'line', yMin: 2, yMax: 2, borderColor: 'red', borderDash: [5, 5] } } } }
-        }
-    });
-
-    // Update Insights
-    const insights = document.getElementById('modelInsights');
-    insights.innerHTML = `
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div>
-                <b style="color: var(--text-primary)">Signal Detected:</b> ${Math.abs(signals.zscores[2]) > 2 ? '<span style="color: #f59e0b">Heavy Imbalance</span>' : 'Normal Order Flow'}<br>
-                <b style="color: var(--text-primary)">Calibration:</b> The market is currently ${signals.mispricing[0] > 0 ? 'undervalued' : 'overvalued'} by ${Math.abs(signals.mispricing[0])}% relative to historical drift.
-            </div>
-            <div>
-                <b style="color: var(--text-primary)">Recommendation:</b> ${signals.zscores[2] > 2 ? 'Aggressive Entry Potential' : 'Monitor for Pullback'}<br>
-                <b style="color: var(--text-primary)">Confidence:</b> High (Z-Score: ${signals.zscores[2]})
-            </div>
-        </div>
-    `;
-}
-
-function calculateSignals(market) {
-    // Article-based logic simulation
-    // Imbalance = (Qbid - Qask) / (Qbid + Qask)
-    // Drift = p(t+h) - p(t)
-    // We generate pseudo-random but somewhat consistent data based on the market slug/volume
-    const seed = market.slug.length;
-    const random = (s) => Math.sin(seed + s) * 10;
-    
     return {
-        mispricing: [random(1), random(2), random(3), random(4), random(5)].map(v => v.toFixed(2)),
-        drift: {
-            market: [45, 48, 52, 50],
-            model: [46, 51, 58, 62] // Model predicts higher drift
-        },
-        liquidity: {
-            spread: [0.01, 0.02, 0.015, 0.03, 0.02, 0.01, 0.012],
-            imbalance: [0.2, 0.5, -0.1, 0.8, 0.4, 0.2, 0.6]
-        },
-        zscores: [1.2, -0.5, 2.4, 0.8, -1.9]
+        flow, imbalance, gap,
+        drift: { labels: ['Now', '5m', '15m', '60m'], market: driftMarket, model: driftModel },
+        liquidity: { labels: ['10h', '11h', '12h', '13h', '14h', '15h', '16h'], spread, vol },
+        zscores: [seededRandom(6)*3, seededRandom(7)*-2, seededRandom(8)*4, seededRandom(9)*1.5, seededRandom(10)*-1]
     };
 }
 
-function renderStatusMessage(container, title, msg) {
-    container.innerHTML = `
-        <div style="padding: 100px 40px; text-align: center; background: #fff; margin: 0 40px; border-radius: 12px; border: 1px dashed var(--border-line);">
-            <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 12px;">${title}</h2>
-            <p style="color: var(--text-secondary); font-size: 14px;">${msg}</p>
-        </div>
-    `;
-}
+function renderCharts(signals) {
+    // Destroy old charts
+    Object.values(state.charts).forEach(c => c.destroy());
 
+    // 1. Drift Chart
+    state.charts.drift = new Chart(document.getElementById('driftChart'), {
+        type: 'line',
+        data: {
+            labels: signals.drift.labels,
+            datasets: [
+                { label: 'Market Implied', data: signals.drift.market, borderColor: '#cbd5e1', tension: 0.4, borderDash: [5,5] },
+                { label: 'PolyAlpha Model', data: signals.drift.model, borderColor: '#635bff', tension: 0.4, fill: true, backgroundColor: 'rgba(99, 91, 255, 0.05)' }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 6, font: { size: 10 } } } },
+            scales: { y: { grid: { borderDash: [2, 2] } } }
+        }
+    });
+
+    // 2. Liquidity Chart
+    state.charts.liquidity = new Chart(document.getElementById('liquidityChart'), {
+        type: 'bar',
+        data: {
+            labels: signals.liquidity.labels,
+            datasets: [
+                { label: 'Spread Regime', data: signals.liquidity.spread, backgroundColor: '#00d924', borderRadius: 4 },
+                { label: 'Intensity', data: signals.liquidity.vol, type: 'line', borderColor: '#ffb800', tension: 0.4 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { display: false } }
+        }
+    });
+
+    // 3. Z-Score Heatmap
+    state.charts.zscore = new Chart(document.getElementById('zscoreChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Flow', 'Size', 'Imbalance', 'Volatility', 'Calibration'],
+            datasets: [{
+                label: 'Z-Score Strength',
+                data: signals.zscores,
+                backgroundColor: signals.zscores.map(v => v > 2 || v < -2 ? '#ff3b30' : (v > 1 || v < -1 ? '#ffb800' : '#635bff')),
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                annotation: {
+                  annotations: {
+                    line1: { type: 'line', xMin: 2, xMax: 2, borderColor: 'rgba(255, 59, 48, 0.3)', borderDash: [5, 5], borderWidth: 1 },
+                    line2: { type: 'line', xMin: -2, xMax: -2, borderColor: 'rgba(255, 59, 48, 0.3)', borderDash: [5, 5], borderWidth: 1 }
+                  }
+                }
+            },
+            scales: { x: { min: -4, max: 4, grid: { borderDash: [2, 2] } } }
+        }
+    });
+}

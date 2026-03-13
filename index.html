@@ -3,88 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge PRO</title>
+    <title>PolyAlpha | Quant Terminal</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
-<body>
-    <header class="header-node">
-        <div class="brand-sector">
-            <!-- BLACK SHARP P LOGO -->
-            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
-                <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="black"/>
-            </svg>
-            <span class="brand-name">PolyEdge</span>
-        </div>
-        
-        <nav class="nav-sector">
-            <div class="nav-item active" data-tab="markets">Markets</div>
-            <div class="nav-item" data-tab="terminal">Quant Terminal</div>
-            <div class="nav-item" data-tab="scanner">Scanner</div>
-            <div class="nav-item" data-tab="arbitrage">Arbitrage</div>
-        </nav>
-
-        <div class="header-actions">
-            <div class="icon-btn">𝕏</div>
-            <div class="update-timer">
-                <div class="timer-dot"></div> 2s
+<body class="premium-theme">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">α</div>
+                <div class="logo-text">PolyAlpha<span>PRO</span></div>
             </div>
-            <div class="icon-btn">☀️</div>
-            
-            <div class="time-zone-group">
-                <div class="tz-box">
-                    <div class="tz-label">NYC</div>
-                    <div class="tz-val" id="time-nyc">08:58</div>
-                </div>
-                <div class="tz-box">
-                    <div class="tz-label">LDN</div>
-                    <div class="tz-val" id="time-ldn">13:58</div>
-                </div>
-                <div class="tz-box">
-                    <div class="tz-label">TKO</div>
-                    <div class="tz-val" id="time-tko">22:58</div>
+            <nav class="side-nav">
+                <div class="nav-group-label">Analysis</div>
+                <a href="#" class="nav-link active" data-view="dashboard">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="#" class="nav-link" data-view="scanner">
+                    <span class="icon">🔍</span> Signal Scanner
+                </a>
+                <a href="#" class="nav-link" data-view="history">
+                    <span class="icon">📜</span> Trade History
+                </a>
+                
+                <div class="nav-group-label">System</div>
+                <a href="#" class="nav-link" data-view="api">
+                    <span class="icon">🔑</span> API Config
+                </a>
+            </nav>
+            <div class="user-profile">
+                <div class="status-indicator">
+                    <div class="pulse"></div> Live Data
                 </div>
             </div>
-        </div>
-    </header>
+        </aside>
 
-    <section class="stats-bar">
-        <div class="stat-box">
-            <span class="stat-label">Markets</span>
-            <span class="stat-val" id="market-count">60</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-label">24h Volume</span>
-            <span class="stat-val" id="flow-val">$79.5M</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-label">Opportunities</span>
-            <span class="stat-val">52</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-label">Best ROI</span>
-            <span class="stat-val">2000x</span>
-        </div>
-    </section>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="marketSearch" placeholder="Search markets for mispricing signals...">
+                </div>
+                <div class="top-actions">
+                    <div class="metric-mini">
+                        <span class="label">VOL 24H</span>
+                        <span class="value" id="totalVol">$0.00</span>
+                    </div>
+                    <div class="metric-mini">
+                        <span class="label">SYMBOLS</span>
+                        <span class="value" id="marketCount">0</span>
+                    </div>
+                    <button class="btn-primary" id="refreshBtn">Refresh Data</button>
+                </div>
+            </header>
 
-    <div class="search-sector">
-        <h2 class="section-title" id="view-title">Trending Markets</h2>
-        <div class="search-wrap">
-            <input type="text" class="search-input" id="shardSearch" placeholder="Search markets...">
-            <div class="filter-group">
-                <select class="filter-select"><option>All</option></select>
-                <select class="filter-select"><option>Any Volume</option></select>
-                <select class="filter-select"><option>Volume 24h</option></select>
+            <div class="content-body" id="viewContainer">
+                <!-- Dashboard View -->
+                <div class="view" id="dashboardView">
+                    <div class="dashboard-grid">
+                        <!-- Market Selector -->
+                        <div class="grid-col-1 panel market-selector">
+                            <div class="panel-header">
+                                <h3>Active Markets</h3>
+                                <div class="badge">TOP LIQUIDITY</div>
+                            </div>
+                            <div class="market-list" id="marketList">
+                                <!-- Loaded via JS -->
+                                <div class="loading-state">Initializing Quant Engine...</div>
+                            </div>
+                        </div>
+
+                        <!-- Analysis View -->
+                        <div class="grid-col-2">
+                            <div class="stats-row">
+                                <div class="panel stat-card">
+                                    <span class="stat-label">Sign: Signed Trade Flow</span>
+                                    <span class="stat-value" id="signal-flow">0.00</span>
+                                    <div class="stat-desc">Accumulated net flow of trade size</div>
+                                </div>
+                                <div class="panel stat-card">
+                                    <span class="stat-label">Ω: Order Book Imbalance</span>
+                                    <span class="stat-value" id="signal-imbalance">0.0%</span>
+                                    <div class="stat-desc">Supply vs Demand at top of book</div>
+                                </div>
+                                <div class="panel stat-card accent-green">
+                                    <span class="stat-label">α: Calibration Gap</span>
+                                    <span class="stat-value" id="signal-gap">0.0%</span>
+                                    <div class="stat-desc">Implied vs Realized event probability</div>
+                                </div>
+                            </div>
+
+                            <div class="charts-grid">
+                                <div class="panel chart-panel">
+                                    <div class="panel-header">
+                                        <h4>Price Impact vs Post-Trade Drift (Δp)</h4>
+                                        <div class="tooltip-trigger">ℹ️</div>
+                                    </div>
+                                    <div class="chart-wrapper">
+                                        <canvas id="driftChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="panel chart-panel">
+                                    <div class="panel-header">
+                                        <h4>Liquidity Regime & Spread Analaysis</h4>
+                                    </div>
+                                    <div class="chart-wrapper">
+                                        <canvas id="liquidityChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="panel chart-panel wide">
+                                    <div class="panel-header">
+                                        <h4>Quant Signal Heatmap (Z-Scores)</h4>
+                                    </div>
+                                    <div class="chart-wrapper">
+                                        <canvas id="zscoreChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
-
-    <main id="shard-grid">
-        <!-- DATA -->
-    </main>
-
-    <script src="app.js?v=7.2"></script>
+    <script src="app.js"></script>
 </body>
 </html>
