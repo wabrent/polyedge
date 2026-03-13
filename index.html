@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POLYEDGE</title>
+    <title>POLYEDGE PRO | Live Intelligence</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
     <header class="header-node">
         <div class="brand-sector">
-            <div class="brand-icon">
-                <!-- EXACT REPLICA OF THE ICON FROM polyedgeapp.xyz -->
-                <svg class="icon-p" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="25" y="25" width="15" height="50" fill="black"/>
-                    <path d="M40 25L80 50L40 75Z" fill="black"/>
+            <!-- RECONSTRUCTED POLYEDGE PRO LOGO (P WITH LIGHTNING) -->
+            <div class="brand-icon" style="background: white; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                <svg width="16" height="16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M40 20H75C85 20 95 25 95 45C95 65 85 70 75 70H55L45 90L60 70H40L55 45H50L40 20Z" fill="black"/>
                 </svg>
             </div>
             <span class="brand-name">POLYEDGE</span>
         </div>
         <nav class="nav-sector">
-            <div class="nav-item active" onclick="navSwitch(this)">TERMINAL</div>
-            <div class="nav-item" onclick="navSwitch(this)">TRADE</div>
-            <div class="nav-item" onclick="navSwitch(this)">STATS</div>
-            <div class="nav-item" onclick="navSwitch(this)">COPY</div>
-            <div class="nav-item" onclick="navSwitch(this)">LIGHTNING</div>
+            <div class="nav-item active">TERMINAL</div>
+            <div class="nav-item">TRADE</div>
+            <div class="nav-item">STATS</div>
+            <div class="nav-item">COPY</div>
+            <div class="nav-item">LIGHTNING</div>
         </nav>
         <div class="action-sector">
             <button class="connect-btn">CONNECT</button>
@@ -46,7 +45,7 @@
         </div>
         <div class="stat-box">
             <span class="stat-label">LATENCY</span>
-            <span class="stat-val active-val">2ms</span>
+            <span class="stat-val active-val">1ms</span>
         </div>
     </section>
 
@@ -55,16 +54,9 @@
     </div>
 
     <main class="market-list" id="shard-grid">
-        <!-- Dashboard content will load here -->
-        <div class="empty-state" id="boot-loader">INITIALIZING SECURE NODE SHARD...</div>
+        <div class="empty-state" id="boot-loader">ESTABLISHING CONNECTION TO SHARD NODES...</div>
     </main>
 
     <script src="app.js"></script>
-    <script>
-        function navSwitch(el) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-        }
-    </script>
 </body>
 </html>
