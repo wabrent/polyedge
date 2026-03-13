@@ -3,105 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyAlpha | Quant Analytics Terminal</title>
+    <title>PolyEdge PRO</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="terminal-container">
-        <!-- HEADER: PolyEdge Pro Branding -->
-        <header>
-            <div class="logo-area">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
-                    <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="black"/>
-                </svg>
-                PolyEdge <span class="v-tag">PRO QUANT</span>
+    <header class="header-node">
+        <div class="brand-sector">
+            <!-- BLACK SHARP P LOGO -->
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
+                <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="black"/>
+            </svg>
+            <span class="brand-name">PolyEdge</span>
+        </div>
+        
+        <nav class="nav-sector">
+            <div class="nav-item active" data-tab="markets">Markets</div>
+            <div class="nav-item" data-tab="watchlist">Watchlist</div>
+            <div class="nav-item" data-tab="scanner">Scanner</div>
+            <div class="nav-item" data-tab="arbitrage">Arbitrage</div>
+            <div class="nav-item" data-tab="simulator">Simulator</div>
+        </nav>
+
+        <div class="header-actions">
+            <div class="icon-btn">𝕏</div>
+            <div class="update-timer">
+                <div class="timer-dot"></div> 2s
             </div>
+            <div class="icon-btn">☀️</div>
             
-            <nav class="nav-sector">
-                <div class="nav-item active">Analytics</div>
-                <div class="nav-item">Markets</div>
-                <div class="nav-item">Scanner</div>
-                <div class="nav-item">Arbitrage</div>
-            </nav>
-
-            <div class="header-actions">
-                <div class="icon-btn">𝕏</div>
-                <div class="icon-btn">☀️</div>
-                <div class="time-zone-group">
-                    <div class="tz-box"><div class="tz-label">NYC</div><div class="tz-val" id="time-nyc">08:55</div></div>
-                    <div class="tz-box"><div class="tz-label">LDN</div><div class="tz-val" id="time-ldn">13:55</div></div>
-                    <div class="tz-box"><div class="tz-label">TKO</div><div class="tz-val" id="time-tko">22:55</div></div>
+            <div class="time-zone-group">
+                <div class="tz-box">
+                    <div class="tz-label">NYC</div>
+                    <div class="tz-val" id="time-nyc">08:58</div>
+                </div>
+                <div class="tz-box">
+                    <div class="tz-label">LDN</div>
+                    <div class="tz-val" id="time-ldn">13:58</div>
+                </div>
+                <div class="tz-box">
+                    <div class="tz-label">TKO</div>
+                    <div class="tz-val" id="time-tko">22:58</div>
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <!-- LEFT SIDEBAR: ALPHA SCANNER -->
-        <aside class="sidebar">
-            <h3 style="font-size:12px; margin-bottom:15px; color:var(--text-secondary);">ALPHA SCANNER</h3>
-            <div id="market-list">
-                <!-- Markets injected here -->
-                <div style="padding:20px; text-align:center; font-size:11px; color:var(--text-secondary);">FETCHING DATA STREAM...</div>
-            </div>
-        </aside>
+    <section class="stats-bar">
+        <div class="stat-box">
+            <span class="stat-label">Markets</span>
+            <span class="stat-val" id="market-count">60</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">24h Volume</span>
+            <span class="stat-val" id="flow-val">$79.5M</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Opportunities</span>
+            <span class="stat-val">52</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">Best ROI</span>
+            <span class="stat-val">2000x</span>
+        </div>
+    </section>
 
-        <!-- MAIN TERMINAL -->
-        <main>
-            <!-- STATS ROW -->
-            <div class="quant-card stats-grid">
-                <div class="metric-box">
-                    <span class="m-label">Analyzed Trades</span>
-                    <span class="m-val" id="trades-count">100,000+</span>
-                </div>
-                <div class="metric-box">
-                    <span class="m-label">Avg Spread</span>
-                    <span class="m-val" style="color:var(--accent-blue)">0.02¢</span>
-                </div>
-                <div class="metric-box">
-                    <span class="m-label">OB Imbalance</span>
-                    <span class="m-val" style="color:var(--accent-green)">+0.42</span>
-                </div>
-                <div class="metric-box">
-                    <span class="m-label">Alpha Detected</span>
-                    <span class="m-val" style="color:var(--accent-red)">12.4%</span>
-                </div>
+    <div class="search-sector">
+        <h2 class="section-title" id="view-title">Trending Markets</h2>
+        <div class="search-wrap">
+            <input type="text" class="search-input" id="shardSearch" placeholder="Search markets...">
+            <div class="filter-group">
+                <select class="filter-select"><option>All</option></select>
+                <select class="filter-select"><option>Any Volume</option></select>
+                <select class="filter-select"><option>Volume 24h</option></select>
             </div>
-
-            <!-- DRIFT CHART -->
-            <div class="quant-card">
-                <h3 style="font-size:14px; margin-bottom:15px;">Post-Trade Probability Drift (Post-Trade Displacement)</h3>
-                <div class="chart-container">
-                    <canvas id="driftChart"></canvas>
-                </div>
-            </div>
-
-            <!-- CALIBRATION UI -->
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                <div class="quant-card">
-                    <h3 style="font-size:14px; margin-bottom:15px;">Signal Strength Z-Scores</h3>
-                    <div id="zscore-list">
-                        <!-- Z-scores list -->
-                    </div>
-                </div>
-                <div class="quant-card">
-                    <h3 style="font-size:14px; margin-bottom:15px;">Market Calibration (Gap Analysis)</h3>
-                    <div class="chart-container">
-                        <canvas id="calibrationChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- RIGHT SIDEBAR: LIVE FLOW -->
-        <aside class="sidebar sidebar-right">
-            <h3 style="font-size:12px; margin-bottom:15px; color:var(--text-secondary);">LIVE SIGNED FLOW (LOB)</h3>
-            <div id="flow-log" style="font-family:monospace; font-size:11px; line-height:1.6;">
-                <!-- Live trades -->
-            </div>
-        </aside>
+        </div>
     </div>
 
-    <script src="app.js"></script>
+    <main id="shard-grid">
+        <!-- DATA -->
+    </main>
+
+    <script src="app.js?v=7.2"></script>
 </body>
 </html>
