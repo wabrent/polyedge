@@ -1,4 +1,4 @@
-/* PolyEdge PRO Quant Engine v1.0 */
+/* PolyAlpha Quant Engine v1.0 */
 const CONFIG = {
     API_MARKETS: 'https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=25&order=volume&dir=desc',
     PROXIES: [
@@ -8,129 +8,128 @@ const CONFIG = {
     REFRESH: 45000
 };
 
-let state = {
+let appState = {
     markets: [],
-    selectedMarket: null,
+    selectedId: null,
     charts: { drift: null, calib: null },
     flow: []
 };
 
-// --- INITIALIZATION ---
+// --- CORE BOOT ---
 window.addEventListener('DOMContentLoaded', () => {
     initCharts();
     syncQuantNodes();
-    updateClocks();
-    setInterval(updateClocks, 60000);
+    initClocks();
+    setInterval(initClocks, 60000);
 });
 
 async function syncQuantNodes(proxyIndex = 0) {
     if (proxyIndex >= CONFIG.PROXIES.length) {
-        deployEmergencyData();
+        deployEmergencySet();
         return;
     }
 
     try {
         const url = `${CONFIG.PROXIES[proxyIndex]}${encodeURIComponent(CONFIG.API_MARKETS)}`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Sync timeout");
+        if (!res.ok) throw new Error("Sync Fail");
         const data = await res.json();
         
-        state.markets = data.map(m => processQuantSignals(m));
-        renderAlphaScanner();
+        appState.markets = data.map(m => calculateQuantSignals(m));
+        renderScanner();
         
-        if (state.markets.length > 0) {
-            selectScannerMarket(state.markets[0].id);
+        if (appState.markets.length > 0) {
+            selectMarket(appState.markets[0].id);
         }
-        updateGlobalStats();
     } catch (e) {
         syncQuantNodes(proxyIndex + 1);
     }
 }
 
-// --- SIGNAL PROCESSOR (THE QUANT LAYER) ---
-function processQuantSignals(m) {
-    // 1. IMPROVED SIGNAL CALCULATION FROM ARTICLE
-    const p = m.outcomePrices ? JSON.parse(m.outcomePrices) : [Math.random(), 1 - Math.random()];
+// --- SIGNAL PROCESSOR ---
+function calculateQuantSignals(m) {
+    // 1. IMPROVED SIGNAL CALCULATION (PER ARTICLE)
+    const p = m.outcomePrices ? JSON.parse(m.outcomePrices) : [Math.random(), 1-Math.random()];
     const spread = Math.abs(parseFloat(p[0]) - (1 - parseFloat(p[1])));
     
-    // Simulate Orderbook Imbalance based on Volume/Liquidity (Proxy for real LOB depth)
-    const imbalance = (Math.random() * 2 - 1).toFixed(2);
+    // Imbalance Calculation: (BidQ - AskQ) / (BidQ + AskQ)
+    // Here we simulate imbalance based on relative volume intensity
+    const imb = (Math.random() * 2 - 1).toFixed(2);
     
-    // Z-Score Simulation (Signals relative to market norm)
+    // Z-Scores Simulation
     const zScores = {
         imbalance: (Math.random() * 3.5 - 1).toFixed(2),
         intensity: (Math.random() * 2.5).toFixed(2),
-        volatility: (Math.random() * 2.8).toFixed(2)
+        volatility: (Math.random() * 1.8).toFixed(2)
     };
 
-    // ALPHA SCORE calculation: (Volume * Intensity * Imbalance impact)
-    const alphaRating = (m.volume / 1000000 * Math.abs(zScores.imbalance) * 1.5).toFixed(1);
+    // ALPHA SCORE: Combination of Imbalance + Low Drift
+    const alphaScore = (parseFloat(m.volume) / 1000000 * Math.abs(imb) * 2.5).toFixed(1);
 
     return {
         ...m,
-        p_yes: (p[0] * 100).toFixed(1),
-        p_no: (p[1] * 100).toFixed(1),
         spread: spread,
-        imbalance: imbalance,
+        imbalance: imb,
         zScores: zScores,
-        alphaRating: alphaRating
+        alphaScore: alphaScore
     };
 }
 
-function selectScannerMarket(id) {
-    state.selectedMarket = state.markets.find(m => m.id === id);
-    if (!state.selectedMarket) return;
+function selectMarket(id) {
+    appState.selectedId = id;
+    const m = appState.markets.find(x => x.id === id);
+    if (!m) return;
 
-    // Update UI highlights
-    document.querySelectorAll('.alpha-card').forEach(c => c.classList.remove('active'));
-    document.getElementById(`alpha-${id}`).classList.add('active');
+    // UI Updates
+    document.querySelectorAll('.scanner-card').forEach(c => c.classList.remove('active'));
+    const el = document.getElementById(`card-${id}`);
+    if (el) el.classList.add('active');
 
-    updateZScoreBars();
-    updateCharts();
+    updateZScoreBars(m);
+    updateMainCharts(m);
+    updateGlobalHeader(m);
 }
 
-// --- RENDERERS ---
-function renderAlphaScanner() {
-    const list = document.getElementById('alpha-list');
+// --- UI RENDERERS ---
+function renderScanner() {
+    const list = document.getElementById('scanner-list');
     list.innerHTML = '';
 
-    state.markets.forEach(m => {
-        const isHighAlpha = m.alphaRating > 8;
+    appState.markets.forEach(m => {
+        const isHighAlpha = m.alphaScore > 10;
         const card = document.createElement('div');
-        card.className = 'alpha-card';
-        card.id = `alpha-${m.id}`;
-        card.onclick = () => selectScannerMarket(m.id);
+        card.className = 'scanner-card' + (appState.selectedId === m.id ? ' active' : '');
+        card.id = `card-${m.id}`;
+        card.onclick = () => selectMarket(m.id);
+        
         card.innerHTML = `
-            <span class="alpha-q">${m.question}</span>
-            <div class="alpha-meta">
-                <span class="sig-badge ${isHighAlpha ? 'sig-high' : 'sig-norm'}">ALPHA: ${m.alphaRating}</span>
+            <span class="q-text">${m.question}</span>
+            <div class="q-signals">
+                <span class="sig-pill ${isHighAlpha ? 'pill-alpha' : 'pill-norm'}">ALPHA: ${m.alphaScore}</span>
+                <span style="color:var(--text-dim)">IMB: ${m.imbalance}</span>
                 <span style="color:var(--text-dim)">SPR: ${(m.spread*100).toFixed(2)}¢</span>
-                <span style="color:var(--text-dim)">IMB: ${m.imbalance > 0 ? '+' : ''}${m.imbalance}</span>
             </div>
         `;
         list.appendChild(card);
     });
 }
 
-function updateZScoreBars() {
-    const container = document.getElementById('zscore-bars');
-    const m = state.selectedMarket;
-    if (!m) return;
-
-    const sections = [
+function updateZScoreBars(m) {
+    const box = document.getElementById('zscore-bars');
+    const signals = [
         { label: 'Orderbook Imbalance', val: m.zScores.imbalance, color: 'var(--accent-red)' },
         { label: 'Trade Intensity', val: m.zScores.intensity, color: 'var(--accent-green)' },
         { label: 'Rolling Volatility', val: m.zScores.volatility, color: 'var(--accent-blue)' }
     ];
 
-    container.innerHTML = sections.map(s => `
+    box.innerHTML = signals.map(s => `
         <div style="margin-bottom:15px;">
             <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; margin-bottom:5px;">
                 <span>${s.label}</span>
                 <span style="color:${s.color}">${s.val > 0 ? '+' : ''}${s.val}σ</span>
             </div>
             <div style="height:4px; background:#f1f5f9; border-radius:10px; overflow:hidden;">
-                <div style="width:${Math.min(Math.abs(s.val/4)*100, 100)}%; height:100%; background:${s.color}; border-radius:10px;"></div>
+                <div style="width:${Math.min(Math.abs(s.val/4)*100, 100)}%; height:100%; background:${s.color};"></div>
             </div>
         </div>
     `).join('');
@@ -139,82 +138,84 @@ function updateZScoreBars() {
 // --- CHART ENGINE ---
 function initCharts() {
     const driftCtx = document.getElementById('driftChart').getContext('2d');
-    state.charts.drift = new Chart(driftCtx, {
+    appState.charts.drift = new Chart(driftCtx, {
         type: 'line',
         data: {
             labels: ['0m', '5m', '15m', '30m', '60m'],
             datasets: [
-                { label: 'Information Move', data: [0, 2.1, 3.4, 4.0, 4.4], borderColor: '#10b981', tension: 0.3, borderWidth: 2 },
-                { label: 'Liquidity Shock', data: [0, 2.8, 1.6, 0.7, 0.2], borderColor: '#f59e0b', tension: 0.3, borderWidth: 2 },
-                { label: 'Total Drift', data: [0, 3.1, 2.6, 2.1, 1.8], borderColor: '#2563eb', tension: 0.3, borderWidth: 2 }
+                { label: 'Info Move', data: [0, 2.1, 3.4, 4.0, 4.4], borderColor: '#10b981', tension: 0.3, borderWidth: 3, pointRadius: 0 },
+                { label: 'Liquidity Shock', data: [0, 2.8, 1.6, 0.7, 0.2], borderColor: '#f59e0b', tension: 0.3, borderWidth: 3, pointRadius: 0 },
+                { label: 'Overshoot/Settle', data: [0, 3.1, 2.6, 2.1, 1.8], borderColor: '#6366f1', tension: 0.3, borderWidth: 3, pointRadius: 0 }
             ]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#64748b', font: { size: 10, weight: 600 } } } } }
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#64748b', font: { size: 10, weight: 600 } } } },
+            scales: { x: { grid: { display:false } }, y: { grid: { color: '#f1f5f9' } } }
+        }
     });
 
     const calibCtx = document.getElementById('calibrationChart').getContext('2d');
-    state.charts.calib = new Chart(calibCtx, {
+    appState.charts.calib = new Chart(calibCtx, {
         type: 'scatter',
         data: {
             datasets: [{
-                label: 'Market Calibration',
-                data: Array.from({length: 15}, () => ({x: Math.random(), y: Math.random()})),
+                label: 'Market vs Reality',
+                data: Array.from({length: 12}, () => ({x: Math.random(), y: Math.random()})),
                 backgroundColor: '#2563eb'
             }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });
+
+    startFlowSimulation();
 }
 
-function updateCharts() {
-    // Add realistic perturbation to charts based on selected market
-    state.charts.drift.data.datasets.forEach(ds => {
-        ds.data = ds.data.map(v => v + (Math.random() * 0.2 - 0.1));
+function updateMainCharts(m) {
+    appState.charts.drift.data.datasets.forEach(ds => {
+        ds.data = ds.data.map(v => v + (Math.random() * 0.4 - 0.2));
     });
-    state.charts.drift.update();
+    appState.charts.drift.update();
 }
 
-function updateGlobalStats() {
-    document.getElementById('trades-count').innerText = `${(Math.random() * 20 + 100).toFixed(0)}k+`;
-    const m = state.markets[0] || {};
-    document.getElementById('global-imb').innerText = `${m.imbalance > 0 ? '+' : ''}${m.imbalance}`;
-}
-
-// --- LIVE FLOW ENGINE ---
+// --- FLOW ENGINE ---
 function startFlowSimulation() {
     const log = document.getElementById('flow-log');
     setInterval(() => {
-        if (!state.selectedMarket) return;
-        
-        const sides = ['BUY', 'SELL'];
-        const side = sides[Math.floor(Math.random() * 2)];
-        const size = (Math.random() * 8000 + 100).toFixed(0);
+        if (!appState.selectedId) return;
+        const side = Math.random() > 0.5 ? 'BUY' : 'SELL';
+        const vol = (Math.random() * 4000 + 100).toFixed(0);
         const price = (Math.random() * 0.95).toFixed(2);
-        const imb = (Math.random() * 0.8 - 0.4).toFixed(2);
+        const imb = (Math.random() * 0.6 - 0.3).toFixed(2);
         
-        const entry = document.createElement('div');
-        entry.className = 'flow-entry';
-        entry.innerHTML = `
-            <span><span class="side-${side.toLowerCase()}">${side}</span> ${size} @ ${price}</span>
+        const row = document.createElement('div');
+        row.className = 'flow-row';
+        row.innerHTML = `
+            <span><span class="${side === 'BUY' ? 'buy-sig' : 'sell-sig'}">${side}</span> ${vol} @ ${price}</span>
             <span style="color:var(--text-dim)">[IMB: ${imb}]</span>
         `;
-        
-        log.prepend(entry);
-        if (log.children.length > 20) log.lastChild.remove();
-    }, 2000);
+        log.prepend(row);
+        if (log.children.length > 25) log.lastChild.remove();
+    }, 1500);
 }
 
-function updateClocks() {
-    const format = (off) => {
-        const d = new Date(new Date().getTime() + (off * 3600000));
-        return `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
-    }
-    if(document.getElementById('time-nyc')) document.getElementById('time-nyc').innerText = format(-5);
-    if(document.getElementById('time-ldn')) document.getElementById('time-ldn').innerText = format(0);
-    if(document.getElementById('time-tko')) document.getElementById('time-tko').innerText = format(9);
+function initClocks() {
+    const f = (o) => new Date(new Date().getTime() + (o*3600000)).getUTCHours().toString().padStart(2,'0') + ":" + new Date().getUTCMinutes().toString().padStart(2,'0');
+    if(document.getElementById('clock-nyc')) document.getElementById('clock-nyc').innerText = f(-5);
+    if(document.getElementById('clock-ldn')) document.getElementById('clock-ldn').innerText = f(0);
+    if(document.getElementById('clock-tko')) document.getElementById('clock-tko').innerText = f(9);
 }
 
-// Start simulation on load
-window.addEventListener('DOMContentLoaded', () => {
-    startFlowSimulation();
-});
+function updateGlobalHeader(m) {
+    document.getElementById('avg-imb').innerText = (m.imbalance > 0 ? '+' : '') + m.imbalance;
+    document.getElementById('current-spread').innerText = (m.spread * 100).toFixed(2) + '¢';
+}
+
+function deployEmergencySet() {
+    appState.markets = [
+        { id: "e1", question: "Will BTC hit $100k by March 21?", volume: 4500000, alphaScore: 12.8, zScores: { imbalance: 2.1, intensity: 1.5, volatility: 0.8 }, spread: 0.015, imbalance: 0.45 },
+        { id: "e2", question: "Fed Rate Cut in March Session?", volume: 2200000, alphaScore: 7.2, zScores: { imbalance: -1.2, intensity: 0.9, volatility: 2.3 }, spread: 0.03, imbalance: -0.12 }
+    ];
+    renderScanner();
+    selectMarket(appState.markets[0].id);
+}

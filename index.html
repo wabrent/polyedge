@@ -3,100 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge PRO | Quant Analytics</title>
+    <title>PolyAlpha PRO | Quant Terminal</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="terminal-container">
+    <div class="terminal-node">
         <!-- HEADER -->
         <header>
-            <div class="brand-sector">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
-                    <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="black"/>
+            <div class="brand-unit">
+                <svg class="p-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z"/>
                 </svg>
-                PolyEdge <span class="v-tag">PRO QUANT</span>
+                PolyAlpha <span class="quant-tag">QUANT PRO</span>
             </div>
             
-            <nav class="nav-sector">
-                <div class="nav-item active" data-tab="analytics">Analytics</div>
-                <div class="nav-item" data-tab="markets">Markets</div>
-                <div class="nav-item" data-tab="scanner">Scanner</div>
-                <div class="nav-item" data-tab="arbitrage">Arbitrage</div>
+            <nav class="nav-cluster">
+                <div class="nav-link active">Surveillance</div>
+                <div class="nav-link">Market List</div>
+                <div class="nav-link">Scanner</div>
+                <div class="nav-link">Audit</div>
             </nav>
 
-            <div class="header-actions">
-                <div class="icon-btn">𝕏</div>
-                <div class="icon-btn">☀️</div>
-                <div class="time-zone-group">
-                    <div class="tz-box"><div class="tz-label">NYC</div><div class="tz-val" id="time-nyc">08:00</div></div>
-                    <div class="tz-box"><div class="tz-label">LDN</div><div class="tz-val" id="time-ldn">13:00</div></div>
-                    <div class="tz-box"><div class="tz-label">TKO</div><div class="tz-val" id="time-tko">22:00</div></div>
+            <div class="header-util">
+                <div class="status-timer">
+                    <div class="timer-pulse"></div> 2s REFRESH
+                </div>
+                <!-- WORLD CLOCKS -->
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; gap: 15px;">
+                    <div>NYC: <span id="clock-nyc">00:00</span></div>
+                    <div>LDN: <span id="clock-ldn">00:00</span></div>
+                    <div>TKO: <span id="clock-tko">00:00</span></div>
                 </div>
             </div>
         </header>
 
-        <!-- LEFT SIDEBAR: ALPHA SCANNER -->
-        <aside class="sidebar">
-            <span class="section-label">Alpha Scanner</span>
-            <div id="alpha-list">
-                <div style="padding:20px; text-align:center; font-size:11px; color:var(--text-dim);">SYNCING QUANT NODES...</div>
+        <!-- LEFT: ALPHA SCANNER -->
+        <aside>
+            <h3 class="sidebar-title">Alpha Scanner</h3>
+            <div id="scanner-list">
+                <div style="padding: 40px; text-align: center; font-size: 11px; color: var(--text-dim);">CONNECTING TO QUANT NODES...</div>
             </div>
         </aside>
 
-        <!-- MAIN TERMINAL -->
+        <!-- CENTER: ANALYTICS -->
         <main>
-            <!-- GLOBAL QUANT STATS -->
-            <div class="quant-card stats-grid">
-                <div class="metric-box">
-                    <span class="m-label">Analyzed Trades</span>
-                    <span class="m-val" id="trades-count">100k+</span>
+            <!-- MACRO METRICS -->
+            <div class="quant-block stat-grid">
+                <div class="stat-box">
+                    <span class="s-label">Analyzed Trades</span>
+                    <span class="s-val" id="total-trades">100k+</span>
                 </div>
-                <div class="metric-box">
-                    <span class="m-label">OB Imbalance</span>
-                    <span class="m-val" id="global-imb" style="color:var(--accent-green)">+0.42</span>
+                <div class="stat-box">
+                    <span class="s-label">Avg Imbalance</span>
+                    <span class="s-val" id="avg-imb" style="color:var(--accent-green)">+0.42</span>
                 </div>
-                <div class="metric-box">
-                    <span class="m-label">Alpha Detected</span>
-                    <span class="m-val" id="alpha-rate" style="color:var(--accent-red)">12.4%</span>
+                <div class="stat-box">
+                    <span class="s-label">Alpha Detected</span>
+                    <span class="s-val" id="alpha-rate" style="color:var(--accent-red)">12.4%</span>
                 </div>
-                <div class="metric-box">
-                    <span class="m-label">Avg Spread</span>
-                    <span class="m-val" id="avg-spread">0.02¢</span>
+                <div class="stat-box">
+                    <span class="s-label">Spread Regime</span>
+                    <span class="s-val" id="current-spread">0.02¢</span>
                 </div>
             </div>
 
-            <!-- PRIMARY ANALYTICS -->
-            <div class="quant-card">
-                <span class="section-label">Post-Trade Probability Response (Event Study)</span>
-                <div class="chart-wrap">
+            <!-- MAIN CHART: PROBABILITY DRIFT -->
+            <div class="quant-block">
+                <h3 class="sidebar-title">Post-Trade Probability Response (Event Study)</h3>
+                <div class="chart-container">
                     <canvas id="driftChart"></canvas>
                 </div>
             </div>
 
-            <!-- SECONDARY METRICS -->
-            <div class="sub-grid">
-                <div class="quant-card">
-                    <span class="section-label">Signal Strength Z-Scores</span>
+            <!-- SECONDARY ANALYTICS -->
+            <div class="split-grid">
+                <div class="quant-block">
+                    <h3 class="sidebar-title">Signal Strength Z-Scores</h3>
                     <div id="zscore-bars" style="margin-top:20px;">
-                        <!-- Logic bars injected here -->
+                        <!-- Dynamic bars -->
                     </div>
                 </div>
-                <div class="quant-card">
-                    <span class="section-label">Market Calibration Gap</span>
-                    <div class="chart-wrap" style="height:200px;">
+                <div class="quant-block">
+                    <h3 class="sidebar-title">Market Calibration (Gap Analysis)</h3>
+                    <div class="chart-container" style="height:220px;">
                         <canvas id="calibrationChart"></canvas>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- RIGHT SIDEBAR: LIVE FLOW -->
-        <aside class="sidebar sidebar-right">
-            <span class="section-label">Live Signed Flow</span>
+        <!-- RIGHT: SIGNED FLOW -->
+        <aside class="aside-right">
+            <h3 class="sidebar-title">Live Signed Flow (LOB)</h3>
             <div id="flow-log" class="flow-log">
-                <!-- Live trades with imbalance metrics -->
+                <!-- Real-time trade stream -->
             </div>
         </aside>
     </div>
