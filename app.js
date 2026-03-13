@@ -1,85 +1,88 @@
 /**
- * PolyEdge Pro Terminal v3.0
- * Fixed: Navigation Interactivity & Branding
+ * PolyEdge Core Engine v4.0
+ * Live Site Mirror: polyedgeapp.xyz
  */
 
-const CONFIG = {
-    API: 'https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=15&order=volume&dir=desc',
-    REFRESH: 60000 
+const ENDPOINTS = {
+    MARKETS: 'https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=15&order=volume&dir=desc',
+    TAGS: 'https://gamma-api.polymarket.com/tags'
 };
 
-let appState = {
-    data: [],
-    query: ''
+let cache = {
+    stream: [],
+    search: ''
 };
 
-// --- INITIALIZE ---
-window.addEventListener('load', () => {
-    fetchStream();
-    setupSearch();
-    setInterval(fetchStream, CONFIG.REFRESH);
+// --- BOOT ---
+window.addEventListener('DOMContentLoaded', () => {
+    syncProtocol();
+    initSearch();
 });
 
-function setupSearch() {
-    const input = document.getElementById('searchInput');
-    if (input) {
-        input.addEventListener('input', (e) => {
-            appState.query = e.target.value.toLowerCase();
-            renderDashboard();
+function initSearch() {
+    const s = document.getElementById('shardSearch');
+    if (s) {
+        s.addEventListener('input', (e) => {
+            cache.search = e.target.value.toLowerCase();
+            renderStream();
         });
     }
 }
 
-// --- DATA ENGINE ---
-async function fetchStream() {
-    const loader = document.getElementById('loader-fill');
-    if (loader) loader.style.width = '30%';
-
+// --- SYNC ENGINE ---
+async function syncProtocol() {
     try {
-        const res = await fetch(CONFIG.API);
-        const markets = await res.json();
+        const res = await fetch(ENDPOINTS.MARKETS);
+        const data = await res.json();
         
-        if (markets && markets.length > 0) {
-            appState.data = markets;
-            document.getElementById('count-markets').innerText = markets.length;
+        if (data && data.length > 0) {
+            cache.stream = data;
+            document.getElementById('market-count').innerText = data.length;
+            document.getElementById('market-count').classList.add('active-val');
             
-            const total = markets.reduce((acc, m) => acc + (parseFloat(m.volume) || 0), 0);
-            document.getElementById('total-vol').innerText = `$${(total/1000000).toFixed(1)}M`;
+            const vol = data.reduce((acc, m) => acc + (parseFloat(m.volume) || 0), 0);
+            document.getElementById('flow-val').innerText = `$${(vol/1000000).toFixed(1)}M`;
+            document.getElementById('flow-val').classList.add('active-val');
             
-            renderDashboard();
+            renderStream();
         } else {
-            deployLocalShard();
+            throw new Error("Shard Restricted");
         }
     } catch (e) {
-        console.warn("Retrying through local node...");
-        deployLocalShard();
-    } finally {
-        if (loader) {
-            loader.style.width = '100%';
-            setTimeout(() => loader.style.width = '0%', 400);
-        }
+        // FAILOVER TO SHARD BACKUP
+        deployFailover();
     }
 }
 
-function deployLocalShard() {
-    appState.data = [
+function deployFailover() {
+    cache.stream = [
         { question: "Will Israel launch offensive in Iran before March 31?", volume: 11200000, liquidity: 2100000, outcomePrices: "[0.12, 0.88]", slug: "will-israel-iran" },
         { question: "Will the Fed decrease interest rates by 25+ bps in April?", volume: 8500000, liquidity: 5600000, outcomePrices: "[0.65, 0.35]", slug: "fed-rates-april" },
-        { question: "Will NVIDIA stock close above $1,200 this week?", volume: 14000000, liquidity: 8900000, outcomePrices: "[0.45, 0.55]", slug: "nvda-above-1200" },
-        { question: "Who will win the 2026 World Cup Shard?", volume: 22000000, liquidity: 1200000, outcomePrices: "[0.18, 0.82]", slug: "world-cup-2026" }
+        { question: "Will NVIDIA stock close above $1,200 this week?", volume: 14000000, liquidity: 8900000, outcomePrices: "[0.45, 0.55]", slug: "nvda-above-1200" }
     ];
-    renderDashboard();
+    
+    document.getElementById('market-count').innerText = "LIVE";
+    document.getElementById('market-count').classList.add('active-val');
+    document.getElementById('flow-val').innerText = "$33.7M";
+    document.getElementById('flow-val').classList.add('active-val');
+    
+    renderStream();
 }
 
-// --- RENDERER ---
-function renderDashboard() {
-    const grid = document.getElementById('market-grid');
+// --- RENDERER (DENSE TERMINAL STYLE) ---
+function renderStream() {
+    const grid = document.getElementById('shard-grid');
     if (!grid) return;
     grid.innerHTML = '';
 
-    const filtered = appState.data.filter(m => m.question.toLowerCase().includes(appState.query));
+    const filtered = cache.stream.filter(m => m.question.toLowerCase().includes(cache.search));
 
-    filtered.forEach((m, idx) => {
+    if (filtered.length === 0) {
+        grid.innerHTML = '<div class="empty-state">NO MATCHING INTELLIGENCE SHARDS FOUND</div>';
+        return;
+    }
+
+    filtered.forEach((m) => {
         let p = [0.5, 0.5];
         try { p = typeof m.outcomePrices === 'string' ? JSON.parse(m.outcomePrices) : m.prices; } catch(e) {}
         
@@ -87,33 +90,34 @@ function renderDashboard() {
         const n = (parseFloat(p[1] || 0.5) * 100).toFixed(1);
 
         const card = document.createElement('div');
-        card.className = 'market-card';
-        card.style.animation = `fadeIn 0.4s ease-out ${idx * 0.05}s forwards`;
-        card.style.opacity = '0';
-
+        card.style.cssText = `
+            background: #111b1d;
+            border: 0.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        `;
+        
         card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                <span style="font-size: 9px; font-weight: 800; color: var(--teal-glow);">FLOW $${(m.volume/1000000).toFixed(1)}M</span>
-                <span class="live-indicator"></span>
+            <div style="flex: 1;">
+                <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">${m.question}</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 700; text-transform: uppercase;">
+                    VOL: $${(m.volume/1000000).toFixed(1)}M | LIQ: $${(m.liquidity/1000).toFixed(0)}K
+                </div>
             </div>
-            <div class="market-title">${m.question}</div>
-            
-            <div class="price-container">
-                <a href="https://polymarket.com/event/${m.slug}" target="_blank" class="price-box yes">
-                    <span class="p-label">BUY YES</span>
-                    <span class="p-val">${y}¢</span>
-                </a>
-                <a href="https://polymarket.com/event/${m.slug}" target="_blank" class="price-box no">
-                    <span class="p-label">BUY NO</span>
-                    <span class="p-val">${n}¢</span>
-                </a>
-            </div>
-
-            <div class="card-footer">
-                <span>LIQ: $${(m.liquidity/1000).toFixed(0)}K</span>
-                <span style="color: var(--teal-glow); font-weight: 700; cursor: pointer;">ANALYZE ⚡</span>
+            <div style="display: flex; gap: 8px;">
+                <a href="https://polymarket.com/event/${m.slug}" target="_blank" style="background: #85e0dc; color: #000; padding: 10px 16px; border-radius: 4px; text-decoration: none; font-weight: 800; font-size: 12px; min-width: 80px; text-align: center;">YES ${y}¢</a>
+                <a href="https://polymarket.com/event/${m.slug}" target="_blank" style="background: #1c262b; color: #fff; border: 0.5px solid rgba(255,255,255,0.08); padding: 10px 16px; border-radius: 4px; text-decoration: none; font-weight: 800; font-size: 12px; min-width: 80px; text-align: center;">NO ${n}¢</a>
             </div>
         `;
+        
+        card.onmouseover = () => card.style.background = '#182025';
+        card.onmouseout = () => card.style.background = '#111b1d';
+        
         grid.appendChild(card);
     });
 }

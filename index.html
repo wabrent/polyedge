@@ -3,74 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyEdge | Advanced Prediction Terminal</title>
+    <title>POLYEDGE</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <!-- CACHE BUSTING SCRIPT BLOCK -->
-    <div id="top-loader"><div id="loader-fill"></div></div>
-
-    <!-- NAVBAR -->
-    <header class="navbar">
-        <div class="logo-container">
-            <!-- USER EMBEDDED LOGO (P with lighting) -->
-            <svg class="logo-p" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="400" height="400" fill="white"/>
-                <path d="M135.5 123.5H231.5C251.5 123.5 281.5 131.5 281.5 188.5C281.5 245.5 251.5 253.5 231.5 253.5H180.5L135.5 311.5L185.5 253.5H135.5L185.5 195.5H180.5C198.5 195.5 231.5 195.5 231.5 188.5C231.5 181.5 198.5 181.5 180.5 181.5H185.5L135.5 123.5Z" fill="black"/>
-            </svg>
-            <span style="font-weight: 800; font-size: 15px; letter-spacing: -0.5px;">POLYEDGE</span>
+    <header class="header-node">
+        <div class="brand-sector">
+            <div class="brand-icon">
+                <!-- EXACT REPLICA OF THE ICON FROM polyedgeapp.xyz -->
+                <svg class="icon-p" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="25" y="25" width="15" height="50" fill="black"/>
+                    <path d="M40 25L80 50L40 75Z" fill="black"/>
+                </svg>
+            </div>
+            <span class="brand-name">POLYEDGE</span>
         </div>
-        <nav class="nav-links">
-            <div class="nav-link active" onclick="switchTab(this)">TERMINAL</div>
-            <div class="nav-link" onclick="switchTab(this)">TRADE</div>
-            <div class="nav-link" onclick="switchTab(this)">STATS</div>
-            <div class="nav-link" onclick="switchTab(this)">COPY</div>
-            <div class="nav-link" onclick="switchTab(this)">LIGHTNING</div>
+        <nav class="nav-sector">
+            <div class="nav-item active" onclick="navSwitch(this)">TERMINAL</div>
+            <div class="nav-item" onclick="navSwitch(this)">TRADE</div>
+            <div class="nav-item" onclick="navSwitch(this)">STATS</div>
+            <div class="nav-item" onclick="navSwitch(this)">COPY</div>
+            <div class="nav-item" onclick="navSwitch(this)">LIGHTNING</div>
         </nav>
-        <div class="connect-btn">
-            <button style="background: transparent; border: 1px solid var(--teal-glow); color: var(--teal-glow); padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">CONNECT</button>
+        <div class="action-sector">
+            <button class="connect-btn">CONNECT</button>
         </div>
     </header>
 
-    <main class="container">
-        <!-- HEADER ANALYTICS -->
-        <section class="stats-ticker">
-            <div class="stat-item">
-                <span class="stat-label">Markets Tracked</span>
-                <span class="stat-value" id="count-markets">--</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">24h Alpha Flow</span>
-                <span class="stat-value" id="total-vol">--</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Network Node</span>
-                <span class="stat-value" style="font-size: 13px;">polyedgeapp.xyz</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Latency</span>
-                <span class="stat-value">2ms</span>
-            </div>
-        </section>
-
-        <!-- SEARCH -->
-        <div style="margin-bottom: 32px;">
-            <input type="text" id="searchInput" placeholder="Search Markets / Shards / Events..." 
-                   style="background: #111b1d; border: 1px solid var(--border-dim); color: white; width: 100%; border-radius: 4px; padding: 14px 20px; outline: none; font-size: 14px;">
+    <section class="stats-bar">
+        <div class="stat-box">
+            <span class="stat-label">MARKETS TRACKED</span>
+            <span class="stat-val" id="market-count">--</span>
         </div>
+        <div class="stat-box">
+            <span class="stat-label">24h ALPHA FLOW</span>
+            <span class="stat-val" id="flow-val">--</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">NETWORK NODE</span>
+            <span class="stat-val active-val">polyedgeapp.xyz</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">LATENCY</span>
+            <span class="stat-val active-val">2ms</span>
+        </div>
+    </section>
 
-        <!-- DASHBOARD ROOT -->
-        <section id="market-grid" class="market-grid">
-            <!-- JavaScript will inject cards here -->
-        </section>
+    <div class="search-sector">
+        <input type="text" class="search-input" id="shardSearch" placeholder="Search Markets / Shards / Events...">
+    </div>
+
+    <main class="market-list" id="shard-grid">
+        <!-- Dashboard content will load here -->
+        <div class="empty-state" id="boot-loader">INITIALIZING SECURE NODE SHARD...</div>
     </main>
 
     <script src="app.js"></script>
     <script>
-        // Tab switching logic for interactive navigation
-        function switchTab(el) {
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        function navSwitch(el) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             el.classList.add('active');
         }
     </script>
