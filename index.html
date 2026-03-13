@@ -3,133 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyAlpha | Quant Terminal</title>
+    <title>PolyEdge PRO | Quant Analytics</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="premium-theme">
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="logo-area">
-                <div class="logo-icon">α</div>
-                <div class="logo-text">PolyAlpha<span>PRO</span></div>
+<body>
+    <div class="terminal-container">
+        <!-- HEADER -->
+        <header>
+            <div class="brand-sector">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
+                    <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="black"/>
+                </svg>
+                PolyEdge <span class="v-tag">PRO QUANT</span>
             </div>
-            <nav class="side-nav">
-                <div class="nav-group-label">Analysis</div>
-                <a href="#" class="nav-link active" data-view="dashboard">
-                    <span class="icon">📊</span> Dashboard
-                </a>
-                <a href="#" class="nav-link" data-view="scanner">
-                    <span class="icon">🔍</span> Signal Scanner
-                </a>
-                <a href="#" class="nav-link" data-view="history">
-                    <span class="icon">📜</span> Trade History
-                </a>
-                
-                <div class="nav-group-label">System</div>
-                <a href="#" class="nav-link" data-view="api">
-                    <span class="icon">🔑</span> API Config
-                </a>
+            
+            <nav class="nav-sector">
+                <div class="nav-item active" data-tab="analytics">Analytics</div>
+                <div class="nav-item" data-tab="markets">Markets</div>
+                <div class="nav-item" data-tab="scanner">Scanner</div>
+                <div class="nav-item" data-tab="arbitrage">Arbitrage</div>
             </nav>
-            <div class="user-profile">
-                <div class="status-indicator">
-                    <div class="pulse"></div> Live Data
+
+            <div class="header-actions">
+                <div class="icon-btn">𝕏</div>
+                <div class="icon-btn">☀️</div>
+                <div class="time-zone-group">
+                    <div class="tz-box"><div class="tz-label">NYC</div><div class="tz-val" id="time-nyc">08:00</div></div>
+                    <div class="tz-box"><div class="tz-label">LDN</div><div class="tz-val" id="time-ldn">13:00</div></div>
+                    <div class="tz-box"><div class="tz-label">TKO</div><div class="tz-val" id="time-tko">22:00</div></div>
                 </div>
+            </div>
+        </header>
+
+        <!-- LEFT SIDEBAR: ALPHA SCANNER -->
+        <aside class="sidebar">
+            <span class="section-label">Alpha Scanner</span>
+            <div id="alpha-list">
+                <div style="padding:20px; text-align:center; font-size:11px; color:var(--text-dim);">SYNCING QUANT NODES...</div>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="top-bar">
-                <div class="search-bar">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="marketSearch" placeholder="Search markets for mispricing signals...">
+        <!-- MAIN TERMINAL -->
+        <main>
+            <!-- GLOBAL QUANT STATS -->
+            <div class="quant-card stats-grid">
+                <div class="metric-box">
+                    <span class="m-label">Analyzed Trades</span>
+                    <span class="m-val" id="trades-count">100k+</span>
                 </div>
-                <div class="top-actions">
-                    <div class="metric-mini">
-                        <span class="label">VOL 24H</span>
-                        <span class="value" id="totalVol">$0.00</span>
-                    </div>
-                    <div class="metric-mini">
-                        <span class="label">SYMBOLS</span>
-                        <span class="value" id="marketCount">0</span>
-                    </div>
-                    <button class="btn-primary" id="refreshBtn">Refresh Data</button>
+                <div class="metric-box">
+                    <span class="m-label">OB Imbalance</span>
+                    <span class="m-val" id="global-imb" style="color:var(--accent-green)">+0.42</span>
                 </div>
-            </header>
+                <div class="metric-box">
+                    <span class="m-label">Alpha Detected</span>
+                    <span class="m-val" id="alpha-rate" style="color:var(--accent-red)">12.4%</span>
+                </div>
+                <div class="metric-box">
+                    <span class="m-label">Avg Spread</span>
+                    <span class="m-val" id="avg-spread">0.02¢</span>
+                </div>
+            </div>
 
-            <div class="content-body" id="viewContainer">
-                <!-- Dashboard View -->
-                <div class="view" id="dashboardView">
-                    <div class="dashboard-grid">
-                        <!-- Market Selector -->
-                        <div class="grid-col-1 panel market-selector">
-                            <div class="panel-header">
-                                <h3>Active Markets</h3>
-                                <div class="badge">TOP LIQUIDITY</div>
-                            </div>
-                            <div class="market-list" id="marketList">
-                                <!-- Loaded via JS -->
-                                <div class="loading-state">Initializing Quant Engine...</div>
-                            </div>
-                        </div>
+            <!-- PRIMARY ANALYTICS -->
+            <div class="quant-card">
+                <span class="section-label">Post-Trade Probability Response (Event Study)</span>
+                <div class="chart-wrap">
+                    <canvas id="driftChart"></canvas>
+                </div>
+            </div>
 
-                        <!-- Analysis View -->
-                        <div class="grid-col-2">
-                            <div class="stats-row">
-                                <div class="panel stat-card">
-                                    <span class="stat-label">Sign: Signed Trade Flow</span>
-                                    <span class="stat-value" id="signal-flow">0.00</span>
-                                    <div class="stat-desc">Accumulated net flow of trade size</div>
-                                </div>
-                                <div class="panel stat-card">
-                                    <span class="stat-label">Ω: Order Book Imbalance</span>
-                                    <span class="stat-value" id="signal-imbalance">0.0%</span>
-                                    <div class="stat-desc">Supply vs Demand at top of book</div>
-                                </div>
-                                <div class="panel stat-card accent-green">
-                                    <span class="stat-label">α: Calibration Gap</span>
-                                    <span class="stat-value" id="signal-gap">0.0%</span>
-                                    <div class="stat-desc">Implied vs Realized event probability</div>
-                                </div>
-                            </div>
-
-                            <div class="charts-grid">
-                                <div class="panel chart-panel">
-                                    <div class="panel-header">
-                                        <h4>Price Impact vs Post-Trade Drift (Δp)</h4>
-                                        <div class="tooltip-trigger">ℹ️</div>
-                                    </div>
-                                    <div class="chart-wrapper">
-                                        <canvas id="driftChart"></canvas>
-                                    </div>
-                                </div>
-                                <div class="panel chart-panel">
-                                    <div class="panel-header">
-                                        <h4>Liquidity Regime & Spread Analaysis</h4>
-                                    </div>
-                                    <div class="chart-wrapper">
-                                        <canvas id="liquidityChart"></canvas>
-                                    </div>
-                                </div>
-                                <div class="panel chart-panel wide">
-                                    <div class="panel-header">
-                                        <h4>Quant Signal Heatmap (Z-Scores)</h4>
-                                    </div>
-                                    <div class="chart-wrapper">
-                                        <canvas id="zscoreChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <!-- SECONDARY METRICS -->
+            <div class="sub-grid">
+                <div class="quant-card">
+                    <span class="section-label">Signal Strength Z-Scores</span>
+                    <div id="zscore-bars" style="margin-top:20px;">
+                        <!-- Logic bars injected here -->
+                    </div>
+                </div>
+                <div class="quant-card">
+                    <span class="section-label">Market Calibration Gap</span>
+                    <div class="chart-wrap" style="height:200px;">
+                        <canvas id="calibrationChart"></canvas>
                     </div>
                 </div>
             </div>
         </main>
+
+        <!-- RIGHT SIDEBAR: LIVE FLOW -->
+        <aside class="sidebar sidebar-right">
+            <span class="section-label">Live Signed Flow</span>
+            <div id="flow-log" class="flow-log">
+                <!-- Live trades with imbalance metrics -->
+            </div>
+        </aside>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
