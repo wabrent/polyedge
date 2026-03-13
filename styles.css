@@ -153,3 +153,80 @@ body {
 .scanner-row { display: grid; grid-template-columns: 50px 1fr 120px 120px 120px; padding: 16px; border-bottom: 1px solid var(--border-line); align-items: center; }
 .scanner-row:last-child { border-bottom: none; }
 .scanner-row.header { background: #f8fafc; font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
+
+/* QUANT TERMINAL */
+.terminal-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    height: calc(100vh - 200px);
+}
+
+.terminal-sidebar {
+    background: #fff;
+    border: 1px solid var(--border-line);
+    border-radius: 12px;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.terminal-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 20px;
+}
+
+.chart-card {
+    background: #fff;
+    border: 1px solid var(--border-line);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    display: flex;
+    justify-content: space-between;
+}
+
+.chart-container {
+    flex-grow: 1;
+    position: relative;
+    min-height: 200px;
+}
+
+.market-mini-card {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-line);
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.market-mini-card:hover {
+    background: #f1f5f9;
+}
+
+.market-mini-card.active {
+    border-color: var(--accent-blue);
+    background: #eff6ff;
+}
+
+.mini-q {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.mini-stats {
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
