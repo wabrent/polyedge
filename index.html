@@ -10,18 +10,30 @@
 </head>
 <body>
     <div class="terminal-container">
-        <!-- HEADER -->
+        <!-- HEADER: PolyEdge Pro Branding -->
         <header>
             <div class="logo-area">
-                <svg viewBox="0 0 100 100" style="width:24px; height:24px; fill:var(--accent-blue);">
-                    <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z"/>
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
+                    <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z" fill="black"/>
                 </svg>
-                POLYALPHA <span class="v-tag">QUANT v1.0</span>
+                PolyEdge <span class="v-tag">PRO QUANT</span>
             </div>
-            <div style="display:flex; gap:20px; font-size:12px; font-weight:700;">
-                <div id="sync-status">NODE SYNC: ONLINE</div>
-                <div id="api-latency">LATENCY: 12ms</div>
-                <div id="nyc-time">NYC: 08:52</div>
+            
+            <nav class="nav-sector">
+                <div class="nav-item active">Analytics</div>
+                <div class="nav-item">Markets</div>
+                <div class="nav-item">Scanner</div>
+                <div class="nav-item">Arbitrage</div>
+            </nav>
+
+            <div class="header-actions">
+                <div class="icon-btn">𝕏</div>
+                <div class="icon-btn">☀️</div>
+                <div class="time-zone-group">
+                    <div class="tz-box"><div class="tz-label">NYC</div><div class="tz-val" id="time-nyc">08:55</div></div>
+                    <div class="tz-box"><div class="tz-label">LDN</div><div class="tz-val" id="time-ldn">13:55</div></div>
+                    <div class="tz-box"><div class="tz-label">TKO</div><div class="tz-val" id="time-tko">22:55</div></div>
+                </div>
             </div>
         </header>
 
