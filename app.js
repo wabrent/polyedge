@@ -1,212 +1,210 @@
 /**
- * PolyEdge Pro Hub Engine v2.0
- * Gamma + CLOB + Data API Integration
+ * POLYEDGE PRO Engine v2.1
+ * Logic Core with Advanced Sync & Forensic Intelligence
  */
 
 const CONFIG = {
     GAMMA_API: 'https://gamma-api.polymarket.com',
-    CLOB_API: 'https://clob.polymarket.com',
     DATA_API: 'https://data-api.polymarket.com',
-    REFRESH_RATE: 30000 // 30s
+    REFRESH_RATE: 45000, // 45s cycle
+    USER_AGENT: 'PolyEdgePro/2.1 (graanit.eth)'
 };
 
 const UI = {
-    container: document.getElementById('markets-container'),
-    whales: document.getElementById('whales-container'),
-    category: document.getElementById('category-filter'),
-    search: document.getElementById('search-input'),
-    sortBy: document.getElementById('sort-by'),
+    marketsGrid: document.getElementById('markets'),
+    whalesGrid: document.getElementById('whales'),
+    errorMsg: document.getElementById('error-msg'),
+    search: document.getElementById('search'),
+    category: document.getElementById('category'),
+    sort: document.getElementById('sort'),
     limit: document.getElementById('limit'),
     themeToggle: document.getElementById('theme-toggle'),
     themeIcon: document.getElementById('theme-icon')
 };
 
-let state = {
-    tags: [],
-    loading: false
-};
-
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
-    loadTags();
-    refreshLoop();
+    loadCategories();
+    startSync();
     attachListeners();
 });
 
 function attachListeners() {
-    [UI.category, UI.sortBy, UI.limit].forEach(el => el.addEventListener('change', fetchMarkets));
-    UI.search.addEventListener('input', debounce(fetchMarkets, 500));
+    const debouncedLoad = debounce(() => loadMarkets(), 400);
+    UI.search.addEventListener('input', debouncedLoad);
+    UI.category.addEventListener('change', loadMarkets);
+    UI.sort.addEventListener('change', loadMarkets);
+    UI.limit.addEventListener('change', loadMarkets);
 }
 
-function refreshLoop() {
-    fetchMarkets();
-    fetchWhales();
+function startSync() {
+    loadMarkets();
+    loadWhales();
     setInterval(() => {
-        fetchMarkets();
-        fetchWhales();
+        loadMarkets();
+        loadWhales();
     }, CONFIG.REFRESH_RATE);
 }
 
-// --- THEME LOGIC ---
+// --- THEME ---
 function initTheme() {
-    UI.themeToggle.onclick = () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        UI.themeIcon.className = next === 'dark' ? 'fas fa-moon text-polymarket text-xl' : 'fas fa-sun text-polymarket text-xl';
-    };
+    UI.themeToggle.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        UI.themeIcon.className = isDark 
+            ? 'fas fa-moon text-polymarket text-xl' 
+            : 'fas fa-sun text-yellow-400 text-xl';
+    });
 }
 
-// --- DATA FETCHING ---
-async function loadTags() {
+// --- API ACTIONS ---
+async function fetchWithHeaders(url) {
+    try {
+        const response = await fetch(url, {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        return response;
+    } catch (e) {
+        console.warn(`Fetch failure at ${url}:`, e);
+        throw e;
+    }
+}
+
+async function loadCategories() {
     try {
         const res = await fetch(`${CONFIG.GAMMA_API}/tags`);
         const tags = await res.json();
-        tags.sort((a, b) => b.followers - a.followers).slice(0, 30).forEach(tag => {
-            const opt = document.createElement('option');
-            opt.value = tag.id;
-            opt.textContent = tag.name;
-            UI.category.appendChild(opt);
+        tags.sort((a,b) => (b.followers || 0) - (a.followers || 0)).forEach(tag => {
+            if (tag.name && tag.id) {
+                const opt = document.createElement('option');
+                opt.value = tag.id;
+                opt.textContent = tag.name;
+                UI.category.appendChild(opt);
+            }
         });
-    } catch (err) { console.error('Tags logic failure:', err); }
+    } catch (e) { console.warn("Category sync failed."); }
 }
 
-async function fetchMarkets() {
-    if (state.loading) return;
-    state.loading = true;
-    
-    UI.container.innerHTML = `
-        <div class="col-span-full py-20 text-center">
+async function loadMarkets() {
+    UI.marketsGrid.innerHTML = `
+        <div class="col-span-full text-center py-20">
             <i class="fas fa-spinner fa-spin text-4xl text-polymarket mb-4"></i>
-            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">Syncing with Gamma Shard...</p>
+            <p class="text-xs font-black uppercase text-gray-500 tracking-widest">Synchronizing Shards...</p>
         </div>
     `;
+    UI.errorMsg.classList.add('hidden');
 
     try {
-        const limit = UI.limit.value || 15;
-        const tagId = UI.category.value ? `&tag_id=${UI.category.value}` : '';
-        const order = UI.sortBy.value || 'volume';
-        const url = `${CONFIG.GAMMA_API}/markets?active=true&closed=false&limit=${limit}&order=${order}&ascending=false${tagId}`;
-        
-        const res = await fetch(url);
+        let url = `${CONFIG.GAMMA_API}/markets?active=true&closed=false&limit=${UI.limit.value || 20}&order=${UI.sort.value || 'volume'}&ascending=false`;
+        if (UI.category.value) url += `&tag_id=${UI.category.value}`;
+
+        const res = await fetchWithHeaders(url);
         let markets = await res.json();
 
         // Search Filter (Client-side)
-        const q = UI.search.value.toLowerCase();
-        if (q) markets = markets.filter(m => m.question.toLowerCase().includes(q));
+        const q = UI.search.value.toLowerCase().trim();
+        if (q) markets = markets.filter(m => m.question?.toLowerCase().includes(q));
 
-        UI.container.innerHTML = '';
-        
-        for (const [index, m] of markets.entries()) {
+        UI.marketsGrid.innerHTML = '';
+        if (markets.length === 0) {
+            UI.marketsGrid.innerHTML = '<p class="col-span-full text-center py-20 text-gray-500 italic">No markets detected in this shard.</p>';
+            return;
+        }
+
+        markets.forEach((m, idx) => {
             let outcomesHtml = '';
             
-            // Build Outcome Bars with CLOB Real-time Prices
-            if (m.clobTokenIds && m.clobTokenIds.length) {
-                try {
-                    const priceRes = await fetch(`${CONFIG.CLOB_API}/prices?token_id=${m.clobTokenIds.join('&token_id=')}`);
-                    const prices = await priceRes.json();
-                    
-                    m.outcomes.forEach((outcome, i) => {
-                        const tokenId = m.clobTokenIds[i];
-                        const price = prices[tokenId] ? (parseFloat(prices[tokenId].midpoint) * 100).toFixed(1) : '50.0';
-                        const color = i === 0 ? 'bg-yes' : 'bg-no';
-                        
-                        outcomesHtml += `
-                            <div class="mb-4">
-                                <div class="flex justify-between text-xs font-black uppercase mb-1">
-                                    <span class="text-gray-400">${outcome}</span>
-                                    <span class="${i === 0 ? 'text-yes' : 'text-no'}">${price}%</span>
-                                </div>
-                                <div class="outcome-bar-container">
-                                    <div class="outcome-bar ${color}" style="width: ${price}%"></div>
-                                </div>
+            // Handle outcome visualization
+            if (m.outcomePrices && m.outcomePrices.length >= 2) {
+                const colors = ['bg-green-500', 'bg-red-500', 'bg-polymarket', 'bg-blue-500'];
+                
+                m.outcomes.forEach((name, i) => {
+                    const prob = (parseFloat(m.outcomePrices[i]) * 100).toFixed(0);
+                    const color = colors[i] || 'bg-gray-500';
+                    outcomesHtml += `
+                        <div class="mb-4">
+                            <div class="flex justify-between text-[10px] font-black uppercase mb-1">
+                                <span class="text-gray-400">${name}</span>
+                                <span class="text-white">${prob}%</span>
                             </div>
-                        `;
-                    });
-                } catch (e) { outcomesHtml = '<p class="text-xs text-gray-600 italic">Pricing node unreachable</p>'; }
+                            <div class="progress-container">
+                                <div class="progress-bar ${color}" style="width: ${prob}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
             } else {
-                outcomesHtml = '<p class="text-xs text-gray-600 italic">No CLOB data available</p>';
+                outcomesHtml = '<p class="text-xs text-gray-600 italic py-4">Forensic data restricted</p>';
             }
 
             const card = document.createElement('div');
-            card.className = 'card animate-fade-in';
-            card.style.animationDelay = `${index * 0.05}s`;
+            card.className = 'card p-6 animate-fade-in group';
+            card.style.animationDelay = `${idx * 0.05}s`;
+            
             card.innerHTML = `
-                <div class="flex items-center gap-2 mb-4">
-                    <span class="text-[9px] font-black text-polymarket bg-polymarket/10 px-2 py-0.5 rounded italic">LIVE</span>
-                    <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest">${m.category || 'Event'}</span>
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-[9px] font-black text-polymarket bg-polymarket/10 px-2 py-0.5 rounded italic">SHARD: ${m.category || 'SEC'}</span>
+                    <i class="fas fa-ellipsis-h text-gray-700"></i>
                 </div>
-                <h3 class="text-lg font-bold mb-4 line-clamp-2 leading-tight italic">
-                    ${m.question}
+                <h3 class="text-xl font-bold line-clamp-2 mb-6 italic leading-snug group-hover:text-polymarket-light transition-colors">
+                    ${m.question || 'Market Intelligence'}
                 </h3>
-                <div class="flex justify-between items-end mb-6 border-b border-white/5 pb-4">
-                    <div class="text-left">
-                        <p class="text-[8px] font-black text-gray-500 uppercase mb-0.5">Volume</p>
-                        <p class="text-sm font-black text-white">$${formatCompact(m.volume)}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[8px] font-black text-gray-500 uppercase mb-0.5">Liquidity</p>
-                        <p class="text-sm font-black text-white">$${formatCompact(m.liquidity)}</p>
-                    </div>
+                <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6 border-b border-white/5 pb-4">
+                    <span>Vol $${formatCompact(m.volume)}</span>
+                    <span class="text-right">Liq $${formatCompact(m.liquidity)}</span>
                 </div>
                 <div class="space-y-1">
                     ${outcomesHtml}
                 </div>
-                <a href="https://polymarket.com/event/${m.slug}" target="_blank" class="mt-6 flex items-center justify-between w-full py-3 px-4 bg-gray-800/50 hover:bg-polymarket rounded-xl transition-all group">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white">Analyze on Terminal</span>
-                    <i class="fas fa-arrow-right text-[10px] text-polymarket group-hover:text-white"></i>
+                <a href="https://polymarket.com/event/${m.slug}" target="_blank" class="mt-8 flex items-center justify-between w-full py-4 px-5 bg-gray-800/40 hover:bg-polymarket rounded-2xl transition-all active:scale-95 group">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white">Trade Protocol</span>
+                    <i class="fas fa-arrow-right text-polymarket group-hover:translate-x-1 group-hover:text-white transition-all"></i>
                 </a>
             `;
-            UI.container.appendChild(card);
-        }
+            UI.marketsGrid.appendChild(card);
+        });
     } catch (err) {
-        UI.container.innerHTML = `<div class="col-span-full p-10 bg-red-500/10 rounded-3xl border border-red-500/20 text-center text-red-400 font-bold italic">Critical Sync Error: ${err.message}</div>`;
-    } finally {
-        state.loading = false;
+        UI.marketsGrid.innerHTML = '';
+        UI.errorMsg.classList.remove('hidden');
     }
 }
 
-async function fetchWhales() {
-    UI.whales.innerHTML = `<div class="col-span-full py-10 text-center animate-pulse"><p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Scanning whale movement...</p></div>`;
-    
+async function loadWhales() {
+    UI.whalesGrid.innerHTML = '<div class="col-span-full py-12 text-center animate-pulse"><i class="fas fa-spinner fa-spin text-polymarket"></i></div>';
     try {
-        const res = await fetch(`${CONFIG.DATA_API}/leaderboard?limit=3&order=profit&ascending=false`);
-        const whales = await res.json();
-        UI.whales.innerHTML = '';
-        
-        whales.forEach((w, i) => {
+        const res = await fetchWithHeaders(`${CONFIG.DATA_API}/leaderboard?limit=3&order=profit&ascending=false`);
+        const data = await res.json();
+        UI.whalesGrid.innerHTML = '';
+        data.forEach((w, i) => {
             const card = document.createElement('div');
-            card.className = 'card animate-fade-in group hover:bg-polymarket/5';
+            card.className = 'card p-8 hover:bg-polymarket/5 transition-all duration-500';
             card.style.animationDelay = `${i * 0.1}s`;
             card.innerHTML = `
                 <div class="flex items-center gap-4 mb-6">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-polymarket to-indigo-600 flex items-center justify-center font-black text-white italic text-xl shadow-lg">
-                        ${(w.user || 'A').charAt(0).toUpperCase()}
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-polymarket to-indigo-900 flex items-center justify-center shadow-xl">
+                        <i class="fas fa-whale text-white text-2xl"></i>
                     </div>
-                    <div>
-                        <h3 class="text-sm font-black uppercase tracking-tight truncate max-w-[150px]">${w.user || 'Anon Whale'}</h3>
-                        <p class="text-[9px] font-bold text-gray-500 font-mono">${w.address.slice(0, 6)}...${w.address.slice(-4)}</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-black/20 p-3 rounded-xl border border-white/5">
-                        <p class="text-[8px] font-black text-gray-500 uppercase mb-1">Total Profit</p>
-                        <p class="text-lg font-black text-yes">+$${formatCompact(w.profit)}</p>
-                    </div>
-                    <div class="bg-black/20 p-3 rounded-xl border border-white/5">
-                        <p class="text-[8px] font-black text-gray-500 uppercase mb-1">Trades</p>
-                        <p class="text-lg font-black text-white">${w.trades}</p>
+                    <div class="min-w-0">
+                        <div class="font-black italic uppercase tracking-tight truncate text-lg">${w.user || w.address?.slice(0,8)+'...'}</div>
+                        <div class="text-[10px] text-gray-500 font-mono">${w.address?.slice(0,10)}...</div>
                     </div>
                 </div>
-                <a href="https://polymarket.com/profile/${w.address}" target="_blank" class="block text-center py-2 text-[10px] font-black uppercase tracking-widest text-polymarket hover:text-white transition-colors">
-                    View Forensic Profile →
-                </a>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-black/30 p-4 rounded-2xl border border-white/5">
+                        <p class="text-[9px] font-black text-gray-500 uppercase mb-1">Session PnL</p>
+                        <div class="text-green-400 text-xl font-black italic">+$${formatCompact(w.profit)}</div>
+                    </div>
+                    <div class="bg-black/30 p-4 rounded-2xl border border-white/5 text-right">
+                        <p class="text-[9px] font-black text-gray-500 uppercase mb-1">Execution</p>
+                        <div class="text-white text-xl font-black italic">${w.trades || '?'}</div>
+                    </div>
+                </div>
             `;
-            UI.whales.appendChild(card);
+            UI.whalesGrid.appendChild(card);
         });
-    } catch (err) {
-        UI.whales.innerHTML = `<p class="col-span-full text-center text-gray-600 italic">Whale data currently unavailable</p>`;
+    } catch {
+        UI.whalesGrid.innerHTML = '<p class="col-span-full text-center py-20 text-gray-600 italic">Whale forensics node restricted (Geo/Rate Limit)</p>';
     }
 }
 
