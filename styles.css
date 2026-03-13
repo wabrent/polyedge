@@ -1,0 +1,210 @@
+/* PolyEdge Design v5.0 */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --bg-main: #0a1214;
+    --bg-card: #111b1d;
+    --bg-hover: #182025;
+    --acc-cyan: #85e0dc;
+    --text-dim: rgba(255, 255, 255, 0.45);
+    --border-line: rgba(255, 255, 255, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--bg-main);
+    color: #ffffff;
+    font-family: 'Instrument Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+/* HEADER */
+.header-node {
+    height: 54px;
+    border-bottom: 0.5px solid var(--border-line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--bg-main);
+}
+
+.brand-sector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-icon-wrapper {
+    width: 24px;
+    height: 24px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.brand-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.brand-name {
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.2px;
+}
+
+.nav-sector {
+    display: flex;
+    gap: 22px;
+    height: 100%;
+}
+
+.nav-item {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    height: 100%;
+    cursor: pointer;
+    transition: color 0.1s;
+    position: relative;
+    text-transform: uppercase;
+}
+
+.nav-item.active {
+    color: var(--acc-cyan);
+}
+
+.nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--acc-cyan);
+    box-shadow: 0 0 10px var(--acc-cyan);
+}
+
+.nav-item:hover:not(.active) { color: #fff; }
+
+.connect-btn {
+    border: 1px solid var(--border-line);
+    background: transparent;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.connect-btn:hover { border-color: var(--acc-cyan); color: var(--acc-cyan); }
+
+/* STATS BAR */
+.stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 0.5px solid var(--border-line);
+}
+
+.stat-box {
+    padding: 18px 24px;
+    border-right: 0.5px solid var(--border-line);
+}
+
+.stat-box:last-child { border-right: none; }
+
+.stat-label {
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.stat-val {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text-dim);
+}
+
+.stat-val.active-val {
+    color: var(--acc-cyan);
+}
+
+/* SEARCH */
+.search-sector {
+    padding: 24px;
+}
+
+.search-input {
+    width: 100%;
+    background: #111b1d;
+    border: 1px solid var(--border-line);
+    padding: 14px 20px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.search-input:focus { border-color: rgba(133, 224, 220, 0.4); background: #141e21; }
+
+/* MARKET ELEMENTS */
+.market-list { padding: 0 24px 40px 24px; }
+
+.buy-btn {
+    padding: 10px 18px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 12px;
+    min-width: 90px;
+    text-align: center;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.buy-btn:active { transform: scale(0.97); }
+
+.buy-btn.yes { background: var(--acc-cyan); color: #000; }
+.buy-btn.no { 
+    background: #1c262b; 
+    color: #fff; 
+    border: 0.5px solid rgba(255,255,255,0.1); 
+}
+
+.empty-state {
+    text-align: center;
+    padding-top: 100px;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--acc-cyan); }
