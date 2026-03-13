@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PolyEdge | Pro Intelligence Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=1.1">
 </head>
 <body class="min-h-screen pb-20 bg-[#F9FAFB]">
 
@@ -13,7 +13,6 @@
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50 px-4 md:px-8 h-16 flex items-center justify-between">
         <div class="flex items-center gap-10">
             <div class="flex items-center gap-3 font-black text-xl tracking-tighter italic">
-                <!-- EMBEDDED LOGO (SVG version of the 'P' logo) -->
                 <div class="w-8 h-8 bg-black flex items-center justify-center rounded-lg shadow-lg">
                     <svg viewBox="0 0 100 100" class="w-5 h-5 text-white fill-current">
                         <path d="M20 20 L80 20 L80 50 L50 50 L50 80 L20 80 Z" />
@@ -23,10 +22,10 @@
             </div>
             <nav class="hidden md:flex items-center gap-8 text-sm font-bold text-gray-400">
                 <a href="#" class="text-blue-600 border-b-2 border-blue-600 h-16 flex items-center">Markets</a>
-                <a href="#" class="hover:text-gray-900 transition">Watchlist</a>
-                <a href="#" class="hover:text-gray-900 transition">Scanner</a>
-                <a href="#" class="hover:text-gray-900 transition">Arbitrage</a>
-                <a href="#" class="hover:text-gray-900 transition">Simulator</a>
+                <a href="#" class="hover:text-gray-900 transition font-bold">Watchlist</a>
+                <a href="#" class="hover:text-gray-900 transition font-bold">Scanner</a>
+                <a href="#" class="hover:text-gray-900 transition font-bold">Arbitrage</a>
+                <a href="#" class="hover:text-gray-900 transition font-bold">Simulator</a>
             </nav>
         </div>
 
@@ -40,15 +39,15 @@
             <div class="flex gap-4 border-l border-gray-100 pl-4 items-center">
                 <div class="text-right">
                     <div class="text-[8px] font-black text-gray-400 uppercase tracking-widest">NYC</div>
-                    <div class="text-[12px] font-black" id="clock-nyc">00:00</div>
+                    <div class="text-[12px] font-black" id="clock-nyc">--:--</div>
                 </div>
                 <div class="text-right">
                     <div class="text-[8px] font-black text-gray-400 uppercase tracking-widest">LDN</div>
-                    <div class="text-[12px] font-black" id="clock-ldn">00:00</div>
+                    <div class="text-[12px] font-black" id="clock-ldn">--:--</div>
                 </div>
                 <div class="text-right">
                     <div class="text-[8px] font-black text-gray-400 uppercase tracking-widest">TKO</div>
-                    <div class="text-[12px] font-black" id="clock-tko">00:00</div>
+                    <div class="text-[12px] font-black" id="clock-tko">--:--</div>
                 </div>
             </div>
         </div>
@@ -58,19 +57,19 @@
         <!-- HERO STATS -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <div class="stat-card">
-                <div class="text-3xl font-black mb-1" id="stat-markets">60</div>
+                <div class="text-3xl font-black mb-1" id="stat-markets">...</div>
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Markets</div>
             </div>
             <div class="stat-card">
-                <div class="text-3xl font-black mb-1" id="stat-vol">$79.5M</div>
+                <div class="text-3xl font-black mb-1" id="stat-vol">...</div>
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">24h Volume</div>
             </div>
             <div class="stat-card">
-                <div class="text-3xl font-black mb-1" id="stat-opps">52</div>
+                <div class="text-3xl font-black mb-1" id="stat-opps">...</div>
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Opportunities</div>
             </div>
             <div class="stat-card">
-                <div class="text-3xl font-black mb-1">2000x</div>
+                <div class="text-3xl font-black mb-1">...</div>
                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Best ROI</div>
             </div>
         </div>
@@ -84,7 +83,7 @@
                            class="w-full bg-gray-100 border border-transparent focus:bg-white focus:border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none transition-all font-medium">
                 </div>
             </div>
-            <div class="flex gap-2 w-full md:w-auto">
+            <div class="flex gap-2 w-full md:w-auto font-bold">
                 <select id="category" class="bg-gray-100 border border-gray-200 rounded-lg px-4 py-2.5 text-[11px] font-black uppercase outline-none cursor-pointer">
                     <option value="">All Categories</option>
                 </select>
@@ -97,16 +96,27 @@
             </div>
         </div>
 
+        <!-- REFRESH STATUS -->
+        <div id="status-bar" class="mb-4 text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em] flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            Live Intelligence Stream v15.4
+        </div>
+
         <!-- MARKET GRID -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="marketGrid">
             <!-- Loading State -->
-            <div class="col-span-full py-32 text-center" id="loading-state">
+            <div class="col-span-full py-40 text-center" id="loading-state">
                 <div class="inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <p class="mt-4 text-xs font-black text-gray-400 uppercase tracking-widest">Syncing Intelligence...</p>
+                <p class="mt-4 text-[11px] font-black text-gray-400 uppercase tracking-widest">Establishing secure node connection...</p>
             </div>
         </div>
     </main>
 
-    <script src="app.js"></script>
+    <!-- Force reload by adding timestamp -->
+    <script>
+        const script = document.createElement('script');
+        script.src = 'app.js?t=' + new Date().getTime();
+        document.body.appendChild(script);
+    </script>
 </body>
 </html>
