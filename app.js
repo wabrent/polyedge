@@ -127,16 +127,16 @@ function renderMain() {
 
     switch(appState.activeTab) {
         case 'TRADE':
-            renderTradeView(grid);
+            renderTradeDesk(grid);
             break;
         case 'STATS':
-            renderStatsView(grid);
+            renderStatsDashboard(grid);
             break;
         case 'COPY':
-            renderStatusMessage(grid, 'Copy Trading Protocol', 'Security audit in progress. Access restricted for 48h.');
+            renderCopyTerminal(grid);
             break;
         case 'LIGHTNING':
-            renderStatusMessage(grid, 'Lightning Integration', 'Establishing P2P node connections. Shard sync: 82%');
+            renderLightningNetwork(grid);
             break;
         default:
             renderTerminal(grid);
@@ -184,43 +184,113 @@ function renderTerminal(container) {
     });
 }
 
-function renderTradeView(container) {
+function renderTradeDesk(container) {
     container.innerHTML = `
-        <div style="padding: 100px 40px; text-align: center; animation: fadeIn 0.5s ease-out;">
-            <div style="font-size: 40px; margin-bottom: 24px;">🛡️</div>
-            <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.5px;">SECURE TRADE EXECUTION</h2>
-            <p style="color: rgba(255,255,255,0.4); font-size: 12px; max-width: 420px; margin: 0 auto; line-height: 1.6;">
-                Direct smart contract validation is currently being synchronized with our decentralized nodes. Live execution will resume upon next block verification.
-            </p>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; animation: fadeIn 0.4s;">
+            <div style="background: var(--bg-card); border-radius: 4px; padding: 20px; border: 0.5px solid var(--border-line);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="font-size: 14px; font-weight: 800;">QUICK EXECUTION PANEL</div>
+                    <div style="font-size: 10px; color: var(--acc-cyan); font-weight: 700;">SLIPPAGE: 0.5%</div>
+                </div>
+                ${appState.markets.slice(0, 5).map(m => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 0.5px solid var(--border-line);">
+                        <div style="font-size: 12px; font-weight: 700; max-width: 60%;">${m.question.substring(0, 45)}...</div>
+                        <div style="display: flex; gap: 6px;">
+                            <input type="number" placeholder="QTY" style="width: 50px; background: #0a1214; border: 0.5px solid var(--border-line); color: #fff; font-size: 10px; padding: 4px;">
+                            <button style="background: var(--acc-cyan); color: #000; border: none; padding: 4px 10px; font-weight: 800; font-size: 10px; border-radius: 2px;">SWAP</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div style="background: var(--bg-card); border-radius: 4px; padding: 20px; border: 0.5px solid var(--border-line);">
+                <div style="font-size: 11px; font-weight: 800; margin-bottom: 12px; color: var(--text-dim);">LIVE ORDER BOOK</div>
+                <div style="font-family: 'Courier New', monospace; font-size: 10px; color: #ff5e5e; margin-bottom: 2px;">SELL 0.8842 - 1.2k</div>
+                <div style="font-family: 'Courier New', monospace; font-size: 10px; color: #ff5e5e; margin-bottom: 2px;">SELL 0.8839 - 2.5k</div>
+                <div style="font-family: 'Courier New', monospace; font-size: 10px; color: #ff5e5e; margin-bottom: 2px;">SELL 0.8835 - 5.1k</div>
+                <div style="font-size: 12px; font-weight: 800; margin: 10px 0; color: #fff;">0.8831</div>
+                <div style="font-family: 'Courier New', monospace; font-size: 10px; color: #00ff88; margin-bottom: 2px;">BUY 0.8829 - 8.4k</div>
+                <div style="font-family: 'Courier New', monospace; font-size: 10px; color: #00ff88; margin-bottom: 2px;">BUY 0.8825 - 3.2k</div>
+                <div style="font-family: 'Courier New', monospace; font-size: 10px; color: #00ff88; margin-bottom: 2px;">BUY 0.8821 - 1.1k</div>
+            </div>
         </div>
     `;
 }
 
-function renderStatsView(container) {
+function renderStatsDashboard(container) {
     container.innerHTML = `
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px; animation: fadeIn 0.5s ease-out;">
-            <div style="background: #111b1d; padding: 30px 24px; border-radius: 4px; border: 1px solid var(--border-line);">
-                <span class="stat-label" style="opacity:1; margin-bottom:12px;">Win Probability (Avg)</span>
-                <span class="stat-val active-val" style="font-size: 28px;">68.4%</span>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; animation: fadeIn 0.4s;">
+            <div style="background: var(--bg-card); padding: 24px; border-radius: 4px; border: 0.5px solid var(--border-line);">
+                <span class="stat-label">ALPHA CONFIDENCE</span>
+                <span class="stat-val active-val" style="font-size: 32px;">94.2%</span>
+                <div style="height: 4px; background: rgba(255,255,255,0.05); margin-top: 15px; border-radius: 2px;">
+                    <div style="height: 100%; width: 94%; background: var(--acc-cyan); border-radius: 2px;"></div>
+                </div>
             </div>
-            <div style="background: #111b1d; padding: 30px 24px; border-radius: 4px; border: 1px solid var(--border-line);">
-                <span class="stat-label" style="opacity:1; margin-bottom:12px;">Intelligence Shards</span>
-                <span class="stat-val active-val" style="font-size: 28px;">4,812</span>
+            <div style="background: var(--bg-card); padding: 24px; border-radius: 4px; border: 0.5px solid var(--border-line);">
+                <span class="stat-label">LIQUIDITY DEPTH</span>
+                <span class="stat-val active-val" style="font-size: 32px;">$1.8B</span>
+                <div style="height: 4px; background: rgba(255,255,255,0.05); margin-top: 15px; border-radius: 2px;">
+                    <div style="height: 100%; width: 78%; background: var(--acc-cyan); border-radius: 2px;"></div>
+                </div>
             </div>
-            <div style="background: #111b1d; padding: 30px 24px; border-radius: 4px; border: 1px solid var(--border-line);">
-                <span class="stat-label" style="opacity:1; margin-bottom:12px;">Global Flow (24h)</span>
-                <span class="stat-val active-val" style="font-size: 28px;">$2.4B</span>
+            <div style="background: var(--bg-card); padding: 24px; border-radius: 4px; border: 0.5px solid var(--border-line);">
+                <span class="stat-label">NETWORK NODES</span>
+                <span class="stat-val active-val" style="font-size: 32px;">4,812</span>
+                <div style="height: 4px; background: rgba(255,255,255,0.05); margin-top: 15px; border-radius: 2px;">
+                    <div style="height: 100%; width: 62%; background: var(--acc-cyan); border-radius: 2px;"></div>
+                </div>
             </div>
         </div>
     `;
 }
 
-function renderStatusMessage(container, title, msg) {
+function renderCopyTerminal(container) {
+    const traders = [
+        { name: "AlphaForensics", winrate: "82%", pnl: "+14.2k", status: "ONLINE" },
+        { name: "WhaleHunter_X", winrate: "76%", pnl: "+8.5k", status: "TRADING" },
+        { name: "Shadow_M", winrate: "71%", pnl: "+6.1k", status: "ONLINE" },
+        { name: "NodeMaster", winrate: "68%", pnl: "+2.2k", status: "BUSY" }
+    ];
+
     container.innerHTML = `
-        <div style="padding: 100px 40px; text-align: center; animation: fadeIn 0.5s ease-out;">
-            <div style="font-size: 32px; margin-bottom: 20px; color: var(--acc-cyan);">⚡</div>
-            <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">${title}</h2>
-            <p style="color: rgba(255,255,255,0.4); font-size: 11px; font-weight: 600;">${msg}</p>
+        <div style="background: var(--bg-card); border-radius: 4px; border: 0.5px solid var(--border-line); animation: fadeIn 0.4s;">
+            <div style="padding: 15px 20px; border-bottom: 0.5px solid var(--border-line); font-size: 11px; font-weight: 800; color: var(--text-dim);">TOP PERFORMING SHARDS [COPY]</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                    <tr style="text-align: left; background: rgba(255,255,255,0.02);">
+                        <th style="padding: 15px 20px; font-weight: 800; font-size: 10px; color: var(--text-dim);">TRADER NODE</th>
+                        <th style="padding: 15px 20px; font-weight: 800; font-size: 10px; color: var(--text-dim);">WIN RATE</th>
+                        <th style="padding: 15px 20px; font-weight: 800; font-size: 10px; color: var(--text-dim);">PNL (24H)</th>
+                        <th style="padding: 15px 20px; font-weight: 800; font-size: 10px; color: var(--text-dim);">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${traders.map(t => `
+                        <tr style="border-bottom: 0.5px solid var(--border-line);">
+                            <td style="padding: 15px 20px; font-weight: 700;">${t.name}</td>
+                            <td style="padding: 15px 20px; font-weight: 700; color: var(--acc-cyan);">${t.winrate}</td>
+                            <td style="padding: 15px 20px; font-weight: 700; color: #00ff88;">${t.pnl}</td>
+                            <td style="padding: 15px 20px;"><button style="background: transparent; border: 1px solid var(--acc-cyan); color: var(--acc-cyan); padding: 4px 12px; border-radius: 2px; font-size: 10px; font-weight: 800; cursor: pointer;">COPY SHARD</button></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderLightningNetwork(container) {
+    container.innerHTML = `
+        <div style="background: #000; border: 0.5px solid var(--border-line); border-radius: 4px; padding: 20px; font-family: 'Courier New', monospace; height: 350px; overflow-y: auto; animation: fadeIn 0.4s;">
+            <div style="color: var(--acc-cyan); margin-bottom: 10px; font-weight: 800;">[LOG] ESTABLISHING ENCRYPTED P2P TUNNEL...</div>
+            <div style="color: #666; font-size: 11px;">[14:23:01] Connected to node [polyedgeapp.xyz]</div>
+            <div style="color: #666; font-size: 11px;">[14:23:04] Found 14 active alpha streams</div>
+            <div style="color: #666; font-size: 11px;">[14:23:08] Authenticating credentials...</div>
+            <div style="color: var(--acc-cyan); font-size: 11px;">[14:23:10] ACCESS GRANTED. FETCHING ALPHA...</div>
+            <div style="color: #fff; margin-top: 15px; font-size: 11px;">> WHALE DETECTION: 1.2M USDC moving into SHARD-881</div>
+            <div style="color: #fff; font-size: 11px;">> PATTERN ALERT: ROI Spike on [Fed Decisions]</div>
+            <div style="color: #fff; font-size: 11px;">> CROSS-REF: Institutional sentiment shifting to YES on [NVIDIA]</div>
+            <div style="color: #00ff88; font-size: 11px; margin-top: 10px;">> LIVE SYNC COMPLETED [82%]</div>
         </div>
     `;
 }
