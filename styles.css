@@ -1,9 +1,10 @@
-/* PolyEdge v16.5 - Production Accuracy Fix */
+/* PolyEdge Design v5.0 */
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
     --bg-main: #0a1214;
-    --bg-header: #0a1214;
+    --bg-card: #111b1d;
+    --bg-hover: #182025;
     --acc-cyan: #85e0dc;
     --text-dim: rgba(255, 255, 255, 0.45);
     --border-line: rgba(255, 255, 255, 0.08);
@@ -30,29 +31,30 @@ body {
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: var(--bg-header);
+    background: var(--bg-main);
 }
 
 .brand-sector {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
-.brand-icon {
-    width: 20px;
-    height: 20px;
+.brand-icon-wrapper {
+    width: 24px;
+    height: 24px;
     background: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 2px;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
-/* The exact P from polyedgeapp.xyz */
-.icon-p {
-    width: 14px;
-    height: 14px;
+.brand-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .brand-name {
@@ -87,16 +89,17 @@ body {
 .nav-item.active::after {
     content: '';
     position: absolute;
-    bottom: -0.5px;
+    bottom: -1px;
     left: 0;
     width: 100%;
     height: 2px;
     background: var(--acc-cyan);
+    box-shadow: 0 0 10px var(--acc-cyan);
 }
 
 .nav-item:hover:not(.active) { color: #fff; }
 
-.action-sector .connect-btn {
+.connect-btn {
     border: 1px solid var(--border-line);
     background: transparent;
     color: #fff;
@@ -105,10 +108,10 @@ body {
     padding: 6px 14px;
     border-radius: 4px;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 
-.action-sector .connect-btn:hover { border-color: var(--acc-cyan); }
+.connect-btn:hover { border-color: var(--acc-cyan); color: var(--acc-cyan); }
 
 /* STATS BAR */
 .stats-bar {
@@ -136,7 +139,7 @@ body {
 .stat-val {
     font-size: 14px;
     font-weight: 800;
-    color: var(--text-dim); /* Match -- status */
+    color: var(--text-dim);
 }
 
 .stat-val.active-val {
@@ -150,24 +153,39 @@ body {
 
 .search-input {
     width: 100%;
-    background: transparent;
+    background: #111b1d;
     border: 1px solid var(--border-line);
-    padding: 12px 20px;
+    padding: 14px 20px;
     border-radius: 4px;
     color: #fff;
     font-size: 13px;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 
-.search-input:focus { border-color: rgba(133, 224, 220, 0.4); }
+.search-input:focus { border-color: rgba(133, 224, 220, 0.4); background: #141e21; }
 
-/* MARKET LIST (Matches the empty state of live site) */
-.market-list {
-    padding: 0 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+/* MARKET ELEMENTS */
+.market-list { padding: 0 24px 40px 24px; }
+
+.buy-btn {
+    padding: 10px 18px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 12px;
+    min-width: 90px;
+    text-align: center;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.buy-btn:active { transform: scale(0.97); }
+
+.buy-btn.yes { background: var(--acc-cyan); color: #000; }
+.buy-btn.no { 
+    background: #1c262b; 
+    color: #fff; 
+    border: 0.5px solid rgba(255,255,255,0.1); 
 }
 
 .empty-state {
@@ -177,5 +195,16 @@ body {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
 }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--border-line); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--acc-cyan); }
