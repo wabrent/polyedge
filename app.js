@@ -91,39 +91,45 @@ function renderMarkets() {
     container.innerHTML = appState.markets.map(m => `
         <tr class="group">
             <td class="p-4">
-                <div class="m-title truncate" title="${m.question}">${m.question}</div>
+                <div class="m-title truncate clickable-title" onclick="openMarket('${m.slug}')" title="${m.question}">
+                    ${m.question}
+                    <i data-lucide="external-link" class="link-icon"></i>
+                </div>
             </td>
             <td class="p-4" style="text-align:center;">
                 <span class="m-alpha ${Number(m.alpha) > 10 ? 'alpha-high' : ''}">${m.alpha}%</span>
             </td>
             <td class="p-4" style="color:#d1fae5; font-weight:bold;">$${m.volDisplay}</td>
-            <td class="p-4">
+            <td class="p-4 text-center">
                 <div style="color:white; font-style:italic;">${(m.price * 100).toFixed(0)}¢</div>
                 <div style="font-size:9px; color:var(--text-dark);">SPR: ${m.spread}¢</div>
             </td>
             <td class="p-4" style="text-align:right;">
-                <button class="trade-btn">Trade</button>
+                <button class="trade-btn" onclick="openMarket('${m.slug}')">Trade</button>
             </td>
         </tr>
     `).join('');
+    lucide.createIcons();
 }
 
 function startWhaleFlow() {
     const log = document.getElementById('whale-log');
     setInterval(() => {
+        if (appState.markets.length === 0) return;
+        const m = appState.markets[Math.floor(Math.random() * appState.markets.length)];
         const wallet = CONFIG.WALLETS[Math.floor(Math.random() * CONFIG.WALLETS.length)];
-        const asset = CONFIG.ASSETS[Math.floor(Math.random() * CONFIG.ASSETS.length)];
         const amt = (Math.random() * 50 + 5).toFixed(1);
         
         const item = document.createElement('div');
-        item.className = 'flow-item';
+        item.className = 'flow-item clickable-flow';
+        item.onclick = () => openMarket(m.slug);
         item.innerHTML = `
             <div style="display:flex; justify-content:space-between;">
                 <span class="flow-tag">BUY ORDER</span>
                 <span style="color:var(--text-dark); font-size:8px;">${new Date().toLocaleTimeString()}</span>
             </div>
-            <p style="color:rgba(255,255,255,0.8); margin-top:5px;">
-                Wallet <span style="color:white;">${wallet}</span> moved $${amt}k into "${asset}"
+            <p style="color:rgba(255,255,255,0.8); margin-top:5px; line-height:1.2;">
+                Wallet <span style="color:white;">0x${Math.random().toString(16).slice(2, 6)}...</span> moved $${amt}k into "${m.question.substring(0, 30)}..."
             </p>
             <div class="flow-meta">
                 <span>IMB: +0.${Math.floor(Math.random()*40)}</span>
@@ -131,7 +137,7 @@ function startWhaleFlow() {
             </div>
         `;
         log.prepend(item);
-        if (log.children.length > 15) log.lastChild.remove();
+        if (log.children.length > 20) log.lastChild.remove();
     }, 4000);
 }
 
