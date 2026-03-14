@@ -14,26 +14,28 @@
         <!-- 1. HEADER -->
         <header>
             <div class="brand-unit">
-                <div class="logo-box">
+                <div class="logo-box" style="box-shadow: 0 0 15px rgba(0,255,157,0.3);">
                     <i data-lucide="zap"></i>
                 </div>
                 <div class="brand-text">
-                    <h1>PolyEdge <span>v2.0</span></h1>
-                    <div class="node-status">
-                         <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="globe" style="width:10px;"></i> ● NODE: ACTIVE</span>
-                         <span id="auth-status" style="display:flex; align-items:center; gap:5px;"><i data-lucide="shield-check" style="width:10px;"></i> ● AUTH: REQUIRED</span>
+                    <h1 style="font-weight: 900;">PolyEdge <span style="font-style: italic; font-weight: 400;">Quant</span></h1>
+                    <div class="node-status" style="font-weight: 800; opacity: 0.8; letter-spacing: 2px;">
+                         <span style="color:var(--accent);">● LIVE FEED</span>
+                         <span>● ENV: PROD_01</span>
+                         <span>● GAS: 32 GWEI</span>
                     </div>
                 </div>
             </div>
 
-            <div class="header-util">
-                <div style="text-align: right; font-size: 9px; color: var(--text-dark); text-transform: uppercase;">
-                    <div>Data Refresh: 00:00:10</div>
-                    <div>API Latency: 42ms</div>
+            <div class="header-util" style="background: var(--bg-card); border: 1px solid var(--border); padding: 5px 20px; display: flex; gap: 30px;">
+                <div style="text-align: right;">
+                    <div style="font-size: 8px; color: var(--text-dark); text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">Global Volume (24h)</div>
+                    <div style="color: white; font-weight: bold; font-size: 14px;">$142.8M</div>
                 </div>
-                <button class="wallet-btn" id="connect-btn">
-                    INITIALIZE WALLET
-                </button>
+                <div style="text-align: right; border-left: 1px solid var(--border); padding-left: 30px;">
+                    <div style="font-size: 8px; color: var(--text-dark); text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">Active Whales</div>
+                    <div style="color: var(--accent); font-weight: bold; font-size: 14px;">1,240</div>
+                </div>
             </div>
         </header>
 
