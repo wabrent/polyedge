@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 </head>
 <body>
     <div class="terminal-node">
@@ -19,16 +20,16 @@
                 <div class="brand-text">
                     <h1>PolyEdge <span>v2.0</span></h1>
                     <div class="node-status">
-                         <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="globe" style="width:10px;"></i> NODE: ACTIVE</span>
-                         <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="shield-check" style="width:10px;"></i> AUTH: ENCRYPTED</span>
+                         <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="globe" style="width:10px;"></i> ● NODE: ACTIVE</span>
+                         <span id="auth-status" style="display:flex; align-items:center; gap:5px;"><i data-lucide="shield-check" style="width:10px;"></i> ● AUTH: REQUIRED</span>
                     </div>
                 </div>
             </div>
 
             <div class="header-util">
-                <div style="text-align: right; font-size: 9px; color: var(--text-dark);">
-                    <div>DATA REFRESH: <span id="last-update">00:00:00</span></div>
-                    <div>API LATENCY: 42ms</div>
+                <div style="text-align: right; font-size: 9px; color: var(--text-dark); text-transform: uppercase;">
+                    <div>Data Refresh: 00:00:10</div>
+                    <div>API Latency: 42ms</div>
                 </div>
                 <button class="wallet-btn" id="connect-btn">
                     INITIALIZE WALLET
@@ -40,23 +41,27 @@
         <main class="scanner-container">
             <div class="box-header">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <i data-lucide="activity" style="width:14px; color:#34d399;"></i>
+                    <i data-lucide="activity" style="width:14px;"></i>
                     LIVE ALPHA SCANNER
                 </div>
-                <div style="display:flex; gap:15px; color: var(--text-dark); text-decoration: underline; cursor:pointer;">
-                    <span>FILTERS</span>
-                    <span>EXPORT CSV</span>
+                <div style="display:flex; gap:15px; color: var(--text-dark); text-decoration: underline; cursor:pointer; font-size:9px; font-weight:700; text-transform:uppercase;">
+                    <span class="hover-white">Filters</span>
+                    <span class="hover-white">Export CSV</span>
                 </div>
             </div>
 
-            <div style="overflow-y: auto; flex-grow: 1;" class="custom-scroll">
-                <table class="market-table">
+            <div style="overflow-y: auto; flex-grow: 1; border-bottom: 1px solid var(--border);" class="custom-scroll">
+                <div id="api-error" class="hidden" style="padding: 100px; text-align: center; color: #ef4444; font-size: 11px;">
+                    <i data-lucide="alert-circle" style="width:24px; margin: 0 auto 10px;"></i>
+                    <div>API BRIDGE ERROR. CHECK PROXY STATUS.</div>
+                </div>
+                <table class="market-table" id="data-table">
                     <thead>
                         <tr>
-                            <th style="width: 40%;">Market Instance</th>
+                            <th style="width: 45%;">Market Instance</th>
                             <th style="text-align: center;">Alpha Z-Score</th>
-                            <th>Volume</th>
-                            <th>Price / Spread</th>
+                            <th style="text-align: center;">Volume</th>
+                            <th style="text-align: center;">Price / Spread</th>
                             <th style="text-align: right;">Execute</th>
                         </tr>
                     </thead>

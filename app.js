@@ -2,14 +2,14 @@ const CONFIG = {
     API: "https://gamma-api.polymarket.com/markets?active=true&limit=15&order=volume&dir=desc",
     PROXY: "https://api.allorigins.win/raw?url=", // The CORS Bridge
     REFRESH: 10000,
-    WALLETS: ["0x72a...", "0xBC8...", "0x31F...", "0x9E2..."],
-    ASSETS: ["Fed Rate Cut", "BTC hit $120k", "ETH Pectra", "NVDA $4T Cap"]
+    WALLETS: ["0x72a...", "0xBC8...", "0x31F...", "0x9E2..."]
 };
 
 let appState = {
     markets: [],
-    balance: "0.00",
-    connected: false
+    address: null,
+    loading: true,
+    error: false
 };
 
 // --- INITIALIZATION ---
@@ -29,11 +29,13 @@ async function fetchData() {
     try {
         const url = `${CONFIG.PROXY}${encodeURIComponent(CONFIG.API)}`;
         const res = await fetch(url);
+        if(!res.ok) throw new Error("API Bridge Failure");
         const data = await res.json();
         
         appState.markets = data.map(m => ({
             id: m.id,
             question: m.question,
+            slug: m.slug,
             alpha: (Math.random() * 8 + 2).toFixed(1), // Match your template (2-10%)
             volume: m.volume,
             volDisplay: new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(m.volume),
@@ -41,12 +43,18 @@ async function fetchData() {
             price: m.outcomePrices ? JSON.parse(m.outcomePrices)[0] : "0.50"
         }));
 
+        appState.error = false;
         renderMarkets();
-        const lastUpd = document.getElementById('last-update');
-        if (lastUpd) lastUpd.innerText = new Date().toLocaleTimeString();
     } catch (e) {
-        console.error("Sync Error (CORS Breach Attempt):", e);
+        console.error("Fetch Error:", e);
+        appState.error = true;
+        renderMarkets();
     }
+}
+
+function openMarket(slug) {
+    if (!slug) return;
+    window.open(`https://polymarket.com/event/${slug}`, '_blank');
 }
 
 // --- BOT MONITOR ENGINE ---
@@ -64,7 +72,7 @@ function monitorMarkets() {
 
     log("--- PolyEdge Bot: Monitoring Active ---", "var(--text-dark)");
 
-    const ALPHA_THRESHOLD = 10.0;
+    const ALPHA_THRESHOLD = 9.0;
     const VOL_THRESHOLD = 50000;
 
     appState.markets.forEach(m => {
@@ -78,15 +86,25 @@ function monitorMarkets() {
 
 function printSignal(market, alpha, logFn) {
     logFn("SIGNAL DETECTED!", "var(--accent)");
-    logFn(`Market: ${market.question.substring(0, 40)}...`, "#fff");
+    logFn(`Market: ${market.question.substring(0, 35)}...`, "#fff");
     logFn(`Alpha: ${alpha}% | Vol: $${market.volDisplay}`, "#fbbf24");
-    logFn(`Action: Suggested BUY/HOLD`, "var(--accent)");
     logFn(`-----------------------------------`, "var(--text-dark)");
 }
 
 function renderMarkets() {
     const container = document.getElementById('market-rows');
+    const table = document.getElementById('data-table');
+    const errorEl = document.getElementById('api-error');
     if (!container) return;
+
+    if (appState.error) {
+        table.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        return;
+    } else {
+        table.classList.remove('hidden');
+        errorEl.classList.add('hidden');
+    }
 
     container.innerHTML = appState.markets.map(m => `
         <tr class="group">
