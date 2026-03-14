@@ -107,26 +107,56 @@ function renderMarkets() {
     }
 
     container.innerHTML = appState.markets.map(m => `
-        <tr class="group">
-            <td class="p-4">
-                <div class="m-title truncate clickable-title" onclick="openMarket('${m.slug}')" title="${m.question}">
-                    ${m.question}
-                    <i data-lucide="external-link" class="link-icon"></i>
+        <tr class="group border-b border-[#1a2e2e]/30 hover:bg-[#00ff9d]/5 transition-all duration-200">
+            <td class="p-4 cursor-pointer" onclick="openMarket('${m.slug}')">
+                <div class="m-title truncate clickable-title font-bold text-white opacity-80 group-hover:text-[#00ff9d] group-hover:opacity-100" title="${m.question}">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        ${m.question}
+                        <i data-lucide="external-link" class="link-icon"></i>
+                    </div>
                 </div>
             </td>
-            <td class="p-4" style="text-align:center;">
-                <span class="m-alpha ${Number(m.alpha) > 10 ? 'alpha-high' : ''}">${m.alpha}%</span>
-            </td>
-            <td class="p-4" style="color:#d1fae5; font-weight:bold;">$${m.volDisplay}</td>
             <td class="p-4 text-center">
-                <div style="color:white; font-style:italic;">${(m.price * 100).toFixed(0)}¢</div>
-                <div style="font-size:9px; color:var(--text-dark);">SPR: ${m.spread}¢</div>
+                <span class="m-alpha italic font-bold text-[#00ff9d]">${m.alpha}%</span>
+            </td>
+            <td class="p-4 text-center text-[11px] opacity-70" style="font-weight:bold;">$${m.volDisplay}</td>
+            <td class="p-4 text-center">
+                <div style="color:white; font-style:italic; font-weight:bold;">${m.price}¢</div>
+                <div style="font-size:9px; color:var(--text-dark); font-weight:bold; text-transform:uppercase;">SPR: ${m.spread}¢</div>
             </td>
             <td class="p-4" style="text-align:right;">
-                <button class="trade-btn" onclick="openMarket('${m.slug}')">Trade</button>
+                <button class="trade-btn shadow-glow" onclick="openMarket('${m.slug}')">Trade</button>
             </td>
         </tr>
     `).join('');
+    lucide.createIcons();
+}
+
+async function connectWallet() {
+    if (window.ethereum) {
+        try {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            appState.address = await signer.getAddress();
+            updateWalletUI();
+        } catch (e) {
+            console.error("Wallet connection failed", e);
+        }
+    } else {
+        alert("Please install MetaMask or Rabby wallet.");
+    }
+}
+
+function updateWalletUI() {
+    const btn = document.getElementById('connect-btn');
+    const authStatus = document.getElementById('auth-status');
+    if (appState.address) {
+        const shortAddr = `${appState.address.slice(0, 6)}...${appState.address.slice(-4)}`;
+        btn.innerText = shortAddr;
+        btn.classList.add('connected');
+        authStatus.innerHTML = `<i data-lucide="shield-check" style="width:10px; color:var(--accent);"></i> ● AUTH: SECURED`;
+        authStatus.style.color = "var(--accent)";
+    }
     lucide.createIcons();
 }
 
