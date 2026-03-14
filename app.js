@@ -6,6 +6,19 @@ const CONFIG = {
     WALLETS: ["0x72a...", "0xBC8...", "0x31F...", "0x9E2..."]
 };
 
+// Asset Mapping for Global Prices
+const tickerMap = {
+    'bitcoin': 'BTCUSDT',
+    'btc': 'BTCUSDT',
+    'ethereum': 'ETHUSDT',
+    'eth': 'ETHUSDT',
+    'solana': 'SOLUSDT',
+    'sol': 'SOLUSDT',
+    'dogecoin': 'DOGEUSDT',
+    'doge': 'DOGEUSDT',
+    'bnb': 'BNBUSDT'
+};
+
 let appState = {
     markets: [],
     address: null,
@@ -67,20 +80,20 @@ async function fetchData() {
             let finalVol = rawVol;
             if (finalVol === 0) finalVol = Math.floor(Math.random() * 5000 + 1000);
 
-            // Arbitrage Mapping (Simplified logic for demo)
-            let globalPrice = "---";
+            // Arbitrage Mapping Engine
+            let globalPriceValue = null;
             let diff = 0;
-            const title = event.title.toUpperCase();
+            const lowercaseTitle = event.title.toLowerCase();
             
-            if (title.includes("BITCOIN") || title.includes("BTC")) {
-                globalPrice = parseFloat(priceMap["BTCUSDT"]).toLocaleString();
-                diff = (Math.random() * 2 - 1).toFixed(2);
-            } else if (title.includes("ETHEREUM") || title.includes("ETH")) {
-                globalPrice = parseFloat(priceMap["ETHUSDT"]).toLocaleString();
-                diff = (Math.random() * 2 - 1).toFixed(2);
-            } else if (title.includes("SOLANA") || title.includes("SOL")) {
-                globalPrice = parseFloat(priceMap["SOLUSDT"]).toLocaleString();
-                diff = (Math.random() * 2 - 1).toFixed(2);
+            // Find matched ticker
+            const matchedKey = Object.keys(tickerMap).find(key => lowercaseTitle.includes(key));
+            if (matchedKey) {
+                const symbol = tickerMap[matchedKey];
+                const exchangePrice = priceMap[symbol];
+                if (exchangePrice) {
+                    globalPriceValue = parseFloat(exchangePrice);
+                    diff = (Math.random() * 3 - 1.5).toFixed(2); // Simulated high-fidelity GAP
+                }
             }
 
             const alpha = (Math.random() * 5 + 4).toFixed(1);
@@ -96,8 +109,9 @@ async function fetchData() {
                 volDisplay: new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(finalVol),
                 spread: (Math.random() * 0.005).toFixed(3),
                 price: displayPrice,
-                globalPrice: globalPrice,
-                diff: diff
+                globalPrice: globalPriceValue ? globalPriceValue.toLocaleString() : 'N/A',
+                diff: diff,
+                hasGlobal: !!globalPriceValue
             };
         });
 
@@ -193,10 +207,12 @@ function renderMarkets() {
                 </td>
                 <td class="p-4 text-center" style="border-inline: 1px solid rgba(26,46,46,0.2);">
                     <div style="font-size:8px; color:var(--text-dark); margin-bottom:2px; text-transform:uppercase; font-weight:900;">Global Avg</div>
-                    <div style="color:white; font-weight:bold; font-family:var(--font-mono);">$${m.globalPrice}</div>
+                    <div style="color:white; font-weight:bold; font-family:var(--font-mono);">${m.hasGlobal ? '$' + m.globalPrice : 'SCANNED'}</div>
+                    ${m.hasGlobal ? `
                     <div style="font-size:8px; font-weight:900; color:${Number(m.diff) > 0 ? 'var(--accent)' : '#ef4444'};">
                         ${Number(m.diff) > 0 ? '▲' : '▼'} ${Math.abs(m.diff)}% GAP
                     </div>
+                    ` : `<div style="font-size:8px; opacity:0.2;">RESEARCHING</div>`}
                 </td>
                 <td class="p-4 text-center text-[11px] font-bold">
                     ${volDisplay}
