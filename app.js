@@ -313,23 +313,29 @@ function updateMainCharts(m) {
 
 // --- FLOW ENGINE ---
 function startFlowSimulation() {
+    console.log("Igniting Atomic Flow Engine...");
     const log = document.getElementById('flow-log');
     setInterval(() => {
         if (!appState.selectedId) return;
         const side = Math.random() > 0.5 ? 'BUY' : 'SELL';
-        const vol = (Math.random() * 4000 + 100).toFixed(0);
-        const price = (Math.random() * 0.95).toFixed(2);
-        const imb = (Math.random() * 0.6 - 0.3).toFixed(2);
+        const vol = (Math.random() * 8000 + 50).toFixed(0);
+        const price = (Math.random() * 0.98).toFixed(2);
+        const imb = (Math.random() * 0.8 - 0.4).toFixed(2);
         
         const row = document.createElement('div');
         row.className = 'flow-row';
+        row.style.animation = 'fadeIn 0.2s ease-out';
         row.innerHTML = `
             <span><span class="${side === 'BUY' ? 'buy-sig' : 'sell-sig'}">${side}</span> ${vol} @ ${price}</span>
-            <span style="color:var(--text-dim)">[IMB: ${imb}]</span>
+            <span style="color:var(--text-dim); font-size:9px;">JUST NOW [IMB: ${imb}]</span>
         `;
         log.prepend(row);
-        if (log.children.length > 25) log.lastChild.remove();
-    }, 1500);
+        if (log.children.length > 20) log.lastChild.remove();
+        
+        // Update total trades counter
+        const tradeCount = document.getElementById('total-trades');
+        if(tradeCount) tradeCount.innerText = (parseInt(tradeCount.innerText) + 1).toLocaleString() + '+';
+    }, 800);
 }
 
 function initClocks() {
@@ -347,6 +353,10 @@ function updateGlobalHeader(m) {
 function deployEmergencySet() {
     console.log("Synthesizing High-Fidelity Quant Data from Polymarket...");
     
+    // Initial trades count simulation
+    const tradeCount = document.getElementById('total-trades');
+    if(tradeCount) tradeCount.innerText = "1,245,670+";
+
     appState.markets = [
         { id: "e1", slug: "what-price-will-bitcoin-hit-in-march-2026", question: "What price will Bitcoin hit in March 2026?", volume: 154100000, alphaScore: 28.4, zScores: { imbalance: 3.1, intensity: 1.8, volatility: 0.9 }, spread: 0.008, imbalance: 0.82 },
         { id: "e2", slug: "will-bitcoin-hit-60k-or-80k-first-965", question: "Will Bitcoin hit $60k or $80k first?", volume: 45100000, alphaScore: 15.2, zScores: { imbalance: 1.4, intensity: 2.5, volatility: 1.1 }, spread: 0.012, imbalance: 0.44 },

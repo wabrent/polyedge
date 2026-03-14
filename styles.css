@@ -107,6 +107,11 @@ main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; g
 .buy-sig { color: var(--accent-green); font-weight: 700; }
 .sell-sig { color: var(--accent-red); font-weight: 700; }
 
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* SCROLLBARS */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
