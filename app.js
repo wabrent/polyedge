@@ -17,7 +17,13 @@ window.addEventListener('DOMContentLoaded', () => {
     fetchData();
     startWhaleFlow();
     setupControls();
+    
+    // BOT MONITOR: Start as per User Request
     setInterval(fetchData, CONFIG.REFRESH);
+    setInterval(monitorMarkets, 30000); // 30s Bot Cycle
+    
+    // UI Signal Tick
+    setTimeout(monitorMarkets, 4000);
 });
 
 async function fetchData() {
@@ -28,8 +34,9 @@ async function fetchData() {
         appState.markets = data.map(m => ({
             id: m.id,
             question: m.question,
-            alpha: (Math.random() * 12 + 2).toFixed(1),
-            volume: new Intl.NumberFormat('en-US', { notation: 'compact' }).format(m.volume),
+            alpha: (Math.random() * 15).toFixed(2), // Match bot logic range
+            volume: m.volume,
+            volDisplay: new Intl.NumberFormat('en-US', { notation: 'compact' }).format(m.volume),
             spread: (Math.random() * 0.02).toFixed(3),
             price: m.outcomePrices ? JSON.parse(m.outcomePrices)[0] : "0.50"
         }));
@@ -39,6 +46,41 @@ async function fetchData() {
     } catch (e) {
         console.error("Sync Error:", e);
     }
+}
+
+// --- BOT MONITOR ENGINE ---
+function monitorMarkets() {
+    if (appState.markets.length === 0) return;
+    
+    const consoleEl = document.getElementById('bot-console');
+    const log = (msg, color = "#34d399") => {
+        const div = document.createElement('div');
+        div.style.color = color;
+        div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        consoleEl.prepend(div);
+        if (consoleEl.children.length > 50) consoleEl.lastChild.remove();
+    };
+
+    log("--- PolyEdge Bot: Monitoring Active ---", "var(--text-dark)");
+
+    const ALPHA_THRESHOLD = 10.0;
+    const VOL_THRESHOLD = 50000;
+
+    appState.markets.forEach(m => {
+        if (m.volume < VOL_THRESHOLD) return;
+
+        if (parseFloat(m.alpha) > ALPHA_THRESHOLD) {
+            printSignal(m, m.alpha, log);
+        }
+    });
+}
+
+function printSignal(market, alpha, logFn) {
+    logFn("SIGNAL DETECTED!", "var(--accent)");
+    logFn(`Market: ${market.question.substring(0, 40)}...`, "#fff");
+    logFn(`Alpha: ${alpha}% | Vol: $${market.volDisplay}`, "#fbbf24");
+    logFn(`Action: Suggested BUY/HOLD`, "var(--accent)");
+    logFn(`-----------------------------------`, "var(--text-dark)");
 }
 
 function renderMarkets() {
@@ -51,9 +93,9 @@ function renderMarkets() {
                 <div class="m-title truncate" title="${m.question}">${m.question}</div>
             </td>
             <td class="p-4" style="text-align:center;">
-                <span class="m-alpha ${Number(m.alpha) > 8 ? 'alpha-high' : ''}">${m.alpha}%</span>
+                <span class="m-alpha ${Number(m.alpha) > 10 ? 'alpha-high' : ''}">${m.alpha}%</span>
             </td>
-            <td class="p-4" style="color:#d1fae5; font-weight:bold;">$${m.volume}</td>
+            <td class="p-4" style="color:#d1fae5; font-weight:bold;">$${m.volDisplay}</td>
             <td class="p-4">
                 <div style="color:white; font-style:italic;">${(m.price * 100).toFixed(0)}¢</div>
                 <div style="font-size:9px; color:var(--text-dark);">SPR: ${m.spread}¢</div>

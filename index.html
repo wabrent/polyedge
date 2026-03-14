@@ -66,6 +66,17 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- NEW: BOT CONSOLE PANEL -->
+            <div style="height: 180px; background: black; border-top: 1px solid var(--border); padding: 15px; font-family: 'JetBrains Mono'; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="font-size: 9px; color: var(--text-dark); margin-bottom: 10px; display: flex; justify-content: space-between;">
+                    <span>[SYS] SIGNAL AUDIT CONSOLE</span>
+                    <span id="bot-status" style="color: var(--accent);">BOT ACTIVE: POLARIS_NODE_01</span>
+                </div>
+                <div id="bot-console" style="flex-grow: 1; overflow-y: auto; font-size: 10px; color: #34d399; line-height: 1.5;" class="custom-scroll">
+                    <div style="color: var(--text-dark);">INIT_SEQUENCE: BOOTING QUANT_BOT_V2.0...</div>
+                </div>
+            </div>
         </main>
 
         <!-- 3. RIGHT: WHALE FLOW -->
