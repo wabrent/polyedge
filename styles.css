@@ -78,6 +78,16 @@ aside { background: var(--bg-surface); border-right: 1px solid var(--border-ligh
 .pill-alpha { background: #fee2e2; color: #b91c1c; }
 .pill-norm { background: #f1f5f9; color: var(--text-muted); }
 
+.trade-link {
+    color: var(--text-dim);
+    transition: color 0.1s;
+    padding: 2px;
+    margin-left: 8px;
+}
+.trade-link:hover {
+    color: var(--accent-blue);
+}
+
 /* MAIN CONTENT */
 main { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 30px; }
 .quant-block { background: var(--bg-surface); border-radius: 12px; border: 1px solid var(--border-light); padding: 24px; box-shadow: var(--shadow-soft); }
