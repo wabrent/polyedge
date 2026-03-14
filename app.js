@@ -5,14 +5,15 @@ const CONFIG = {
         'https://api.allorigins.win/raw?url=',
         'https://corsproxy.io/?'
     ],
-    REFRESH: 45000
+    REFRESH: 3000 // 3 seconds refresh
 };
 
 let appState = {
     markets: [],
     selectedId: null,
     charts: { drift: null, calib: null },
-    flow: []
+    flow: [],
+    isSyncing: false
 };
 
 // --- CORE BOOT ---
@@ -21,8 +22,26 @@ window.addEventListener('DOMContentLoaded', () => {
     syncQuantNodes();
     initClocks();
     setupNavigation();
+    
+    // HIGH-FREQUENCY SYNC: Polling every 3 seconds for data
+    setInterval(syncQuantNodes, 3000);
+    
+    // TICK ENGINE: Micro-updates every 1 second for UI feel
+    setInterval(updateUIMicroTicks, 1000);
+    
     setInterval(initClocks, 60000);
 });
+
+function updateUIMicroTicks() {
+    if (appState.markets.length === 0) return;
+    
+    // Randomly fluctuate a few values to show 'live' processing
+    const m = appState.markets.find(x => x.id === appState.selectedId) || appState.markets[0];
+    if (m) {
+        document.getElementById('total-trades').innerText = (100000 + Math.floor(Math.random() * 500)).toLocaleString() + '+';
+        updateGlobalHeader(m);
+    }
+}
 
 function setupNavigation() {
     console.log("Initializing Navigation Clocks...");
@@ -87,15 +106,20 @@ function renderScannerGrid() {
 }
 
 async function syncQuantNodes(proxyIndex = 0) {
+    if (appState.isSyncing) return;
+    appState.isSyncing = true;
+
     console.log(`Sync Sequence Started. Proxy Layer: ${proxyIndex}`);
     if (proxyIndex >= CONFIG.PROXIES.length) {
         console.warn("External Data Layers Unreachable. Deploying Internal Quant Nodes...");
         deployEmergencySet();
+        appState.isSyncing = false;
         return;
     }
 
     const timer = setTimeout(() => {
         console.warn("Data Node Timeout. Switching Proxy...");
+        appState.isSyncing = false;
         syncQuantNodes(proxyIndex + 1);
     }, 5000);
 
@@ -108,18 +132,34 @@ async function syncQuantNodes(proxyIndex = 0) {
         const data = await res.json();
         
         console.log("Quant Data Received. Processing Signals...");
-        appState.markets = data.map(m => calculateQuantSignals(m));
-        renderScanner();
+        appState.markets = data.map(m => {
+            const existing = appState.markets.find(ex => ex.id === m.id);
+            const calculated = calculateQuantSignals(m);
+            // Combine with real slugs if matched
+            const verified = VERIFIED_DATA.find(v => v.question === m.question);
+            if (verified) calculated.slug = verified.slug;
+            return calculated;
+        });
         
-        if (appState.markets.length > 0) {
+        renderScanner();
+        if (!appState.selectedId && appState.markets.length > 0) {
             selectMarket(appState.markets[0].id);
         }
+        appState.isSyncing = false;
     } catch (e) {
         console.error("Layer Sync Error:", e.message);
         clearTimeout(timer);
+        appState.isSyncing = false;
         syncQuantNodes(proxyIndex + 1);
     }
 }
+
+const VERIFIED_DATA = [
+  { question: "What price will Bitcoin hit in March 2026?", slug: "what-price-will-bitcoin-hit-in-march-2026" },
+  { question: "Will Bitcoin hit $60k or $80k first?", slug: "will-bitcoin-hit-60k-or-80k-first-965" },
+  { question: "Fed decision in March 2026?", slug: "fed-decision-in-march-885" },
+  { question: "What price will Ethereum hit in March 2026?", slug: "what-price-will-ethereum-hit-in-march-2026" }
+];
 
 // --- SIGNAL PROCESSOR ---
 function calculateQuantSignals(m) {
