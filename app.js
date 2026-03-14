@@ -1,6 +1,6 @@
-/* PolyEdge Quant Engine v2.0 */
 const CONFIG = {
     API: "https://gamma-api.polymarket.com/markets?active=true&limit=15&order=volume&dir=desc",
+    PROXY: "https://api.allorigins.win/raw?url=", // The CORS Bridge
     REFRESH: 10000,
     WALLETS: ["0x72a...", "0xBC8...", "0x31F...", "0x9E2..."],
     ASSETS: ["Fed Rate Cut", "BTC hit $120k", "ETH Pectra", "NVDA $4T Cap"]
@@ -18,33 +18,34 @@ window.addEventListener('DOMContentLoaded', () => {
     startWhaleFlow();
     setupControls();
     
-    // BOT MONITOR: Start as per User Request
+    // BOT MONITOR: 30s Bot Cycle
     setInterval(fetchData, CONFIG.REFRESH);
-    setInterval(monitorMarkets, 30000); // 30s Bot Cycle
+    setInterval(monitorMarkets, 30000); 
     
-    // UI Signal Tick
     setTimeout(monitorMarkets, 4000);
 });
 
 async function fetchData() {
     try {
-        const res = await fetch(CONFIG.API);
+        const url = `${CONFIG.PROXY}${encodeURIComponent(CONFIG.API)}`;
+        const res = await fetch(url);
         const data = await res.json();
         
         appState.markets = data.map(m => ({
             id: m.id,
             question: m.question,
-            alpha: (Math.random() * 15).toFixed(2), // Match bot logic range
+            alpha: (Math.random() * 8 + 2).toFixed(1), // Match your template (2-10%)
             volume: m.volume,
-            volDisplay: new Intl.NumberFormat('en-US', { notation: 'compact' }).format(m.volume),
-            spread: (Math.random() * 0.02).toFixed(3),
+            volDisplay: new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(m.volume),
+            spread: (Math.random() * 0.01).toFixed(3),
             price: m.outcomePrices ? JSON.parse(m.outcomePrices)[0] : "0.50"
         }));
 
         renderMarkets();
-        document.getElementById('last-update').innerText = new Date().toLocaleTimeString();
+        const lastUpd = document.getElementById('last-update');
+        if (lastUpd) lastUpd.innerText = new Date().toLocaleTimeString();
     } catch (e) {
-        console.error("Sync Error:", e);
+        console.error("Sync Error (CORS Breach Attempt):", e);
     }
 }
 

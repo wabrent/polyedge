@@ -1,12 +1,12 @@
 :root {
-    --bg-main: #050505;
-    --bg-card: #080808;
-    --accent: #10b981; /* Emerald-500 */
-    --accent-dim: #064e3b; /* Emerald-900 */
+    --bg-main: #020606;
+    --bg-card: #030a0a;
+    --accent: #00ff9d; 
+    --accent-dim: #1a2e2e; 
     --text-main: #ffffff;
-    --text-dim: #059669; /* Emerald-600 */
-    --text-dark: #064e3b;
-    --border: rgba(16, 185, 129, 0.2);
+    --text-dim: rgba(0, 255, 157, 0.4);
+    --text-dark: rgba(0, 255, 157, 0.2);
+    --border: #1a2e2e;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
