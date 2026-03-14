@@ -199,6 +199,20 @@ header {
 .hover-white:hover { color: white !important; }
 .hidden { display: none !important; }
 
+.row-hot {
+    background: rgba(249, 115, 22, 0.03); /* Very subtle orange tint */
+}
+.row-hot:hover {
+    background: rgba(0, 255, 157, 0.08); /* Matrix override on hover */
+}
+
+@keyframes signalPulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 2px currentColor); }
+    50% { transform: scale(1.2); filter: drop-shadow(0 0 8px currentColor); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 2px currentColor); }
+}
+.animate-pulse { animation: signalPulse 1s infinite ease-in-out; }
+
 /* UTILS */
 .custom-scroll::-webkit-scrollbar { width: 3px; }
 .custom-scroll::-webkit-scrollbar-thumb { background: var(--border); }

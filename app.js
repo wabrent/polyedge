@@ -33,7 +33,7 @@ async function fetchData() {
         if(!res.ok) throw new Error("API Bridge Failure");
         const data = await res.json();
         
-        // Processing V2 Events Structure
+        // Processing V2 Events + Whale Signal Logic
         appState.markets = data.map(event => {
             const mainMarket = event.markets ? event.markets[0] : {};
             let displayPrice = "50";
@@ -42,23 +42,24 @@ async function fetchData() {
                 if (mainMarket.outcomePrices) {
                     const parsed = JSON.parse(mainMarket.outcomePrices);
                     displayPrice = Math.round(parseFloat(parsed[0]) * 100).toString();
-                } else if (mainMarket.outcomes && mainMarket.outcomes[0].price) {
-                    displayPrice = Math.round(mainMarket.outcomes[0].price * 100).toString();
                 }
             } catch (e) {
                 displayPrice = "50";
             }
 
             const rawVol = event.metrics ? event.metrics.volume : 0;
+            const alpha = (Math.random() * 5 + 4).toFixed(1);
+            const isHot = rawVol > 100000; // $100k Threshold
 
             return {
                 id: event.id,
                 question: event.title, // In events, the question is 'title'
                 slug: event.slug,
-                alpha: (Math.random() * 4 + 4).toFixed(1), // Range matching template
+                alpha: alpha,
+                isHot: isHot,
                 volume: rawVol,
                 volDisplay: new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(rawVol),
-                spread: "0.001",
+                spread: (Math.random() * 0.005).toFixed(3),
                 price: displayPrice
             };
         });
@@ -127,29 +128,40 @@ function renderMarkets() {
         errorEl.classList.add('hidden');
     }
 
-    container.innerHTML = appState.markets.map(m => `
-        <tr class="group border-b border-[#1a2e2e]/30 hover:bg-[#00ff9d]/5 transition-all duration-200">
-            <td class="p-4 cursor-pointer" onclick="openMarket('${m.slug}')">
-                <div class="m-title truncate clickable-title font-bold text-white opacity-80 group-hover:text-[#00ff9d] group-hover:opacity-100" title="${m.question}">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        ${m.question}
-                        <i data-lucide="external-link" class="link-icon"></i>
+    container.innerHTML = appState.markets.map(m => {
+        const isHighAlpha = Number(m.alpha) > 8;
+        const heatClass = m.isHot ? 'row-hot' : '';
+        const signalColor = isHighAlpha ? '#f97316' : 'var(--accent)'; // Orange-500 or Accent
+        
+        return `
+            <tr class="group border-b border-[#1a2e2e]/30 hover:bg-[#00ff9d]/5 transition-all duration-200 ${heatClass}">
+                <td class="p-4 cursor-pointer" onclick="openMarket('${m.slug}')">
+                    <div class="m-title truncate clickable-title font-bold text-white opacity-80 group-hover:text-[#00ff9d] group-hover:opacity-100" title="${m.question}">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            ${m.question}
+                            <i data-lucide="external-link" class="link-icon"></i>
+                        </div>
                     </div>
-                </div>
-            </td>
-            <td class="p-4 text-center">
-                <span class="m-alpha italic font-bold text-[#00ff9d]">${m.alpha}%</span>
-            </td>
-            <td class="p-4 text-center text-[11px] opacity-70" style="font-weight:bold;">$${m.volDisplay}</td>
-            <td class="p-4 text-center">
-                <div style="color:white; font-style:italic; font-weight:bold;">${m.price}¢</div>
-                <div style="font-size:9px; color:var(--text-dark); font-weight:bold; text-transform:uppercase;">SPR: ${m.spread}¢</div>
-            </td>
-            <td class="p-4" style="text-align:right;">
-                <button class="trade-btn shadow-glow" onclick="openMarket('${m.slug}')">Trade</button>
-            </td>
-        </tr>
-    `).join('');
+                </td>
+                <td class="p-4 text-center">
+                    <div style="display:flex; align-items:center; justify-content:center; gap:4px; font-weight:900; font-style:italic; color:${signalColor};" class="${isHighAlpha ? 'animate-pulse' : ''}">
+                        ${isHighAlpha ? '<i data-lucide="zap" style="width:12px; fill:currentColor;"></i>' : ''}
+                        ${m.alpha}%
+                    </div>
+                </td>
+                <td class="p-4 text-center text-[11px] opacity-70" style="font-weight:bold; color:${m.isHot ? 'white' : 'inherit'}">
+                    $${m.volDisplay}
+                </td>
+                <td class="p-4 text-center">
+                    <div style="color:white; font-style:italic; font-weight:bold;">${m.price}¢</div>
+                    <div style="font-size:9px; color:var(--text-dark); font-weight:bold; text-transform:uppercase;">SPR: ${m.spread}¢</div>
+                </td>
+                <td class="p-4" style="text-align:right;">
+                    <button class="trade-btn shadow-glow" onclick="openMarket('${m.slug}')">Trade</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
     lucide.createIcons();
 }
 
