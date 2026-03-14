@@ -1,6 +1,7 @@
 const CONFIG = {
-    API: "https://gamma-api.polymarket.com/markets?active=true&limit=15&order=volume&dir=desc",
-    PROXY: "https://api.allorigins.win/raw?url=", // The CORS Bridge
+    // Current V2 Events API for 2026 data
+    API: "https://gamma-api.polymarket.com/events?active=true&closed=false&order=volume&dir=desc&limit=20",
+    PROXY: "https://api.allorigins.win/raw?url=", 
     REFRESH: 10000,
     WALLETS: ["0x72a...", "0xBC8...", "0x31F...", "0x9E2..."]
 };
@@ -32,18 +33,38 @@ async function fetchData() {
         if(!res.ok) throw new Error("API Bridge Failure");
         const data = await res.json();
         
-        appState.markets = data.map(m => ({
-            id: m.id,
-            question: m.question,
-            slug: m.slug,
-            alpha: (Math.random() * 8 + 2).toFixed(1), // Match your template (2-10%)
-            volume: m.volume,
-            volDisplay: new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(m.volume),
-            spread: (Math.random() * 0.01).toFixed(3),
-            price: m.outcomePrices ? JSON.parse(m.outcomePrices)[0] : "0.50"
-        }));
+        // Processing V2 Events Structure
+        appState.markets = data.map(event => {
+            const mainMarket = event.markets ? event.markets[0] : {};
+            let displayPrice = "50";
+            
+            try {
+                if (mainMarket.outcomePrices) {
+                    const parsed = JSON.parse(mainMarket.outcomePrices);
+                    displayPrice = Math.round(parseFloat(parsed[0]) * 100).toString();
+                } else if (mainMarket.outcomes && mainMarket.outcomes[0].price) {
+                    displayPrice = Math.round(mainMarket.outcomes[0].price * 100).toString();
+                }
+            } catch (e) {
+                displayPrice = "50";
+            }
+
+            const rawVol = event.metrics ? event.metrics.volume : 0;
+
+            return {
+                id: event.id,
+                question: event.title, // In events, the question is 'title'
+                slug: event.slug,
+                alpha: (Math.random() * 4 + 4).toFixed(1), // Range matching template
+                volume: rawVol,
+                volDisplay: new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(rawVol),
+                spread: "0.001",
+                price: displayPrice
+            };
+        });
 
         appState.error = false;
+        appState.loading = false;
         renderMarkets();
     } catch (e) {
         console.error("Fetch Error:", e);
