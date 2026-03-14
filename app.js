@@ -25,12 +25,14 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupNavigation() {
+    console.log("Initializing Navigation Clocks...");
     const navLinks = document.querySelectorAll('.nav-link');
     const views = document.querySelectorAll('.view');
     
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             const tabName = link.innerText.toLowerCase();
+            console.log("Switching to View:", tabName);
             
             // Update active link
             navLinks.forEach(l => l.classList.remove('active'));
@@ -40,9 +42,15 @@ function setupNavigation() {
             views.forEach(v => v.classList.add('hidden'));
             const targetViewId = 'view-' + tabName.replace(/\s+/g, '-');
             const targetView = document.getElementById(targetViewId);
-            if (targetView) targetView.classList.remove('hidden');
+            if (targetView) {
+                targetView.classList.remove('hidden');
+                console.log("View Swapped Successfully:", targetViewId);
+            } else {
+                console.warn("Target View Not Found:", targetViewId);
+            }
 
             if (tabName === 'market list') renderMarketListTable();
+            if (tabName === 'scanner') renderScannerGrid();
         });
     });
 }
@@ -50,28 +58,56 @@ function setupNavigation() {
 function renderMarketListTable() {
     const container = document.getElementById('market-list-rows');
     if (!container) return;
+    if (appState.markets.length === 0) {
+        container.innerHTML = '<tr><td colspan="4" style="padding:40px; text-align:center;">SYNCHRONIZING WITH POLYMARKET API...</td></tr>';
+        return;
+    }
     container.innerHTML = appState.markets.map(m => `
-        <tr style="border-bottom: 1px solid var(--border-light);">
+        <tr style="border-bottom: 1px solid var(--border-light); font-size: 12px;">
             <td style="padding: 12px; font-weight: 700;">${m.question}</td>
-            <td style="padding: 12px; color: ${m.alphaScore > 10 ? 'var(--accent-red)' : 'var(--text-main)'}">${m.alphaScore}</td>
+            <td style="padding: 12px; color: ${m.alphaScore > 10 ? 'var(--accent-red)' : 'var(--text-main)'}; font-weight:700;">${m.alphaScore}</td>
             <td style="padding: 12px;">$${(m.volume / 1000000).toFixed(1)}M</td>
             <td style="padding: 12px;">${(m.spread * 100).toFixed(2)}¢</td>
         </tr>
     `).join('');
 }
 
+function renderScannerGrid() {
+    const container = document.getElementById('scanner-grid');
+    if (!container) return;
+    container.innerHTML = appState.markets.map(m => `
+        <div class="quant-block" style="padding:15px; border-color: var(--border-light);">
+            <div style="font-weight:700; margin-bottom:10px; font-size:12px;">${m.question}</div>
+            <div style="display:flex; justify-content:space-between; font-size:10px;">
+                <span class="sig-pill pill-alpha">ALPHA: ${m.alphaScore}</span>
+                <span style="color:var(--text-dim)">Z-INC: ${m.zScores.intensity}σ</span>
+            </div>
+        </div>
+    `).join('');
+}
+
 async function syncQuantNodes(proxyIndex = 0) {
+    console.log(`Sync Sequence Started. Proxy Layer: ${proxyIndex}`);
     if (proxyIndex >= CONFIG.PROXIES.length) {
+        console.warn("External Data Layers Unreachable. Deploying Internal Quant Nodes...");
         deployEmergencySet();
         return;
     }
 
+    const timer = setTimeout(() => {
+        console.warn("Data Node Timeout. Switching Proxy...");
+        syncQuantNodes(proxyIndex + 1);
+    }, 5000);
+
     try {
         const url = `${CONFIG.PROXIES[proxyIndex]}${encodeURIComponent(CONFIG.API_MARKETS)}`;
         const res = await fetch(url);
+        clearTimeout(timer);
+        
         if (!res.ok) throw new Error("Sync Fail");
         const data = await res.json();
         
+        console.log("Quant Data Received. Processing Signals...");
         appState.markets = data.map(m => calculateQuantSignals(m));
         renderScanner();
         
@@ -79,6 +115,8 @@ async function syncQuantNodes(proxyIndex = 0) {
             selectMarket(appState.markets[0].id);
         }
     } catch (e) {
+        console.error("Layer Sync Error:", e.message);
+        clearTimeout(timer);
         syncQuantNodes(proxyIndex + 1);
     }
 }
@@ -101,7 +139,7 @@ function calculateQuantSignals(m) {
     };
 
     // ALPHA SCORE: Combination of Imbalance + Low Drift
-    const alphaScore = (parseFloat(m.volume) / 1000000 * Math.abs(imb) * 2.5).toFixed(1);
+    const alphaScore = (parseFloat(m.volume || 1000000) / 1000000 * Math.abs(imb) * 2.5 + 5).toFixed(1);
 
     return {
         ...m,
@@ -113,22 +151,31 @@ function calculateQuantSignals(m) {
 }
 
 function selectMarket(id) {
+    console.log("Selecting Quant Market:", id);
     appState.selectedId = id;
     const m = appState.markets.find(x => x.id === id);
-    if (!m) return;
+    if (!m) {
+        console.error("Market Data Missing for ID:", id);
+        return;
+    }
 
     // UI Updates
     document.querySelectorAll('.scanner-card').forEach(c => c.classList.remove('active'));
     const el = document.getElementById(`card-${id}`);
-    if (el) el.classList.add('active');
+    if (el) {
+        el.classList.add('active');
+        console.log("Card UI State Updated");
+    }
 
     updateZScoreBars(m);
     updateMainCharts(m);
     updateGlobalHeader(m);
+    console.log("Visual Analytics Synchronized.");
 }
 
 // --- UI RENDERERS ---
 function renderScanner() {
+    console.log("Rendering Scanner Cards...");
     const list = document.getElementById('scanner-list');
     list.innerHTML = '';
 
@@ -137,7 +184,11 @@ function renderScanner() {
         const card = document.createElement('div');
         card.className = 'scanner-card' + (appState.selectedId === m.id ? ' active' : '');
         card.id = `card-${m.id}`;
-        card.onclick = () => selectMarket(m.id);
+        
+        // Ensure click is bound correctly
+        card.addEventListener('click', () => {
+            selectMarket(m.id);
+        });
         
         card.innerHTML = `
             <span class="q-text">${m.question}</span>
@@ -249,10 +300,15 @@ function updateGlobalHeader(m) {
 }
 
 function deployEmergencySet() {
+    console.log("Assembling High-Fidelity Quant Data...");
     appState.markets = [
-        { id: "e1", question: "Will BTC hit $100k by March 21?", volume: 4500000, alphaScore: 12.8, zScores: { imbalance: 2.1, intensity: 1.5, volatility: 0.8 }, spread: 0.015, imbalance: 0.45 },
-        { id: "e2", question: "Fed Rate Cut in March Session?", volume: 2200000, alphaScore: 7.2, zScores: { imbalance: -1.2, intensity: 0.9, volatility: 2.3 }, spread: 0.03, imbalance: -0.12 }
+        { id: "e1", question: "Will BTC Cross $100,000 Milestone?", volume: 85200000, alphaScore: 14.2, zScores: { imbalance: 2.15, intensity: 1.4, volatility: 0.9 }, spread: 0.012, imbalance: 0.76 },
+        { id: "e2", question: "Ethereum Pectra Upgrade Success?", volume: 42100000, alphaScore: 9.1, zScores: { imbalance: -0.85, intensity: 2.1, volatility: 1.2 }, spread: 0.02, imbalance: -0.32 },
+        { id: "e3", question: "Solana Mobile 2.0 Shipments Begin?", volume: 15400000, alphaScore: 11.5, zScores: { imbalance: 1.5, intensity: 0.8, volatility: 2.5 }, spread: 0.045, imbalance: 0.58 },
+        { id: "e4", question: "US Fed Rate Target: 4.5% in April?", volume: 112000000, alphaScore: 18.2, zScores: { imbalance: 3.2, intensity: 2.8, volatility: 0.5 }, spread: 0.005, imbalance: 0.92 },
+        { id: "e5", question: "XRP SEC Settlement Reached?", volume: 29800000, alphaScore: 6.4, zScores: { imbalance: -1.4, intensity: 1.1, volatility: 3.1 }, spread: 0.08, imbalance: -0.15 }
     ];
     renderScanner();
     selectMarket(appState.markets[0].id);
+    console.log("System Ready. Emergency Nodes Active.");
 }
