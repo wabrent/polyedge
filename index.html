@@ -3,155 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PolyAlpha PRO | Quant Terminal</title>
+    <title>PolyEdge V2.0 | Quant Terminal</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="terminal-node">
-        <!-- HEADER -->
+        <!-- 1. HEADER -->
         <header>
             <div class="brand-unit">
-                <svg class="p-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M35 30H75C85 30 95 40 95 50C95 60 85 70 75 70H55L45 90L55 70H35L42 50H35L35 30Z"/>
-                </svg>
-                PolyAlpha <span class="quant-tag">QUANT PRO</span>
+                <div class="logo-box">
+                    <i data-lucide="zap"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>PolyEdge <span>v2.0</span></h1>
+                    <div class="node-status">
+                         <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="globe" style="width:10px;"></i> NODE: ACTIVE</span>
+                         <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="shield-check" style="width:10px;"></i> AUTH: ENCRYPTED</span>
+                    </div>
+                </div>
             </div>
-            
-            <nav class="nav-cluster">
-                <div class="nav-link active">Surveillance</div>
-                <div class="nav-link">Market List</div>
-                <div class="nav-link">Scanner</div>
-                <div class="nav-link">Audit</div>
-            </nav>
 
             <div class="header-util">
-                <div class="status-timer" style="color: var(--accent-red); font-weight: 800;">
-                    <div class="timer-pulse" style="border-color: var(--accent-red);"></div> 
-                    <span id="sync-status">LIVE STREAM: MARCH 2026</span>
+                <div style="text-align: right; font-size: 9px; color: var(--text-dark);">
+                    <div>DATA REFRESH: <span id="last-update">00:00:00</span></div>
+                    <div>API LATENCY: 42ms</div>
                 </div>
-                <!-- WORLD CLOCKS -->
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; gap: 15px;">
-                    <div>NYC: <span id="clock-nyc">00:00</span></div>
-                    <div>LDN: <span id="clock-ldn">00:00</span></div>
-                    <div>TKO: <span id="clock-tko">00:00</span></div>
-                </div>
+                <button class="wallet-btn" id="connect-btn">
+                    INITIALIZE WALLET
+                </button>
             </div>
         </header>
 
-        <!-- LEFT: ALPHA SCANNER -->
-        <aside>
-            <h3 class="sidebar-title">Alpha Scanner</h3>
-            <div id="scanner-list">
-                <div style="padding: 40px; text-align: center; font-size: 11px; color: var(--text-dim);">CONNECTING TO QUANT NODES...</div>
-            </div>
-        </aside>
-
-        <!-- CENTER: ANALYTICS / VIEWS -->
-        <main id="main-view">
-            <!-- VIEW: SURVEILLANCE -->
-            <div id="view-surveillance" class="view">
-                <!-- MACRO METRICS -->
-                <div class="quant-block stat-grid">
-                    <div class="stat-box">
-                        <span class="s-label">Analyzed Trades</span>
-                        <span class="s-val" id="total-trades">100k+</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="s-label">Avg Imbalance</span>
-                        <span class="s-val" id="avg-imb" style="color:var(--accent-green)">+0.42</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="s-label">Alpha Detected</span>
-                        <span class="s-val" id="alpha-rate" style="color:var(--accent-red)">12.4%</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="s-label">Spread Regime</span>
-                        <span class="s-val" id="current-spread">0.02¢</span>
-                    </div>
+        <!-- 2. LEFT: ALPHA SCANNER -->
+        <main class="scanner-container">
+            <div class="box-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i data-lucide="activity" style="width:14px; color:#34d399;"></i>
+                    LIVE ALPHA SCANNER
                 </div>
-
-                <!-- MAIN CHART: PROBABILITY DRIFT -->
-                <div class="quant-block">
-                    <h3 class="sidebar-title">Post-Trade Probability Response (Event Study)</h3>
-                    <div class="chart-container">
-                        <canvas id="driftChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- SECONDARY ANALYTICS -->
-                <div class="split-grid">
-                    <div class="quant-block">
-                        <h3 class="sidebar-title">Signal Strength Z-Scores</h3>
-                        <div id="zscore-bars" style="margin-top:20px;">
-                            <!-- Dynamic bars -->
-                        </div>
-                    </div>
-                    <div class="quant-block">
-                        <h3 class="sidebar-title">Market Calibration (Gap Analysis)</h3>
-                        <div class="chart-container" style="height:220px;">
-                            <canvas id="calibrationChart"></canvas>
-                        </div>
-                    </div>
+                <div style="display:flex; gap:15px; color: var(--text-dark); text-decoration: underline; cursor:pointer;">
+                    <span>FILTERS</span>
+                    <span>EXPORT CSV</span>
                 </div>
             </div>
 
-            <!-- VIEW: MARKET LIST -->
-            <div id="view-market-list" class="view hidden">
-                <div class="quant-block">
-                    <h3 class="sidebar-title">Active Quant Markets</h3>
-                    <div id="market-table-container" style="margin-top: 20px;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                            <thead>
-                                <tr style="text-align: left; border-bottom: 2px solid var(--border-light); color: var(--text-dim);">
-                                    <th style="padding: 10px;">MARKET</th>
-                                    <th style="padding: 10px;">ALPHA</th>
-                                    <th style="padding: 10px;">VOLUME</th>
-                                    <th style="padding: 10px;">SPREAD</th>
-                                </tr>
-                            </thead>
-                            <tbody id="market-list-rows">
-                                <!-- Dynamic rows -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VIEW: SCANNER -->
-            <div id="view-scanner" class="view hidden">
-                <div class="quant-block">
-                    <h3 class="sidebar-title">Deep Alpha Scanner</h3>
-                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Scanning for microstructural anomalies in discrete probability windows...</p>
-                    <div id="scanner-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <!-- Cloned scanner cards for full view -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- VIEW: AUDIT -->
-            <div id="view-audit" class="view hidden">
-                <div class="quant-block">
-                    <h3 class="sidebar-title">Quant Performance Audit</h3>
-                    <div style="padding: 40px; text-align: center; color: var(--text-muted);">
-                        <p>Historical audit logging is active. All signals and trades are being archived for calibration analysis.</p>
-                        <div style="margin-top: 20px; font-weight: 700; color: var(--accent-blue);">NODE STATUS: ACTIVE & ARCHIVING</div>
-                        <div style="margin-top: 10px; font-size: 11px;">Current Epoch: 1773415643 | Checksum: 0x8F2E...</div>
-                    </div>
-                </div>
+            <div style="overflow-y: auto; flex-grow: 1;" class="custom-scroll">
+                <table class="market-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Market Instance</th>
+                            <th style="text-align: center;">Alpha Z-Score</th>
+                            <th>Volume</th>
+                            <th>Price / Spread</th>
+                            <th style="text-align: right;">Execute</th>
+                        </tr>
+                    </thead>
+                    <tbody id="market-rows">
+                        <!-- Dynamic Data -->
+                         <tr><td colSpan="5" style="padding:100px; text-align:center; color:var(--text-dark); letter-spacing:3px;">SYNCHRONIZING WITH POLYMARKET...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </main>
 
-        <!-- RIGHT: SIGNED FLOW -->
-        <aside class="aside-right">
-            <h3 class="sidebar-title">Live Signed Flow (LOB)</h3>
-            <div id="flow-log" class="flow-log">
-                <!-- Real-time trade stream -->
-            </div>
+        <!-- 3. RIGHT: WHALE FLOW -->
+        <aside class="flow-container">
+             <h3 class="box-header" style="background:transparent; padding:0 0 15px 0; border:none;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i data-lucide="bar-chart-3" style="width:14px;"></i>
+                    RECENT WHALE FLOW
+                </div>
+             </h3>
+             
+             <div id="whale-log" style="flex-grow: 1; overflow-y: auto;" class="custom-scroll">
+                 <!-- Whale trade logs -->
+             </div>
+
+             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                 <div style="background: rgba(6, 78, 59, 0.2); padding: 15px; border-radius: 2px;">
+                    <div style="font-size: 9px; color: var(--text-dim); margin-bottom: 10px; letter-spacing: 1px;">INTERNAL CALIBRATOR</div>
+                    <div style="height: 3px; background: #064e3b; border-radius: 10px; overflow: hidden;">
+                        <div style="height: 100%; background: var(--accent); width: 75%;" class="alpha-high"></div>
+                    </div>
+                    <div style="font-size: 8px; color: var(--text-dark); margin-top: 10px; font-style: italic;">Processing 1,240 events per second...</div>
+                 </div>
+             </div>
         </aside>
     </div>
 
     <script src="app.js"></script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
