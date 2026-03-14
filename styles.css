@@ -213,6 +213,33 @@ header {
 }
 .animate-pulse { animation: signalPulse 1s infinite ease-in-out; }
 
+@keyframes neon-pulse {
+  0% { box-shadow: 0 0 5px rgba(0, 255, 157, 0.1); }
+  50% { box-shadow: 0 0 20px rgba(0, 255, 157, 0.3); }
+  100% { box-shadow: 0 0 5px rgba(0, 255, 157, 0.1); }
+}
+
+.neon-row {
+  animation: neon-pulse 2s infinite;
+  background: rgba(0, 255, 157, 0.03) !important;
+}
+
+.btn-high {
+    background: var(--accent) !important;
+    color: black !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
+}
+
+.animate-bounce {
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
 /* UTILS */
 .custom-scroll::-webkit-scrollbar { width: 3px; }
 .custom-scroll::-webkit-scrollbar-thumb { background: var(--border); }

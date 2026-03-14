@@ -143,33 +143,38 @@ function renderMarkets() {
     container.innerHTML = appState.markets.map(m => {
         const isHighAlpha = Number(m.alpha) > 8;
         const heatClass = m.isHot ? 'row-hot' : '';
-        const signalColor = isHighAlpha ? '#f97316' : 'var(--accent)'; // Orange-500 or Accent
+        const neonClass = isHighAlpha ? 'neon-row' : '';
+        const signalColor = isHighAlpha ? '#fbbf24' : 'var(--accent)'; 
+        const volDisplay = (m.volume === 0 || m.volDisplay === "0") ? 
+            `<span style="color:rgba(0,255,157,0.2); font-size:9px;">SCANNED</span>` : 
+            `$${m.volDisplay}`;
         
         return `
-            <tr class="group border-b border-[#1a2e2e]/30 hover:bg-[#00ff9d]/5 transition-all duration-200 ${heatClass}">
+            <tr class="group border-b border-[#1a2e2e]/30 transition-all duration-300 ${heatClass} ${neonClass}">
                 <td class="p-4 cursor-pointer" onclick="openMarket('${m.slug}')">
                     <div class="m-title truncate clickable-title font-bold text-white opacity-80 group-hover:text-[#00ff9d] group-hover:opacity-100" title="${m.question}">
                         <div style="display:flex; align-items:center; gap:8px;">
-                            ${m.question}
+                            <span class="${isHighAlpha ? 'text-accent' : ''}">${m.question}</span>
+                            ${isHighAlpha ? '<i data-lucide="activity" class="animate-bounce" style="width:12px; color:var(--accent);"></i>' : ''}
                             <i data-lucide="external-link" class="link-icon"></i>
                         </div>
                     </div>
                 </td>
                 <td class="p-4 text-center">
-                    <div style="display:flex; align-items:center; justify-content:center; gap:4px; font-weight:900; font-style:italic; color:${signalColor};" class="${isHighAlpha ? 'animate-pulse' : ''}">
-                        ${isHighAlpha ? '<i data-lucide="zap" style="width:12px; fill:currentColor;"></i>' : ''}
+                    <div style="display:flex; align-items:center; justify-content:center; gap:6px; font-weight:900; font-style:italic; color:${signalColor};" class="${isHighAlpha ? 'animate-pulse scale-110' : ''}">
+                        ${isHighAlpha ? '<i data-lucide="zap" style="width:14px; fill:currentColor;"></i>' : ''}
                         ${m.alpha}%
                     </div>
                 </td>
-                <td class="p-4 text-center text-[11px] opacity-70" style="font-weight:bold; color:${m.isHot ? 'white' : 'inherit'}">
-                    $${m.volDisplay}
+                <td class="p-4 text-center text-[11px] font-bold">
+                    ${volDisplay}
                 </td>
                 <td class="p-4 text-center">
                     <div style="color:white; font-style:italic; font-weight:bold;">${m.price}¢</div>
                     <div style="font-size:9px; color:var(--text-dark); font-weight:bold; text-transform:uppercase;">SPR: ${m.spread}¢</div>
                 </td>
                 <td class="p-4" style="text-align:right;">
-                    <button class="trade-btn shadow-glow" onclick="openMarket('${m.slug}')">Trade</button>
+                    <button class="trade-btn shadow-glow ${isHighAlpha ? 'btn-high' : ''}" onclick="openMarket('${m.slug}')">Trade</button>
                 </td>
             </tr>
         `;
